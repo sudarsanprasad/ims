@@ -19,5 +19,17 @@ public class Ticket {
 	private String shortDescription;
 	
 	private String comments;
+	
+	private String status;
+	
+	private String createdDate;
+	
+	private String updatedDate;
+	
+	private String createdBy;
+	
+	private String category;
+	
+	private String priority;
 
 }

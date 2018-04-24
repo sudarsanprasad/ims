@@ -38,6 +38,12 @@ public class TicketService {
 				 ticket.setComments((String) record.get(env.getProperty("comments")));
 				 ticket.setDescription((String) record.get(env.getProperty("description")));
 				 ticket.setShortDescription((String) record.get(env.getProperty("shortdescription")));
+				 ticket.setStatus((String) record.get(env.getProperty("status")));
+				 ticket.setCategory((String) record.get(env.getProperty("category")));
+				 ticket.setPriority((String) record.get(env.getProperty("priority")));
+				 ticket.setCreatedDate((String) record.get(env.getProperty("createddate")));
+				 ticket.setCreatedBy((String) record.get(env.getProperty("createdby")));
+				 ticket.setUpdatedDate((String) record.get(env.getProperty("updateddate")));
 				 tickets.add(ticket);
 			 }
 			 tickets = ticketRepository.save(tickets);
