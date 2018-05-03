@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ims.entity.Ticket;
+import com.ims.service.FTPService;
 import com.ims.service.TicketService;
 import com.ims.taskconfig.ScheduledTasks;
 
@@ -19,11 +20,19 @@ public class TicketController {
 	private TicketService ticketService;
 	
 	@Autowired
+	private FTPService ftpService;
+	
+	@Autowired
 	private ScheduledTasks scheduledTasks;
 	
 	@GetMapping
 	public List<Ticket> getTickets(){
 		return ticketService.getTicketData();
+	}
+	
+	@GetMapping(value = "/downloadExcel")
+	public boolean downloadExcel() throws Exception{
+		return ftpService.downloadExcel();
 	}
 	
 }
