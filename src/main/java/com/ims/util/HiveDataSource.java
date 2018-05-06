@@ -1,4 +1,4 @@
-package com.ims.util;
+/*package com.ims.util;
 
 import javax.sql.DataSource;
 
@@ -34,3 +34,4 @@ public class HiveDataSource {
     }
 
 }
+*/

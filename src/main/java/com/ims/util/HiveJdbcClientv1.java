@@ -20,7 +20,7 @@ public class HiveJdbcClientv1 {
       System.exit(1);
     }
     //replace "hive" here with the name of the user the queries should run as
-    Connection con = DriverManager.getConnection("jdbc:hive2://127.0.0.1:10000/default", "", "");
+    Connection con = DriverManager.getConnection("jdbc:hive2://192.168.204.13:10000/default", "hive", "hive");
     Statement stmt = con.createStatement();
     String tableName = "testHiveDriverTable";
     stmt.execute("drop table if exists " + tableName);

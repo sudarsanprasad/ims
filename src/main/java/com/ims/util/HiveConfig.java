@@ -1,4 +1,4 @@
-package com.ims.util;
+/*package com.ims.util;
 
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.slf4j.Logger;
@@ -33,4 +33,4 @@ public class HiveConfig {
 	public JdbcTemplate hiveJdbcTemplate(@Qualifier("hiveJdbcDataSource") DataSource dataSource) {
 		return new JdbcTemplate(dataSource);
 	}
-}
+}*/
