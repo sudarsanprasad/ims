@@ -35,4 +35,8 @@ public class TicketController {
 		return ftpService.downloadExcel();
 	}
 	
+	@GetMapping(value = "/deleteData")
+	public void deleteData(){
+		 ticketService.deleteData();
+	}
 }

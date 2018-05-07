@@ -25,8 +25,8 @@ public class ScheduledTasks {
 	private Environment env;
 	
 
-	//@Scheduled(cron = "${shedule.time.sec}")
-	public void performTaskUsingCron() {
+	@Scheduled(cron = "${shedule.time.sec}")
+	public void performTaskUsingCron() throws Exception {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 		LOG.info("Regular task performed using Cron at "+ dateFormat.format(new Date()));
 		ticketService.updateTicketData(getRecords());

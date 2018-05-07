@@ -3,8 +3,9 @@ package com.ims.service;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
@@ -15,13 +16,14 @@ public class HiveService {
 	private static final Logger LOG = Logger.getLogger(HiveService.class);
 	private static String driverName = "org.apache.hive.jdbc.HiveDriver";
 
+	
 	public String createTable() {
 		String result = null;
 		 try {
 			 
 			StringBuffer sql = new StringBuffer("create table IF NOT EXISTS ");
-			sql.append("HIVE_TEST");
-			sql.append("(KEY INT, VALUE STRING)");
+			sql.append("TICKET_DATA");
+			sql.append("(col1 STRING,col2 STRING,col3 STRING,col4 STRING,col5 STRING,col6 STRING,col7 STRING,col8 STRING,col9 STRING,col10 STRING)");
 			/*sql.append("PARTITIONED BY (CTIME DATE)");
 			sql.append("ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' LINES TERMINATED BY '\n' ");
 			sql.append("STORED AS TEXTFILE");*/
@@ -33,7 +35,7 @@ public class HiveService {
 			Statement stmt = con.createStatement();
 			LOG.info("SQL ====== "+sql.toString());
 			stmt.execute(sql.toString());
-			String query = "SELECT VALUE FROM HIVE_TEST";
+			String query = "SELECT col1 FROM TICKET_DATA";
 			ResultSet res = stmt.executeQuery(query);
 			if (res.next()) {
 				result  = res.getString(1);
@@ -98,6 +100,31 @@ public class HiveService {
 	        System.out.println(response);
 	      }
 	  return response;
+	}
+	
+	public List<String> getTicketData() throws Exception{
+		List<String> ticketIds = new ArrayList<String>();
+	      try {
+	      Class.forName(driverName);
+	    } catch (ClassNotFoundException e) {
+	      // TODO Auto-generated catch block
+	      e.printStackTrace();
+	      System.exit(1);
+	    }
+	    //replace "hive" here with the name of the user the queries should run as
+	      Connection con = DriverManager.getConnection("jdbc:hive2://192.168.204.13:10000/default", "hive", "hive");
+	    Statement stmt = con.createStatement();
+	    // show tables
+	    // String sql = "show tables '" + tableName + "'";
+	    String sql = ("SELECT col1,col2 FROM ticket_data");
+	    ResultSet res = stmt.executeQuery(sql);
+	    String response = null;
+	    if (res.next()) {
+	    	response = res.getString(1);
+	    	ticketIds.add(response);
+	        System.out.println(response);
+	      }
+	  return ticketIds;
 	}
 
 }
