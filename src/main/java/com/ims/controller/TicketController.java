@@ -2,12 +2,14 @@ package com.ims.controller;
 
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ims.entity.Ticket;
+import com.ims.exception.ImsException;
 import com.ims.service.FTPService;
 import com.ims.service.TicketService;
 import com.ims.taskconfig.ScheduledTasks;
@@ -15,6 +17,8 @@ import com.ims.taskconfig.ScheduledTasks;
 @RestController
 @RequestMapping("/ticket")
 public class TicketController {
+	
+	private static final Logger LOG = Logger.getLogger(TicketController.class);
 	
 	@Autowired
 	private TicketService ticketService;
@@ -31,12 +35,13 @@ public class TicketController {
 	}
 	
 	@GetMapping(value = "/downloadExcel")
-	public boolean downloadExcel() throws Exception{
-		return ftpService.downloadExcel();
+	public boolean downloadExcel() {
+		try {
+			return ftpService.downloadExcel();
+		} catch (ImsException e) {
+			LOG.error(e);
+		}
+		return false;
 	}
 	
-	@GetMapping(value = "/deleteData")
-	public void deleteData(){
-		 ticketService.deleteData();
-	}
 }

@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import com.ims.exception.ImsException;
 import com.ims.service.TicketService;
 
 @Component
@@ -26,7 +27,7 @@ public class ScheduledTasks {
 	
 
 	@Scheduled(cron = "${shedule.time.sec}")
-	public void performTaskUsingCron() throws Exception {
+	public void performTaskUsingCron() throws ImsException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 		LOG.info("Regular task performed using Cron at "+ dateFormat.format(new Date()));
 		ticketService.updateTicketData(getRecords());

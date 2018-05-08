@@ -1,8 +1,10 @@
 package com.ims;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 
@@ -10,22 +12,25 @@ import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 // @EnableScheduling
 public class ImsApplication {
 	
+	@Autowired
+	private Environment env;
+	
 	public static void main(String[] args) {
 		SpringApplication.run(new Object[] { ImsApplication.class }, args);
 	}
 
 	@Bean
 	public DefaultFtpSessionFactory ftpSessionFactory() {
-		DefaultFtpSessionFactory sf = new DefaultFtpSessionFactory();
-		sf.setHost("192.168.241.12");
-		sf.setUsername("rbongurala");
-		sf.setPassword("April@2018");
-		return sf;
+		DefaultFtpSessionFactory factory = new DefaultFtpSessionFactory();
+		factory.setHost((String)env.getProperty("ftp.location"));
+		factory.setUsername((String)env.getProperty("ftp.username"));
+		factory.setPassword((String)env.getProperty("ftp.password"));
+		return factory;
 	}
 
 	@Bean
-	public FtpRemoteFileTemplate template(DefaultFtpSessionFactory sf) {
-		return new FtpRemoteFileTemplate(sf);
+	public FtpRemoteFileTemplate template(DefaultFtpSessionFactory factory) {
+		return new FtpRemoteFileTemplate(factory);
 	}
 	
 
