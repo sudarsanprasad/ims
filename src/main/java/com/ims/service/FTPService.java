@@ -31,6 +31,7 @@ import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketStatisticsRepository;
+import com.ims.util.DataMaskUtil;
 import com.ims.util.QueryBuilder;
 
 @Service
@@ -118,7 +119,8 @@ public class FTPService {
 
 	private void appendCellColumn(StringBuilder query, Cell currentCell) {
 		if (currentCell.getCellTypeEnum() == CellType.STRING) {
-			query.append(currentCell.getStringCellValue()).append("\"").append(",");
+			String cellValue = DataMaskUtil.maskData(currentCell.getStringCellValue());
+			query.append(cellValue).append("\"").append(",");
 		} else if (currentCell.getCellTypeEnum() == CellType.NUMERIC) {
 			query.append(currentCell.getNumericCellValue()).append("\"").append(",");
 		}
