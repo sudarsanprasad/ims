@@ -22,12 +22,12 @@ public class TicketMetadataService {
 		return ticketMetadataRepository.save(ticketMetadata);
 	}
 	
-	public TicketMetadata findById(String metadata) {
-		return ticketMetadataRepository.findOne(metadata);
+	public TicketMetadata findById(Long metadataId) {
+		return ticketMetadataRepository.findOne(metadataId);
 	}
 
-	public void delete(String metadata) {
-		ticketMetadataRepository.delete(metadata);
+	public void delete(Long metadataId) {
+		ticketMetadataRepository.delete(metadataId);
 		
 	}
 

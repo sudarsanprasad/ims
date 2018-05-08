@@ -35,15 +35,15 @@ public class TicketMetadataController {
         return ticketMetadataService.update(ticketMetadata);
     }
 
-    @DeleteMapping(value = "/{metadata}")
-    public ResponseEntity<Void> deleteMetadata(@PathVariable String metadata) throws ApplicationException {
-    	ticketMetadataService.delete(metadata);
+    @DeleteMapping(value = "/{metadataId}")
+    public ResponseEntity<Void> deleteMetadata(@PathVariable Long metadataId) throws ApplicationException {
+    	ticketMetadataService.delete(metadataId);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @GetMapping(value = "/{metadata}")
-    public TicketMetadata findMetadataById(@PathVariable String metadata) throws ApplicationException {
-        return ticketMetadataService.findById(metadata);
+    @GetMapping(value = "/{metadataId}")
+    public TicketMetadata findMetadataById(@PathVariable Long metadataId) throws ApplicationException {
+        return ticketMetadataService.findById(metadataId);
     }
 
     @GetMapping

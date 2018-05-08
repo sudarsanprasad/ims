@@ -1,6 +1,5 @@
 package com.ims;
 
-import org.apache.log4j.Logger;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -11,8 +10,6 @@ import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 // @EnableScheduling
 public class ImsApplication {
 	
-	private static final Logger LOG = Logger.getLogger(ImsApplication.class);
-
 	public static void main(String[] args) {
 		SpringApplication.run(new Object[] { ImsApplication.class }, args);
 	}
