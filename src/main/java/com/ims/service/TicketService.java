@@ -15,6 +15,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import com.ims.constant.StatusType;
 import com.ims.entity.Ticket;
 import com.ims.entity.TicketMetadata;
 import com.ims.entity.TicketStatistics;
@@ -45,7 +46,9 @@ public class TicketService {
 	@Autowired
 	TicketStatisticsRepository ticketStatisticsRepository;
 	
-	public void updateTicketData(String result) throws ImsException {
+	public void updateTicketData(String result, TicketStatistics ticketStatistics) throws ImsException {
+		ticketStatistics.setComments("Scheduler pulled the data from ticketing system");
+		updateTicketStatistics(ticketStatistics);
 		StringBuilder queryBuilder = new StringBuilder("insert into ticket_data (");
 		buildInsertQueryWithMetadata(queryBuilder);
 		LOG.info("Result in Service === " + result);
@@ -55,7 +58,8 @@ public class TicketService {
 			if (records != null && records.length() != 0) {
 				Connection con = getConnection();
 				Statement stmt = con.createStatement();
-				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics());
+				ticketStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
+				updateTicketStatistics(ticketStatistics);
 				for (int i = 0; i < records.length(); i++) {
 					JSONObject record = records.getJSONObject(i);
 					StringBuilder query = getInsertQuery(queryBuilder);
@@ -65,11 +69,22 @@ public class TicketService {
 				stmt.close();
 				con.close();
 				ticketStatistics.setAutomationEndDate(new Date());
-				ticketStatisticsRepository.save(ticketStatistics);
+				ticketStatistics.setComments("Data inserted into HDFS");
+				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
+				updateTicketStatistics(ticketStatistics);
 			}
 		} catch (SQLException e) {
+			ticketStatistics.setComments("Exception while processign data with Postgresql database");
+			ticketStatistics.setAutomationStatus(StatusType.ABORTED.getDescription());
+			updateTicketStatistics(ticketStatistics);
 			LOG.error(e);
 			throw new ImsException("Exception while processign data with Postgresql database", e);
+		} catch (ImsException e) {
+			ticketStatistics.setComments("Exception occured while processing the data");
+			ticketStatistics.setAutomationStatus(StatusType.ABORTED.getDescription());
+			updateTicketStatistics(ticketStatistics);
+			LOG.error(e);
+			throw new ImsException("Exception while processing data with Hive database", e);
 		}
 	}
 
@@ -113,13 +128,8 @@ public class TicketService {
 			}
 	}
 
-	private TicketStatistics getTicketStatistics() {
-		TicketStatistics ticket = new TicketStatistics();
-		 ticket.setSystemName((String)env.getProperty("ticketsystem"));
-		 ticket.setCustomer((String)env.getProperty("customer"));
-		 ticket.setAutomationStatus("In Progress");
-		 ticket.setAutomationStartDate(new Date());
-		 return ticket;
+	public TicketStatistics updateTicketStatistics(TicketStatistics ticketStatistics) {
+		 return ticketStatisticsRepository.save(ticketStatistics);
 	}
 	
 	public Connection getConnection() throws ImsException {
