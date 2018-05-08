@@ -2,6 +2,7 @@ package com.ims.service;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
 import java.util.List;
@@ -22,6 +23,11 @@ import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketRepository;
 import com.ims.repository.TicketStatisticsRepository;
 
+/**
+ * 
+ * @author RKB
+ *
+ */
 @Service
 public class TicketService {
 	
@@ -111,9 +117,14 @@ public class TicketService {
 		 return ticket;
 	}
 	
-	public Connection getConnection() throws Exception {
-		Class.forName((String)env.getProperty("hive.driver-class-name"));
-		return DriverManager.getConnection((String)env.getProperty("hive.url"), (String)env.getProperty("hive.username"), (String)env.getProperty("hive.password"));
+	public Connection getConnection() {
+		try {
+			Class.forName((String)env.getProperty("hive.driver-class-name"));
+			return DriverManager.getConnection((String)env.getProperty("hive.url"), (String)env.getProperty("hive.username"), (String)env.getProperty("hive.password"));
+		} catch (ClassNotFoundException | SQLException e) {
+			LOG.error(e);
+		}
+		return null;
 	}
 
 	private StringBuilder getInsertQuery(StringBuilder queryBuilder) {
