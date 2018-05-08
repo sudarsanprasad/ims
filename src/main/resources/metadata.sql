@@ -1,6 +1,6 @@
 CREATE TABLE ticket_metadata
 (
-  id character varying(255) NOT NULL,
+  id bigint NOT NULL,
   business_column character varying(255),
   customer character varying(255),
   is_forecast character varying(255),

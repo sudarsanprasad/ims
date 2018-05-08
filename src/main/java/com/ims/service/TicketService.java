@@ -13,16 +13,15 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import com.ims.constant.StatusType;
 import com.ims.entity.Ticket;
-import com.ims.entity.TicketMetadata;
 import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketRepository;
 import com.ims.repository.TicketStatisticsRepository;
+import com.ims.util.QueryBuilder;
 
 /**
  * 
@@ -47,10 +46,10 @@ public class TicketService {
 	TicketStatisticsRepository ticketStatisticsRepository;
 	
 	public void updateTicketData(String result, TicketStatistics ticketStatistics) throws ImsException {
+		QueryBuilder queryBuilder = new QueryBuilder();
 		ticketStatistics.setComments("Scheduler pulled the data from ticketing system");
 		updateTicketStatistics(ticketStatistics);
-		StringBuilder queryBuilder = new StringBuilder("insert into ticket_data (");
-		buildInsertQueryWithMetadata(queryBuilder);
+		StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository);
 		LOG.info("Result in Service === " + result);
 		JSONObject jsonObj = new JSONObject(result);
 		JSONArray records = jsonObj.getJSONArray("result");
@@ -62,7 +61,7 @@ public class TicketService {
 				updateTicketStatistics(ticketStatistics);
 				for (int i = 0; i < records.length(); i++) {
 					JSONObject record = records.getJSONObject(i);
-					StringBuilder query = getInsertQuery(queryBuilder);
+					StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
 					prepareQuery(record, query);
 					stmt.execute(query.toString());
 				}
@@ -88,14 +87,7 @@ public class TicketService {
 		}
 	}
 
-	private void buildInsertQueryWithMetadata(StringBuilder queryBuilder) {
-		List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomer("Service Now", "Deloitte");
-		if(!CollectionUtils.isEmpty(metadata)){
-			for(TicketMetadata data : metadata){
-				queryBuilder.append(data.getMappingColumn()).append(",");
-			}
-		}
-	}
+	
 
 	private void prepareQuery(JSONObject record, StringBuilder query) throws ImsException {
 		 try{
@@ -142,13 +134,6 @@ public class TicketService {
 		}
 	}
 
-	private StringBuilder getInsertQuery(StringBuilder queryBuilder) {
-		String tempQueryBuilder = queryBuilder.toString().substring(0, queryBuilder.lastIndexOf(","));
-		StringBuilder query = new StringBuilder(tempQueryBuilder);
-		query.append(") values (");
-		return query;
-	}
-	
 	public List<Ticket> getTicketData(){
 		return ticketRepository.findAll();
 	}
