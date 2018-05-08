@@ -45,15 +45,7 @@ public class TicketService {
 	
 	public void updateTicketData(String result) throws Exception{
 		StringBuilder queryBuilder = new StringBuilder("insert into ticket_data (");
-		List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomer("Service Now", "Deloitte");
-		if(!CollectionUtils.isEmpty(metadata)){
-			for(TicketMetadata data : metadata){
-				queryBuilder.append(data.getMappingColumn()).append(",");
-			}
-		}
-		
-		
-		
+		buildInsertQueryWithMetadata(queryBuilder);
 		LOG.info("Result in Service === "+result);
 		JSONObject jsonObj = new JSONObject(result);
 		 JSONArray records = jsonObj.getJSONArray("result");
@@ -73,6 +65,15 @@ public class TicketService {
 			 ticketStatisticsRepository.save(ticketStatistics);
 		 }
 		 
+	}
+
+	private void buildInsertQueryWithMetadata(StringBuilder queryBuilder) {
+		List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomer("Service Now", "Deloitte");
+		if(!CollectionUtils.isEmpty(metadata)){
+			for(TicketMetadata data : metadata){
+				queryBuilder.append(data.getMappingColumn()).append(",");
+			}
+		}
 	}
 
 	private void prepareQuery(JSONObject record, StringBuilder query) {
