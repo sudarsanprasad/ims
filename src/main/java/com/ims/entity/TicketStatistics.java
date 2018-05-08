@@ -41,7 +41,7 @@ public class TicketStatistics {
 	
 	private Date knowledgeBaseEndDate;
 	
-	private String description;
+	private String comments;
 	
 	
 }
