@@ -46,5 +46,13 @@ public class TicketMetadataService {
 	public List<TicketMetadata> findByCustomer(String customer){
 		return ticketMetadataRepository.findByCustomer(customer);
 	}
+	
+	public List<String> findByIsForecast(){
+		return ticketMetadataRepository.findMappingColumnByIsForecast();
+	}
+	
+	public List<String> findByIsProactive(){
+		return ticketMetadataRepository.findMappingColumnByIsProactive();
+	}
 
 }

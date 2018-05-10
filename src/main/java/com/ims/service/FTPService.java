@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
@@ -67,7 +68,7 @@ public class FTPService {
         	}
     	}catch(Exception ex){
     		LOG.error(ex);
-			throw new ImsException("Exception occured while processing excep data", ex);
+			throw new ImsException("Exception occured while processing excel data", ex);
     	}
     	return isFileSavedToLocalFlag;
     }
@@ -76,46 +77,63 @@ public class FTPService {
     	try {
     		QueryBuilder queryBuilder = new QueryBuilder();
     		StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository);
-    		
-    		
-        	boolean skipFirstRow = false;
             FileInputStream excelFile = new FileInputStream(new File(filename));
             Workbook workbook = new XSSFWorkbook(excelFile);
             Sheet datatypeSheet = workbook.getSheetAt(0);
             Iterator<Row> iterator = datatypeSheet.iterator();
             ticketStatistics.setComments("Reading the data from Excel in Progress");
             ticketStatisticsRepository.save(ticketStatistics);
-            while (iterator.hasNext()) {
-            	if(!skipFirstRow){
-            		iterator.next();
-            	}
-            	StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
-            	skipFirstRow = true;
-                Row currentRow = iterator.next();
-                Iterator<Cell> cellIterator = currentRow.iterator();
-                while (cellIterator.hasNext()) {
-                    Cell currentCell = cellIterator.next();
-                    query.append("\"");
-                    appendCellColumn(query, currentCell);
-                }
-                String insertQuery = query.toString().substring(0, query.lastIndexOf(","));
-                StringBuilder insertHiveQuery = new StringBuilder(insertQuery).append(")");
-                LOG.info(insertHiveQuery.toString());
-                //Add connection details
-                ticketStatistics.setComments("Data inserted into HDFS");
-                ticketStatisticsRepository.save(ticketStatistics);
-            }
+            Connection con = getConnection();
+			Statement stmt = con.createStatement();
+            updateDataToHDFS(ticketStatistics, queryBuilder, qBuilder, iterator, stmt);
+            stmt.close();
+			con.close();
             workbook.close();
         } catch (FileNotFoundException e) {
         	LOG.error(e);
+        	ticketStatistics.setAutomationStatus(StatusType.ABORTED.getDescription());
         	ticketStatistics.setComments("File Not Found");
             ticketStatisticsRepository.save(ticketStatistics);
-        } catch (IOException e) {
+        } catch (IOException | SQLException e) {
         	LOG.error(e);
+        	ticketStatistics.setAutomationStatus(StatusType.ABORTED.getDescription());
         	ticketStatistics.setComments("Exception occured While Processing the File");
+            ticketStatisticsRepository.save(ticketStatistics);
+        } catch (ImsException e) {
+        	LOG.error(e);
+        	ticketStatistics.setAutomationStatus(StatusType.ABORTED.getDescription());
+        	ticketStatistics.setComments("Exception occured Connecting to Postgres");
             ticketStatisticsRepository.save(ticketStatistics);
         }
     }
+
+	private boolean updateDataToHDFS(TicketStatistics ticketStatistics, QueryBuilder queryBuilder, StringBuilder qBuilder, Iterator<Row> iterator, Statement stmt) 	throws SQLException {
+		boolean skipFirstRow = false;
+		while (iterator.hasNext()) {
+			if(!skipFirstRow){
+				iterator.next();
+			}
+			StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
+			skipFirstRow = true;
+		    Row currentRow = iterator.next();
+		    Iterator<Cell> cellIterator = currentRow.iterator();
+		    while (cellIterator.hasNext()) {
+		        Cell currentCell = cellIterator.next();
+		        query.append("\"");
+		        appendCellColumn(query, currentCell);
+		    }
+		    String insertQuery = query.toString().substring(0, query.lastIndexOf(","));
+		    StringBuilder insertHiveQuery = new StringBuilder(insertQuery).append(")");
+		    LOG.info(insertHiveQuery.toString());
+		    stmt.execute(insertHiveQuery.toString());
+		    //Add connection details
+		    ticketStatistics.setComments("Data inserted into HDFS");
+		    ticketStatistics.setAutomationEndDate(new Date());
+		    ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
+		    ticketStatisticsRepository.save(ticketStatistics);
+		}
+		return skipFirstRow;
+	}
 
 	private void appendCellColumn(StringBuilder query, Cell currentCell) {
 		if (currentCell.getCellTypeEnum() == CellType.STRING) {
@@ -123,16 +141,6 @@ public class FTPService {
 			query.append(cellValue).append("\"").append(",");
 		} else if (currentCell.getCellTypeEnum() == CellType.NUMERIC) {
 			query.append(currentCell.getNumericCellValue()).append("\"").append(",");
-		}
-	}
-    
-    public Connection getConnection() throws ImsException {
-		try {
-			Class.forName((String)env.getProperty("hive.driver-class-name"));
-			return DriverManager.getConnection((String)env.getProperty("hive.url"), (String)env.getProperty("hive.username"), (String)env.getProperty("hive.password"));
-		} catch (ClassNotFoundException | SQLException e) {
-			LOG.error(e);
-			throw new ImsException("",e);
 		}
 	}
     
@@ -144,5 +152,15 @@ public class FTPService {
 		ticketStatistics.setAutomationStartDate(new Date());
 		ticketStatistics.setComments("Excel downloaded successfully");
 		return ticketStatistics;
+	}
+    
+    public Connection getConnection() throws ImsException {
+		try {
+			Class.forName((String)env.getProperty("hive.driver-class-name"));
+			return DriverManager.getConnection((String)env.getProperty("hive.url"), (String)env.getProperty("hive.username"), (String)env.getProperty("hive.password"));
+		} catch (ClassNotFoundException | SQLException e) {
+			LOG.error(e);
+			throw new ImsException("",e);
+		}
 	}
 }

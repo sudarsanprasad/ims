@@ -56,15 +56,10 @@ public class TicketService {
 		try {
 			if (records != null && records.length() != 0) {
 				Connection con = getConnection();
-				Statement stmt = con.createStatement();
 				ticketStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
 				updateTicketStatistics(ticketStatistics);
-				for (int i = 0; i < records.length(); i++) {
-					JSONObject record = records.getJSONObject(i);
-					StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
-					prepareQuery(record, query);
-					stmt.execute(query.toString());
-				}
+				Statement stmt = con.createStatement();
+				updateDataToHDFS(queryBuilder, qBuilder, records, stmt);
 				stmt.close();
 				con.close();
 				ticketStatistics.setAutomationEndDate(new Date());
@@ -84,6 +79,19 @@ public class TicketService {
 			updateTicketStatistics(ticketStatistics);
 			LOG.error(e);
 			throw new ImsException("Exception while processing data with Hive database", e);
+		}
+	}
+
+
+
+	private void updateDataToHDFS(QueryBuilder queryBuilder,
+			StringBuilder qBuilder, JSONArray records, Statement stmt)
+			throws ImsException, SQLException {
+		for (int i = 0; i < records.length(); i++) {
+			JSONObject record = records.getJSONObject(i);
+			StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
+			prepareQuery(record, query);
+			stmt.execute(query.toString());
 		}
 	}
 
