@@ -57,6 +57,8 @@ public class TicketService {
 			if (records != null && records.length() != 0) {
 				Connection con = getConnection();
 				ticketStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
+				ticketStatistics.setForecastStatus(StatusType.OPEN.getDescription());
+				ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
 				updateTicketStatistics(ticketStatistics);
 				Statement stmt = con.createStatement();
 				updateDataToHDFS(queryBuilder, qBuilder, records, stmt);

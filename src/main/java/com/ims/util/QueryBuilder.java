@@ -13,7 +13,7 @@ public class QueryBuilder {
 	
 	
 	public StringBuilder buildHiveQuery(TicketMetadataRepository ticketMetadataRepository){
-		StringBuilder queryBuilder = new StringBuilder("insert into ticket_data (");
+		StringBuilder queryBuilder = new StringBuilder("insert into ticket_temp_data (");
 		buildInsertQueryWithMetadata(queryBuilder, ticketMetadataRepository);
 		return queryBuilder;
 	}

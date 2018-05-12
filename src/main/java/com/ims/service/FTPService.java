@@ -124,6 +124,11 @@ public class FTPService {
 		    }
 		    String insertQuery = query.toString().substring(0, query.lastIndexOf(","));
 		    StringBuilder insertHiveQuery = new StringBuilder(insertQuery).append(")");
+		    
+		    ticketStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
+		    ticketStatistics.setForecastStatus(StatusType.OPEN.getDescription());
+			ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
+			ticketStatisticsRepository.save(ticketStatistics);
 		    LOG.info(insertHiveQuery.toString());
 		    stmt.execute(insertHiveQuery.toString());
 		    //Add connection details
