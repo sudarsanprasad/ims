@@ -42,4 +42,7 @@ INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
     VALUES (10, 'Service Now', 'Deloitte', 'col10', 'priority', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (11, 'Service Now', 'Deloitte', 'col11', 'jobid', 'N', 'N', 'N');
+
     
