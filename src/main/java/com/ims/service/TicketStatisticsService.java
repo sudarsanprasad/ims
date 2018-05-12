@@ -2,6 +2,7 @@ package com.ims.service;
 
 import java.util.List;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +34,19 @@ public class TicketStatisticsService {
 
 	public List<TicketStatistics> findAll() {
 		return ticketStatisticsRepository.findAll();
+	}
+	
+	public List<TicketStatistics> findAllByFileNameOrderByJobId(String fileName){
+		return ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(fileName);
+	}
+	
+	public TicketStatistics findMostRecentRecord(String fileName){
+		TicketStatistics ticketStatistics = null;
+		List<TicketStatistics> ticketStatisticsList = ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(fileName);
+		if(!CollectionUtils.isEmpty(ticketStatisticsList)){
+			ticketStatistics = ticketStatisticsList.get(0);
+		}
+		return ticketStatistics;
 	}
 	
 }

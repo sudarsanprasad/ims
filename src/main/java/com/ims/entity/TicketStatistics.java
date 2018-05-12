@@ -17,7 +17,7 @@ public class TicketStatistics {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+	private Long jobId;
 	
 	private String systemName;
 	
@@ -42,6 +42,16 @@ public class TicketStatistics {
 	private Date knowledgeBaseEndDate;
 	
 	private String comments;
+	
+	private String fileName;
+	
+	private Long totalRecords;
+	
+	private Long recordsInserted;
+	
+	private Long recordsFailed;
+	
+	private String source;
 	
 	
 }
