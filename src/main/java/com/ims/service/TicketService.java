@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
 import com.ims.entity.Ticket;
 import com.ims.entity.TicketStatistics;
@@ -71,13 +72,13 @@ public class TicketService {
 			}
 		} catch (SQLException e) {
 			ticketStatistics.setComments("Exception while processign data with Postgresql database");
-			ticketStatistics.setAutomationStatus(StatusType.ABORTED.getDescription());
+			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
 			updateTicketStatistics(ticketStatistics);
 			LOG.error(e);
 			throw new ImsException("Exception while processign data with Postgresql database", e);
 		} catch (ImsException e) {
 			ticketStatistics.setComments("Exception occured while processing the data");
-			ticketStatistics.setAutomationStatus(StatusType.ABORTED.getDescription());
+			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
 			updateTicketStatistics(ticketStatistics);
 			LOG.error(e);
 			throw new ImsException("Exception while processing data with Hive database", e);
@@ -131,6 +132,7 @@ public class TicketService {
 	}
 
 	public TicketStatistics updateTicketStatistics(TicketStatistics ticketStatistics) {
+			ticketStatistics.setSource(SourceType.API.getDescription());
 		 return ticketStatisticsRepository.save(ticketStatistics);
 	}
 	

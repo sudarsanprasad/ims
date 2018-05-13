@@ -1,14 +1,12 @@
 package com.ims.constant;
 
-public enum StatusType {
-	OPEN("OPEN"),
-	INPROGRESS("IN PROGRESS"),
-    COMPLETED("COMPLETED"),
-    FAILED("FAILED");
+public enum SourceType {
+	FTP("FTP"),
+    API("API");
 	
 	private String description;
 
-	StatusType(String description) {
+	SourceType(String description) {
         this.description = description;
     }
 
