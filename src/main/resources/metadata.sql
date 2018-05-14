@@ -19,61 +19,91 @@ INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_
     VALUES (2, 'Service Now', 'Deloitte', 'col2', 'version', 'N', 'N', 'N');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (3, 'Service Now', 'Deloitte', 'col3', 'number', 'N', 'N', 'N');
+    VALUES (3, 'Service Now', 'Deloitte', 'col3', 'number', 'Y', 'Y', 'Y');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (4, 'Service Now', 'Deloitte', 'col4', 'description', 'N', 'N', 'N');
+    VALUES (4, 'Service Now', 'Deloitte', 'col4', 'description', 'Y', 'Y', 'Y');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (5, 'Service Now', 'Deloitte', 'col5', 'short_description', 'N', 'N', 'N');
+    VALUES (5, 'Service Now', 'Deloitte', 'col5', 'short_description', 'Y', 'Y', 'Y');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (6, 'Service Now', 'Deloitte', 'col6', 'short_description', 'N', 'N', 'N');
+    VALUES (6, 'Service Now', 'Deloitte', 'col6', 'comments', 'Y', 'Y', 'Y');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (7, 'Service Now', 'Deloitte', 'col7', 'comments', 'N', 'N', 'N');
+    VALUES (7, 'Service Now', 'Deloitte', 'col7', 'incident_state', 'N', 'N', 'N');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (8, 'Service Now', 'Deloitte', 'col8', 'comments', 'N', 'N', 'N');
+    VALUES (8, 'Service Now', 'Deloitte', 'col8', 'opened_at', 'Y', 'Y', 'Y');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (9, 'Service Now', 'Deloitte', 'col9', 'incident_state', 'N', 'N', 'N');
+    VALUES (9, 'Service Now', 'Deloitte', 'col9', 'closed_at', 'Y', 'Y', 'Y');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (10, 'Service Now', 'Deloitte', 'col10', 'opened_at', 'N', 'N', 'N');
+    VALUES (10, 'Service Now', 'Deloitte', 'col10', 'resolved_at', 'Y', 'Y', 'Y');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (11, 'Service Now', 'Deloitte', 'col11', 'closed_at', 'N', 'N', 'N');
+    VALUES (11, 'Service Now', 'Deloitte', 'col11', 'assignment_group', 'Y', 'Y', 'Y');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (12, 'Service Now', 'Deloitte', 'col12', 'resolved_at', 'N', 'N', 'N');
+    VALUES (12, 'Service Now', 'Deloitte', 'col12', 'priority', 'Y', 'N', 'Y');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (13, 'Service Now', 'Deloitte', 'col13', 'assignment_group', 'N', 'N', 'N');
+    VALUES (13, 'Service Now', 'Deloitte', 'col13', 'category', 'Y', 'Y', 'Y');    
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (14, 'Service Now', 'Deloitte', 'col14', 'priority', 'N', 'N', 'N');
+    VALUES (14, 'Service Now', 'Deloitte', 'col14', 'cmdb_ci', 'N', 'Y', 'Y');       
+
+
+
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (15, 'Service Now', 'Deloitte', 'col15', 'category', 'N', 'N', 'N');    
+    VALUES (15, 'AMPM', 'Deloitte', 'col1', 'jobid', 'N', 'N', 'N');
 
 INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
-    VALUES (16, 'Service Now', 'Deloitte', 'col16', 'cmdb_ci', 'N', 'N', 'N');       
+    VALUES (16, 'AMPM', 'Deloitte', 'col2', 'version', 'N', 'N', 'N');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (17, 'AMPM', 'Deloitte', 'col3', 'Incident ID', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (18, 'AMPM', 'Deloitte', 'col4', 'Title', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (19, 'AMPM', 'Deloitte', 'col5', 'Subarea', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (20, 'AMPM', 'Deloitte', 'col6', 'Solution', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (21, 'AMPM', 'Deloitte', 'col8', 'Open Time', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (22, 'AMPM', 'Deloitte', 'col9', 'Close Time', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (23, 'AMPM', 'Deloitte', 'col11', 'Assignment Group', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (24, 'AMPM', 'Deloitte', 'col12', 'priority', 'Y', 'N', 'Y');
+    
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (25, 'AMPM', 'Deloitte', 'col15', 'Affected Service', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (26, 'AMPM', 'Deloitte', 'col16', 'Affective Service Captured', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (27, 'AMPM', 'Deloitte', 'col17', 'Affected CI', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (28, 'AMPM', 'Deloitte', 'col18', 'Area', 'Y', 'Y', 'Y');
 
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (29, 'AMPM', 'Deloitte', 'col19', 'Client Ticket', 'Y', 'N', 'Y');
 
-
-
+INSERT INTO ticket_metadata(id, system_name, customer, mapping_column, business_column, is_forecast, is_knowledgement, is_proactive)
+    VALUES (30, 'AMPM', 'Deloitte', 'col20', 'Resolution Time', 'Y', 'N', 'Y');
 
 
 
