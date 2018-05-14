@@ -62,6 +62,7 @@ public class FTPService {
 
 	public boolean downloadExcel() throws ImsException {
 		boolean isFileSavedToLocalFlag;
+		String fileName = null;
 		FTPFile[] files = template.list("");
 		String systemName = (String)env.getProperty("ticketsystem");
 		String customer = (String)env.getProperty("customer");
@@ -69,11 +70,12 @@ public class FTPService {
 			for (FTPFile file : files) {
 				SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
 				String formattedDate = formatDate.format(file.getTimestamp().getTime());
+				fileName = file.getName();
 				LOG.info(file.getName() + "     " + formattedDate);
 			}
 			isFileSavedToLocalFlag = template.get("data.xls", inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File("C:/test/data.xls"))));
 			if (isFileSavedToLocalFlag) {
-				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics());
+				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(fileName));
 				processExcelData("C:/test/data.xls", ticketStatistics, systemName, customer);
 			}
 		} catch (Exception ex) {
@@ -263,6 +265,7 @@ public class FTPService {
 			ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
 			ticketStatisticsRepository.save(ticketStatistics);
 		}else{
+			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
 			ticketStatisticsRepository.save(ticketStatistics);
 		}
 		return skipFirstRow;
@@ -344,12 +347,13 @@ public class FTPService {
 		return isRecordExists;
 	}
 
-	private TicketStatistics getTicketStatistics() {
+	private TicketStatistics getTicketStatistics(String fileName) {
 		TicketStatistics ticketStatistics = new TicketStatistics();
 		ticketStatistics.setSystemName((String) env.getProperty("ticketsystem"));
 		ticketStatistics.setCustomer((String) env.getProperty("customer"));
 		ticketStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
 		ticketStatistics.setAutomationStartDate(new Date());
+		ticketStatistics.setFileName(fileName);
 		ticketStatistics.setComments("Excel downloaded successfully");
 		return ticketStatistics;
 	}

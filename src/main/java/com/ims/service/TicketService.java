@@ -21,6 +21,7 @@ import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
 import com.ims.dto.TicketDataDto;
 import com.ims.entity.Ticket;
+import com.ims.entity.TicketLogStatistics;
 import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
 import com.ims.repository.TicketMetadataRepository;
@@ -95,6 +96,13 @@ public class TicketService {
 
 
 	private void updateDataToHDFS(QueryBuilder queryBuilder, StringBuilder qBuilder, JSONArray records, Statement stmt, List<TicketDataDto> dtos, TicketStatistics ticketStatistics) throws ImsException, SQLException {
+		Long successCount = 0l;
+		Long failureCount = 0l;
+		ticketStatistics.setRecordsInserted(0l);
+		ticketStatistics.setRecordsFailed(0l);
+		boolean isFailed = false;
+		String ticketId = null;
+		List<TicketLogStatistics> ticketLogStatisticsList = new ArrayList<>();
 		for (int i = 0; i < records.length(); i++) {
 			JSONObject record = records.getJSONObject(i);
 			StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
@@ -102,8 +110,36 @@ public class TicketService {
 			boolean isRecordExists = prepareQuery(record, query, ticketStatistics, dtos, dto);
 			
 			if(!isRecordExists){
-				stmt.execute(query.toString());
+				try{
+					stmt.execute(query.toString());
+					successCount++;
+					ticketStatistics.setRecordsInserted(successCount);
+				}catch (SQLException e) {
+					LOG.error(e);
+					ticketId = (String) record.get((String)env.getProperty("ticketid").trim());
+					TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
+					ticketLogStatistics.setTicketId(ticketId);
+					ticketLogStatistics.setMessage(e.getMessage());
+					ticketLogStatisticsList.add(ticketLogStatistics);
+					ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
+					failureCount++;
+					ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
+					ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
+					ticketStatistics.setComments("Exception occured While Processing the File");
+					isFailed = true;
+				}
+				
 			}
+		}
+		if(!isFailed){
+			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
+			ticketStatistics.setComments("Data inserted into HDFS");
+			ticketStatistics.setAutomationEndDate(new Date());
+			ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
+			ticketStatisticsRepository.save(ticketStatistics);
+		}else{
+			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
+			ticketStatisticsRepository.save(ticketStatistics);
 		}
 	}
 
