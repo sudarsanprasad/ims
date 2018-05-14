@@ -19,6 +19,7 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.log4j.Logger;
+import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
@@ -62,6 +63,8 @@ public class FTPService {
 	public boolean downloadExcel() throws ImsException {
 		boolean isFileSavedToLocalFlag;
 		FTPFile[] files = template.list("");
+		String systemName = (String)env.getProperty("ticketsystem");
+		String customer = (String)env.getProperty("customer");
 		try {
 			for (FTPFile file : files) {
 				SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
@@ -71,7 +74,7 @@ public class FTPService {
 			isFileSavedToLocalFlag = template.get("data.xls", inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File("C:/test/data.xls"))));
 			if (isFileSavedToLocalFlag) {
 				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics());
-				processExcelData("C:/test/data.xls", ticketStatistics);
+				processExcelData("C:/test/data.xls", ticketStatistics, systemName, customer);
 			}
 		} catch (Exception ex) {
 			LOG.error(ex);
@@ -81,10 +84,11 @@ public class FTPService {
 		return isFileSavedToLocalFlag;
 	}
 
-	private void processExcelData(String filename, TicketStatistics ticketStatistics) {
+	private void processExcelData(String filename, TicketStatistics ticketStatistics, String systemName, String customer) {
+		boolean isFailed = false;
 		try {
 			QueryBuilder queryBuilder = new QueryBuilder();
-			StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository);
+			StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer);
 			FileInputStream excelFile = new FileInputStream(new File(filename));
 			Workbook workbook = new XSSFWorkbook(excelFile);
 			Sheet datatypeSheet = workbook.getSheetAt(0);
@@ -95,20 +99,30 @@ public class FTPService {
 			updateDataToHDFS(ticketStatistics, queryBuilder, qBuilder, iterator, dtos);
 			workbook.close();
 		} catch (FileNotFoundException e) {
+			isFailed = true;
 			LOG.error(e);
 			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
 			ticketStatistics.setComments("File Not Found");
-			ticketStatisticsRepository.save(ticketStatistics);
-		} catch (IOException e) {
+		} catch (OLE2NotOfficeXmlFileException e) {
+			isFailed = true;
 			LOG.error(e);
 			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
 			ticketStatistics.setComments("Exception occured While Reading the File");
+			
+		} catch (IOException e) {
+			isFailed = true;
+			LOG.error(e);
+			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
+			ticketStatistics.setComments("Exception occured While Reading the File");
+			
+		} 
+		if(isFailed){
 			ticketStatisticsRepository.save(ticketStatistics);
 		}
 	}
 	
 	private List<TicketDataDto> getDataFromHDFS(String ticketIds){
-		List<TicketDataDto> dtos = new ArrayList<TicketDataDto>();
+		List<TicketDataDto> dtos = new ArrayList<>();
 		Connection con = null;
 		Statement stmt = null;
 		try {

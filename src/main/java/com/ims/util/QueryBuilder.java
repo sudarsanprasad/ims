@@ -2,6 +2,8 @@ package com.ims.util;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -11,16 +13,18 @@ import com.ims.repository.TicketMetadataRepository;
 @Service
 public class QueryBuilder {
 	
+	@Autowired
+	private Environment env;
 	
-	public StringBuilder buildHiveQuery(TicketMetadataRepository ticketMetadataRepository){
+	public StringBuilder buildHiveQuery(TicketMetadataRepository ticketMetadataRepository, String systemName, String customer){
 		StringBuilder queryBuilder = new StringBuilder("insert into ticket_temp_data (");
-		buildInsertQueryWithMetadata(queryBuilder, ticketMetadataRepository);
+		buildInsertQueryWithMetadata(queryBuilder, ticketMetadataRepository, systemName, customer);
 		return queryBuilder;
 	}
 	
 	
-	private void buildInsertQueryWithMetadata(StringBuilder queryBuilder, TicketMetadataRepository ticketMetadataRepository) {
-		List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomer("Service Now", "Deloitte");
+	private void buildInsertQueryWithMetadata(StringBuilder queryBuilder, TicketMetadataRepository ticketMetadataRepository, String systemName, String customer) {
+		List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomer(systemName, customer);
 		if(!CollectionUtils.isEmpty(metadata)){
 			for(TicketMetadata data : metadata){
 				queryBuilder.append(data.getMappingColumn()).append(",");

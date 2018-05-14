@@ -50,7 +50,9 @@ public class TicketService {
 		QueryBuilder queryBuilder = new QueryBuilder();
 		ticketStatistics.setComments("Scheduler pulled the data from ticketing system");
 		updateTicketStatistics(ticketStatistics);
-		StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository);
+		String systemName = (String)env.getProperty("ticketsystem");
+		String customer = (String)env.getProperty("customer");
+		StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer);
 		LOG.info("Result in Service === " + result);
 		JSONObject jsonObj = new JSONObject(result);
 		JSONArray records = jsonObj.getJSONArray("result");
@@ -87,9 +89,7 @@ public class TicketService {
 
 
 
-	private void updateDataToHDFS(QueryBuilder queryBuilder,
-			StringBuilder qBuilder, JSONArray records, Statement stmt)
-			throws ImsException, SQLException {
+	private void updateDataToHDFS(QueryBuilder queryBuilder, StringBuilder qBuilder, JSONArray records, Statement stmt) throws ImsException, SQLException {
 		for (int i = 0; i < records.length(); i++) {
 			JSONObject record = records.getJSONObject(i);
 			StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
