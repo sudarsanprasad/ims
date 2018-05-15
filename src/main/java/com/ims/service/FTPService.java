@@ -7,7 +7,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
@@ -34,7 +33,6 @@ import org.springframework.util.FileCopyUtils;
 
 import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
-import com.ims.dto.TicketDataDto;
 import com.ims.entity.TicketLogStatistics;
 import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
@@ -66,6 +64,8 @@ public class FTPService {
 		FTPFile[] files = template.list("");
 		String systemName = (String)env.getProperty("ticketsystem");
 		String customer = (String)env.getProperty("customer");
+		String ftpFileName = (String)env.getProperty("filename");
+		String location = (String)env.getProperty("file.location");
 		try {
 			for (FTPFile file : files) {
 				SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
@@ -73,10 +73,10 @@ public class FTPService {
 				fileName = file.getName();
 				LOG.info(file.getName() + "     " + formattedDate);
 			}
-			isFileSavedToLocalFlag = template.get("data.xls", inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File("C:/test/data.xls"))));
+			isFileSavedToLocalFlag = template.get(ftpFileName, inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File(location))));
 			if (isFileSavedToLocalFlag) {
 				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(fileName));
-				processExcelData("C:/test/data.xls", ticketStatistics, systemName, customer);
+				processExcelData(location, ticketStatistics, systemName, customer);
 			}
 		} catch (Exception ex) {
 			LOG.error(ex);
@@ -97,21 +97,14 @@ public class FTPService {
 			Iterator<Row> iterator = datatypeSheet.iterator();
 			ticketStatistics.setComments("Reading the data from Excel in Progress");
 			ticketStatisticsRepository.save(ticketStatistics);
-			List<TicketDataDto> dtos = getDataFromHDFS(getTicketIds(filename));
-			updateDataToHDFS(ticketStatistics, queryBuilder, qBuilder, iterator, dtos);
+			updateDataToHDFS(ticketStatistics, queryBuilder, qBuilder, iterator);
 			workbook.close();
 		} catch (FileNotFoundException e) {
 			isFailed = true;
 			LOG.error(e);
 			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
 			ticketStatistics.setComments("File Not Found");
-		} catch (OLE2NotOfficeXmlFileException e) {
-			isFailed = true;
-			LOG.error(e);
-			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-			ticketStatistics.setComments("Exception occured While Reading the File");
-			
-		} catch (IOException e) {
+		} catch (OLE2NotOfficeXmlFileException | IOException e) {
 			isFailed = true;
 			LOG.error(e);
 			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
@@ -123,42 +116,7 @@ public class FTPService {
 		}
 	}
 	
-	private List<TicketDataDto> getDataFromHDFS(String ticketIds){
-		List<TicketDataDto> dtos = new ArrayList<>();
-		Connection con = null;
-		Statement stmt = null;
-		try {
-			con = getConnection();
-			stmt = con.createStatement();
-			StringBuilder queryBuilder = new StringBuilder(" select * from ticket_temp_data where col1 in(");
-			queryBuilder.append(ticketIds).append(")");
-			LOG.info(queryBuilder.toString());
-			ResultSet rs = stmt.executeQuery(queryBuilder.toString());
-			while (rs.next()) {
-				TicketDataDto dto = new TicketDataDto();
-				dto.setCol1(rs.getString(1));
-				dto.setCol2(rs.getString(2));
-				dto.setCol3(rs.getString(3));
-				dto.setCol4(rs.getString(4));
-				dto.setCol5(rs.getString(5));
-				dto.setCol6(rs.getString(6));
-				dto.setCol7(rs.getString(7));
-				dto.setCol8(rs.getString(8));
-				dto.setCol9(rs.getString(9));
-				dto.setCol10(rs.getString(10));
-				dto.setCol11(rs.getString(11));
-				dto.setCol12(rs.getString(12));
-				dtos.add(dto);
-				LOG.info(rs.getString(1));
-			}
-			closeConnection(con, stmt);
-		} catch (ImsException | SQLException e) {
-			LOG.error(e);
-		} 
-		return dtos;
-	}
-
-	private boolean updateDataToHDFS(TicketStatistics ticketStatistics,QueryBuilder queryBuilder, StringBuilder qBuilder, Iterator<Row> iterator, List<TicketDataDto> dtos) {
+	private boolean updateDataToHDFS(TicketStatistics ticketStatistics,QueryBuilder queryBuilder, StringBuilder qBuilder, Iterator<Row> iterator) {
 		Long successCount = 0l;
 		Long failureCount = 0l;
 		ticketStatistics.setRecordsInserted(0l);
@@ -214,7 +172,7 @@ public class FTPService {
 					failureCount++;
 					ticketStatistics.setRecordsFailed(failureCount);
 					ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-					ticketStatistics.setComments("Exception occured While Processing the File");
+					ticketStatistics.setComments("Exception occured while Processing the File");
 					ticketStatistics.setSource(SourceType.FTP.getDescription());
 					ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
 					isFailed = true;
@@ -282,28 +240,6 @@ public class FTPService {
 		return skipFirstRow;
 	}
 
-
-	private String getTicketIds(String filename) throws IOException {
-		FileInputStream excelFile = new FileInputStream(new File(filename));
-		Workbook workbook = new XSSFWorkbook(excelFile);
-		Sheet datatypeSheet = workbook.getSheetAt(0);
-		Iterator<Row> iterator = datatypeSheet.iterator();
-		StringBuilder ticketIdBuilder = new StringBuilder("");
-		boolean skipRowOne = false;
-		while (iterator.hasNext()) {
-			if (!skipRowOne) {
-				iterator.next();
-			}
-			Row currentRow = iterator.next();
-			skipRowOne = true;
-			ticketIdBuilder.append("'").append(currentRow.getCell(0).getStringCellValue()).append("'").append(",");
-			LOG.info(currentRow.getCell(0).getStringCellValue());
-			LOG.info("");
-			
-		}
-		workbook.close();
-		return ticketIdBuilder.toString().substring(0,ticketIdBuilder.lastIndexOf(","));
-	}
 
 	private void closeConnection(Connection con, Statement stmt) {
 		try {
