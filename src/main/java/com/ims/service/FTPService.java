@@ -184,7 +184,6 @@ public class FTPService {
 					StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
 					skipFirstRow = true;
 					Row currentRow = iterator.next();
-					TicketDataDto dto = new TicketDataDto();
 					String values[]=new String[12];
 					Iterator<Cell> cellIterator = currentRow.iterator();
 					int i = 0;
@@ -194,26 +193,17 @@ public class FTPService {
 						values[i] = appendCellColumn(query, currentCell); 
 						i++;
 					}
-					fillDto(values, dto);
 					query.append("\"");
 					query.append(String.valueOf(ticketStatistics.getJobId()));
 					query.append("\"").append(",");
 					query.append("\"");
-					boolean isRecordExists = isRecordExists(dtos, dto);
-					if(dto.getCol12() == null){
-						query.append(1);
-					}else{
-						query.append(dto.getCol12());
-					}
+					query.append(String.valueOf(ticketStatistics.getVersionNumber()));
 					query.append("\"").append(")");
 					LOG.info(query.toString());
-					ticketId = dto.getCol1();
-					if(!isRecordExists){
-						stmt.execute(query.toString());
-						successCount++;
-						ticketStatistics.setRecordsInserted(successCount);
-					}
-					
+					ticketId = values[0];
+					stmt.execute(query.toString());
+					successCount++;
+					ticketStatistics.setRecordsInserted(successCount);
 					ticketStatistics.setSource(SourceType.FTP.getDescription());
 				}catch (SQLException e) {
 					LOG.error(e);
@@ -257,6 +247,25 @@ public class FTPService {
 			ticketStatistics.setComments("Exception occured While Processing the File");
 			isFailed = true;
 		}
+		if(failureCount > 0){
+			try{
+				skipFirstRow = false;
+				stmt.execute("truncate table ticket_temp_data");
+			}catch (SQLException e) {
+				LOG.error(e);
+				TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
+				ticketLogStatistics.setTicketId(ticketId);
+				ticketLogStatistics.setMessage(e.getMessage());
+				ticketLogStatisticsList.add(ticketLogStatistics);
+				ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
+				failureCount++;
+				ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
+				ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
+				ticketStatistics.setComments("Exception occured While Processing the File");
+				isFailed = true;
+			}
+			
+		}
 		closeConnection(con, stmt);
 		if(!isFailed){
 			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
@@ -268,23 +277,10 @@ public class FTPService {
 			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
 			ticketStatisticsRepository.save(ticketStatistics);
 		}
+		
 		return skipFirstRow;
 	}
 
-	private void fillDto(String[] values, TicketDataDto dto) {
-		dto.setCol1(values[0]);
-		dto.setCol2(values[1]);
-		dto.setCol3(values[2]);
-		dto.setCol4(values[3]);
-		dto.setCol5(values[4]);
-		dto.setCol6(values[5]);
-		dto.setCol7(values[6]);
-		dto.setCol8(values[7]);
-		dto.setCol9(values[8]);
-		dto.setCol10(values[9]);
-		dto.setCol11(values[10]);
-		dto.setCol12(values[11]);
-	}
 
 	private String getTicketIds(String filename) throws IOException {
 		FileInputStream excelFile = new FileInputStream(new File(filename));
@@ -331,22 +327,6 @@ public class FTPService {
 		return cellValue;
 	}
 	
-	private boolean isRecordExists(List<TicketDataDto> dtos, TicketDataDto dto){
-		boolean isRecordExists = false;
-		if(!CollectionUtils.isEmpty(dtos)){
-			for(TicketDataDto record:dtos){
-				if(record.getCol1().equals(dto.getCol1())){
-					if(record.equals(dto)){
-						isRecordExists = true;
-					}else{
-						dto.setCol12(String.valueOf(Integer.parseInt(record.getCol12())+1));
-					}
-				}
-			}
-		}
-		return isRecordExists;
-	}
-
 	private TicketStatistics getTicketStatistics(String fileName) {
 		TicketStatistics ticketStatistics = new TicketStatistics();
 		ticketStatistics.setSystemName((String) env.getProperty("ticketsystem"));
@@ -355,6 +335,13 @@ public class FTPService {
 		ticketStatistics.setAutomationStartDate(new Date());
 		ticketStatistics.setFileName(fileName);
 		ticketStatistics.setComments("Excel downloaded successfully");
+		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(fileName);
+		if(!CollectionUtils.isEmpty(list)){
+			ticketStatistics.setVersionNumber(list.size()+1);
+		}else{
+			ticketStatistics.setVersionNumber(1);
+		}
+		
 		return ticketStatistics;
 	}
 

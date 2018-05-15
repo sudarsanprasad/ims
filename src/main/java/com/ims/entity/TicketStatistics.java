@@ -50,6 +50,8 @@ public class TicketStatistics {
 	
 	private String fileName;
 	
+	private int versionNumber;
+	
 	private Long totalRecords;
 	
 	private Long recordsInserted;
