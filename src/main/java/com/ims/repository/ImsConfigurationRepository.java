@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.ims.entity.ImsConfiguration;
 
 public interface ImsConfigurationRepository extends JpaRepository<ImsConfiguration, String> {
-	
+	public String findByProperty(String property);
 }

@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import com.ims.constant.StatusType;
 import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
+import com.ims.repository.ImsConfigurationRepository;
 import com.ims.service.TicketService;
 import com.ims.service.TicketStatisticsService;
 
@@ -31,13 +32,18 @@ public class ScheduledTasks {
 	@Autowired
 	private TicketStatisticsService ticketStatisticsService;
 	
+	@Autowired
+	ImsConfigurationRepository imsConfigurationRepository;
+	
 
 	@Scheduled(cron = "${shedule.time.sec}")
 	public void performTaskUsingCron() throws ImsException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 		LOG.info("Regular task performed using Cron at "+ dateFormat.format(new Date()));
-		TicketStatistics ticketStatistics = ticketService.updateTicketStatistics(getTicketStatistics());
-		ticketService.updateTicketData(getRecords(), ticketStatistics);
+		if("Y".equalsIgnoreCase(imsConfigurationRepository.findByProperty("apischedulerflag"))){
+			TicketStatistics ticketStatistics = ticketService.updateTicketStatistics(getTicketStatistics());
+			ticketService.updateTicketData(getRecords(), ticketStatistics);
+		}
 	}
 	
 	private String getRecords() {

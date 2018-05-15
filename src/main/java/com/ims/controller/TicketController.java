@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ims.entity.Ticket;
 import com.ims.exception.ImsException;
 import com.ims.service.FTPService;
+import com.ims.service.ImsConfigurationService;
 import com.ims.service.TicketService;
 import com.ims.taskconfig.ScheduledTasks;
 
@@ -29,6 +30,9 @@ public class TicketController {
 	@Autowired
 	private ScheduledTasks scheduledTasks;
 	
+	@Autowired
+	ImsConfigurationService imsConfigurationService;
+	
 	@GetMapping
 	public List<Ticket> getTickets(){
 		return ticketService.getTicketData();
@@ -36,10 +40,12 @@ public class TicketController {
 	
 	@GetMapping(value = "/downloadExcel")
 	public boolean downloadExcel() {
-		try {
-			return ftpService.downloadExcel();
-		} catch (ImsException e) {
-			LOG.error(e);
+		if(imsConfigurationService.isFtpAutomationOn()){
+			try {
+				return ftpService.downloadExcel();
+			} catch (ImsException e) {
+				LOG.error(e);
+			}
 		}
 		return false;
 	}
