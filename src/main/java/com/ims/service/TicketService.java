@@ -2,7 +2,6 @@ package com.ims.service;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
-import com.ims.dto.TicketDataDto;
 import com.ims.entity.Ticket;
 import com.ims.entity.TicketLogStatistics;
 import com.ims.entity.TicketStatistics;
@@ -52,6 +50,12 @@ public class TicketService {
 	TicketStatisticsRepository ticketStatisticsRepository;
 	
 	public void updateTicketData(String result, TicketStatistics ticketStatistics) throws ImsException {
+		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(null);
+		if(!CollectionUtils.isEmpty(list)){
+			ticketStatistics.setVersionNumber(list.size());
+		}else{
+			ticketStatistics.setVersionNumber(1);
+		}
 		QueryBuilder queryBuilder = new QueryBuilder();
 		ticketStatistics.setComments("Scheduler pulled the data from ticketing system");
 		updateTicketStatistics(ticketStatistics);
@@ -69,8 +73,7 @@ public class TicketService {
 				ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
 				updateTicketStatistics(ticketStatistics);
 				Statement stmt = con.createStatement();
-				List<TicketDataDto> dtos = getDataFromHDFS(records);
-				updateDataToHDFS(queryBuilder, qBuilder, records, stmt, dtos, ticketStatistics);
+				updateDataToHDFS(queryBuilder, qBuilder, records, stmt, ticketStatistics);
 				stmt.close();
 				con.close();
 				ticketStatistics.setAutomationEndDate(new Date());
@@ -95,7 +98,7 @@ public class TicketService {
 
 
 
-	private void updateDataToHDFS(QueryBuilder queryBuilder, StringBuilder qBuilder, JSONArray records, Statement stmt, List<TicketDataDto> dtos, TicketStatistics ticketStatistics) throws ImsException, SQLException {
+	private void updateDataToHDFS(QueryBuilder queryBuilder, StringBuilder qBuilder, JSONArray records, Statement stmt, TicketStatistics ticketStatistics) throws ImsException, SQLException {
 		Long successCount = 0l;
 		Long failureCount = 0l;
 		ticketStatistics.setRecordsInserted(0l);
@@ -106,10 +109,8 @@ public class TicketService {
 		for (int i = 0; i < records.length(); i++) {
 			JSONObject record = records.getJSONObject(i);
 			StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
-			TicketDataDto dto = new TicketDataDto(); 
-			boolean isRecordExists = prepareQuery(record, query, ticketStatistics, dtos, dto);
+			prepareQuery(record, query, ticketStatistics);
 			
-			if(!isRecordExists){
 				try{
 					stmt.execute(query.toString());
 					successCount++;
@@ -128,8 +129,6 @@ public class TicketService {
 					ticketStatistics.setComments("Exception occured While Processing the File");
 					isFailed = true;
 				}
-				
-			}
 		}
 		if(!isFailed){
 			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
@@ -143,37 +142,10 @@ public class TicketService {
 		}
 	}
 
-	private boolean isRecordExists(List<TicketDataDto> dtos, TicketDataDto dto){
-		boolean isRecordExists = false;
-		if(!CollectionUtils.isEmpty(dtos)){
-			for(TicketDataDto record:dtos){
-				if(record.getCol1().equals(dto.getCol1())){
-					if(record.equals(dto)){
-						isRecordExists = true;
-					}else{
-						dto.setCol12(String.valueOf(Integer.parseInt(record.getCol12())+1));
-					}
-				}
-			}
-		}
-		return isRecordExists;
-	}
-
-	private boolean prepareQuery(JSONObject record, StringBuilder query, TicketStatistics ticketStatistics, List<TicketDataDto> dtos, TicketDataDto dto) throws ImsException {
+	private boolean prepareQuery(JSONObject record, StringBuilder query, TicketStatistics ticketStatistics) throws ImsException {
 		boolean isRecordExists = false;
 		try{
-		 	 dto.setCol1((String) record.get((String)env.getProperty("ticketid").trim()));
-			 dto.setCol2((String) record.get((String)env.getProperty("description").trim()));
-			 dto.setCol3((String) record.get((String)env.getProperty("shortdescription").trim()));
-			 dto.setCol4((String) record.get((String)env.getProperty("comments").trim()));
-			 dto.setCol5((String) record.get((String)env.getProperty("status").trim()));
-			 dto.setCol6((String) record.get((String)env.getProperty("createddate").trim()));
-			 dto.setCol7((String) record.get((String)env.getProperty("createdby").trim()));
-			 dto.setCol8((String) record.get((String)env.getProperty("updateddate").trim()));
-			 dto.setCol9((String) record.get((String)env.getProperty("category").trim()));
-			 dto.setCol10((String) record.get((String)env.getProperty("priority").trim()));
-			 dto.setCol11(String.valueOf(ticketStatistics.getJobId()));
-			 isRecordExists = isRecordExists(dtos, dto);
+		 	 
 			 query.append("\"");
 			 query.append((String) record.get((String)env.getProperty("ticketid").trim())).append("\"").append(",");
 			 query.append("\"");
@@ -199,11 +171,7 @@ public class TicketService {
 			 query.append("\"");
 			 query.append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
 			 query.append("\"");
-			if(dto.getCol12() == null){
-				query.append("1").append("\"").append(")");
-			}else{
-				query.append(dto.getCol12()).append("\"").append(")");
-			}
+			query.append(String.valueOf(ticketStatistics.getVersionNumber())).append("\"").append(")");
 			LOG.info(" \n \n "+query.toString());
 		 }catch (Exception e) {
 				LOG.error(e);
@@ -213,8 +181,8 @@ public class TicketService {
 	}
 
 	public TicketStatistics updateTicketStatistics(TicketStatistics ticketStatistics) {
-			ticketStatistics.setSource(SourceType.API.getDescription());
-		 return ticketStatisticsRepository.save(ticketStatistics);
+		ticketStatistics.setSource(SourceType.API.getDescription());
+		return ticketStatisticsRepository.save(ticketStatistics);
 	}
 	
 	public Connection getConnection() throws ImsException {
@@ -229,60 +197,6 @@ public class TicketService {
 
 	public List<Ticket> getTicketData(){
 		return ticketRepository.findAll();
-	}
-	
-	private List<TicketDataDto> getDataFromHDFS(JSONArray records){
-		String ticketIds = null;
-		StringBuilder ticketIdBuilder = new StringBuilder();
-		for (int i = 0; i < records.length(); i++) {
-			JSONObject record = records.getJSONObject(i);
-			ticketIdBuilder.append("'");
-			ticketIdBuilder.append((String) record.get((String)env.getProperty("ticketid").trim()));
-			ticketIdBuilder.append("'").append(",");
-		}
-		ticketIds = ticketIdBuilder.toString().substring(0,ticketIdBuilder.lastIndexOf(","));
-		List<TicketDataDto> dtos = new ArrayList<>();
-		Connection con = null;
-		Statement stmt = null;
-		try {
-			con = getConnection();
-			stmt = con.createStatement();
-			StringBuilder queryBuilder = new StringBuilder(" select * from ticket_temp_data where col1 in(");
-			queryBuilder.append(ticketIds).append(")");
-			LOG.info(queryBuilder.toString());
-			ResultSet rs = stmt.executeQuery(queryBuilder.toString());
-			while (rs.next()) {
-				TicketDataDto dto = new TicketDataDto();
-				dto.setCol1(rs.getString(1));
-				dto.setCol2(rs.getString(2));
-				dto.setCol3(rs.getString(3));
-				dto.setCol4(rs.getString(4));
-				dto.setCol5(rs.getString(5));
-				dto.setCol6(rs.getString(6));
-				dto.setCol7(rs.getString(7));
-				dto.setCol8(rs.getString(8));
-				dto.setCol9(rs.getString(9));
-				dto.setCol10(rs.getString(10));
-				dto.setCol11(rs.getString(11));
-				dto.setCol12(rs.getString(12));
-				dtos.add(dto);
-				LOG.info(rs.getString(1));
-			}
-			closeConnection(con, stmt);
-		} catch (ImsException | SQLException e) {
-			LOG.error(e);
-		} 
-		return dtos;
-	}
-	
-	private void closeConnection(Connection con, Statement stmt) {
-		try {
-			con.close();
-			stmt.close();
-		} catch (SQLException e) {
-			LOG.error(e);
-		}
-		
 	}
 	
 }
