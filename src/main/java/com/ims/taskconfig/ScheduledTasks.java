@@ -40,7 +40,7 @@ public class ScheduledTasks {
 	public void performTaskUsingCron() throws ImsException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 		LOG.info("Regular task performed using Cron at "+ dateFormat.format(new Date()));
-		if("Y".equalsIgnoreCase(imsConfigurationRepository.findByProperty("apischedulerflag"))){
+		if("Y".equalsIgnoreCase(imsConfigurationRepository.findByProperty("apischedulerflag").getValue())){
 			TicketStatistics ticketStatistics = ticketService.updateTicketStatistics(getTicketStatistics());
 			ticketService.updateTicketData(getRecords(), ticketStatistics);
 		}
