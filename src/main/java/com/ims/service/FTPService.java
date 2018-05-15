@@ -275,6 +275,7 @@ public class FTPService {
 			ticketStatisticsRepository.save(ticketStatistics);
 		}else{
 			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
+			ticketStatistics.setAutomationEndDate(new Date());
 			ticketStatisticsRepository.save(ticketStatistics);
 		}
 		

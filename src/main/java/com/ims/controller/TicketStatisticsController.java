@@ -50,5 +50,10 @@ public class TicketStatisticsController {
 	public TicketStatistics findMostRecentRecord(@PathVariable String fileName) {
 		return ticketStatisticsService.findMostRecentRecord(fileName);
 	}
+	
+	@GetMapping(value = "/getCurrentRecord")
+	public TicketStatistics getCurrentRecord() {
+		return ticketStatisticsService.findMostRecentRecord(null);
+	}
 
 }
