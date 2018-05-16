@@ -18,10 +18,12 @@ import org.springframework.stereotype.Service;
 
 import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
+import com.ims.entity.FieldConfiguration;
 import com.ims.entity.Ticket;
 import com.ims.entity.TicketLogStatistics;
 import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
+import com.ims.repository.FieldConfigurationRepository;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketRepository;
 import com.ims.repository.TicketStatisticsRepository;
@@ -49,6 +51,9 @@ public class TicketService {
 	@Autowired
 	TicketStatisticsRepository ticketStatisticsRepository;
 	
+	@Autowired
+	FieldConfigurationRepository fieldConfigurationRepository;
+	
 	public void updateTicketData(String result, TicketStatistics ticketStatistics) throws ImsException {
 		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(null);
 		if(!CollectionUtils.isEmpty(list)){
@@ -56,6 +61,7 @@ public class TicketService {
 		}else{
 			ticketStatistics.setVersionNumber(1);
 		}
+		List<FieldConfiguration> fields = fieldConfigurationRepository.findPropertyBySystemNameOrderById((String)env.getProperty("ticketsystem"));
 		QueryBuilder queryBuilder = new QueryBuilder();
 		ticketStatistics.setComments("Scheduler pulled the data from ticketing system");
 		updateTicketStatistics(ticketStatistics);
@@ -73,7 +79,7 @@ public class TicketService {
 				ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
 				updateTicketStatistics(ticketStatistics);
 				Statement stmt = con.createStatement();
-				updateDataToHDFS(queryBuilder, qBuilder, records, stmt, ticketStatistics);
+				updateDataToHDFS(queryBuilder, qBuilder, records, stmt, ticketStatistics, fields);
 				stmt.close();
 				con.close();
 				ticketStatistics.setAutomationEndDate(new Date());
@@ -98,7 +104,7 @@ public class TicketService {
 
 
 
-	private void updateDataToHDFS(QueryBuilder queryBuilder, StringBuilder qBuilder, JSONArray records, Statement stmt, TicketStatistics ticketStatistics) throws ImsException, SQLException {
+	private void updateDataToHDFS(QueryBuilder queryBuilder, StringBuilder qBuilder, JSONArray records, Statement stmt, TicketStatistics ticketStatistics, List<FieldConfiguration> fields) throws ImsException, SQLException {
 		Long successCount = 0l;
 		Long failureCount = 0l;
 		ticketStatistics.setRecordsInserted(0l);
@@ -109,7 +115,7 @@ public class TicketService {
 		for (int i = 0; i < records.length(); i++) {
 			JSONObject record = records.getJSONObject(i);
 			StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
-			prepareQuery(record, query, ticketStatistics);
+			prepareQuery(record, query, ticketStatistics, fields);
 			
 				try{
 					stmt.execute(query.toString());
@@ -143,32 +149,19 @@ public class TicketService {
 		}
 	}
 
-	private boolean prepareQuery(JSONObject record, StringBuilder query, TicketStatistics ticketStatistics) throws ImsException {
+	private boolean prepareQuery(JSONObject record, StringBuilder query, TicketStatistics ticketStatistics, List<FieldConfiguration> fields) throws ImsException {
 		boolean isRecordExists = false;
 		try{
-		 	 
-			 query.append("\"");
-			 query.append((String) record.get((String)env.getProperty("ticketid").trim())).append("\"").append(",");
-			 query.append("\"");
-			 String description = (String) record.get((String)env.getProperty("description").replace("\"", "\\\""));
-			 query.append(description.trim()).append("\"").append(",");
-			 query.append("\"");
-			 String shortDescription = (String) record.get((String)env.getProperty("shortdescription").replace("\"", "\\\""));
-			 query.append(shortDescription.trim()).append("\"").append(",");
-			 query.append("\"");
-			 query.append((String) record.get((String)env.getProperty("comments").trim())).append("\"").append(",");
-			 query.append("\"");
-			 query.append((String) record.get((String)env.getProperty("status"))).append("\"").append(",");
-			 query.append("\"");
-			 query.append((String) record.get((String)env.getProperty("createddate"))).append("\"").append(",");
-			 query.append("\"");
-			 query.append((String) record.get((String)env.getProperty("createdby"))).append("\"").append(",");
-			 query.append("\"");
-			 query.append((String) record.get((String)env.getProperty("updateddate"))).append("\"").append(",");
-			 query.append("\"");
-			 query.append((String) record.get((String)env.getProperty("category"))).append("\"").append(",");
-			 query.append("\"");
-			 query.append((String) record.get((String)env.getProperty("priority"))).append("\"").append(",");
+			String tempField = null;
+		 	 for(FieldConfiguration field:fields){
+		 		 if("assignment_group".equals(field.getProperty()) || "cmdb_ci".equals(field.getProperty())){
+		 			tempField = "";
+		 		 }else{
+		 			 tempField = ((String) record.get(field.getProperty())).replace("\"", "\\\"");
+		 		 }
+		 		query.append("\"");
+		 		query.append(tempField).append("\"").append(",");
+		 	 }
 			 query.append("\"");
 			 query.append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
 			 query.append("\"");
