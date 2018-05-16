@@ -10,4 +10,8 @@ public interface TicketStatisticsRepository extends JpaRepository<TicketStatisti
 	
 	List<TicketStatistics> findAllByFileNameOrderByJobIdDesc(String fileName);
 	
+	List<TicketStatistics> findAllByAutomationStatusOrderByJobIdDesc(String automationStatus);
+
+	TicketStatistics findByJobId(Long jobId);
+	
 }

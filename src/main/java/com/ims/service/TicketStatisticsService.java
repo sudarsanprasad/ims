@@ -6,6 +6,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ims.constant.StatusType;
 import com.ims.entity.TicketStatistics;
 import com.ims.repository.TicketStatisticsRepository;
 
@@ -47,6 +48,14 @@ public class TicketStatisticsService {
 			ticketStatistics = ticketStatisticsList.get(0);
 		}
 		return ticketStatistics;
+	}
+
+	public List<TicketStatistics> getCurrentRecords() {
+		return ticketStatisticsRepository.findAllByAutomationStatusOrderByJobIdDesc(StatusType.INPROGRESS.getDescription());
+	}
+
+	public TicketStatistics getCurrentRecordStatus(Long id) {
+		return ticketStatisticsRepository.findByJobId(id);
 	}
 	
 }
