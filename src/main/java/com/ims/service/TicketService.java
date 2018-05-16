@@ -67,7 +67,7 @@ public class TicketService {
 		updateTicketStatistics(ticketStatistics);
 		String systemName = (String)env.getProperty("ticketsystem");
 		String customer = (String)env.getProperty("customer");
-		StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer);
+		StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer,"API");
 		LOG.info("Result in Service === " + result);
 		JSONObject jsonObj = new JSONObject(result);
 		JSONArray records = jsonObj.getJSONArray("result");

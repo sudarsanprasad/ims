@@ -104,7 +104,7 @@ public class FTPService {
 		boolean isFailed = false;
 		try {
 			QueryBuilder queryBuilder = new QueryBuilder();
-			StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer);
+			StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer,"FTP");
 			FileInputStream excelFile = new FileInputStream(new File(filename));
 			Workbook workbook = new XSSFWorkbook(excelFile);
 			Sheet datatypeSheet = workbook.getSheetAt(0);
@@ -219,7 +219,7 @@ public class FTPService {
 		if(failureCount > 0){
 			try{
 				skipFirstRow = false;
-				stmt.execute("truncate table ticket_temp_data");
+				stmt.execute("truncate table ticket_ftp_temp_data");
 			}catch (SQLException e) {
 				LOG.error(e);
 				TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();

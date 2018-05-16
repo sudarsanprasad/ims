@@ -16,8 +16,14 @@ public class QueryBuilder {
 	@Autowired
 	private Environment env;
 	
-	public StringBuilder buildHiveQuery(TicketMetadataRepository ticketMetadataRepository, String systemName, String customer){
-		StringBuilder queryBuilder = new StringBuilder("insert into ticket_temp_data (");
+	public StringBuilder buildHiveQuery(TicketMetadataRepository ticketMetadataRepository, String systemName, String customer, String source){
+		StringBuilder queryBuilder;
+		if("FTP".equalsIgnoreCase(source)){
+			queryBuilder = new StringBuilder("insert into ticket_ftp_temp_data (");
+		}else{
+			queryBuilder = new StringBuilder("insert into ticket_api_temp_data (");
+		}
+		
 		buildInsertQueryWithMetadata(queryBuilder, ticketMetadataRepository, systemName, customer);
 		return queryBuilder;
 	}
