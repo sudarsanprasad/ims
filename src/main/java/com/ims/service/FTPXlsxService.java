@@ -163,7 +163,7 @@ public class FTPXlsxService {
 					query.append(String.valueOf(ticketStatistics.getVersionNumber()));
 					query.append("\"").append(")");
 					LOG.info(query.toString());
-					ticketId = "";
+					ticketId = currentRow.getCell(0).toString();
 					stmt.execute(query.toString());
 					successCount++;
 					ticketStatistics.setRecordsInserted(successCount);
@@ -189,7 +189,7 @@ public class FTPXlsxService {
 			failureCount++;
 			ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
 			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-			ticketStatistics.setComments("Exception occured While Processing the File");
+			ticketStatistics.setComments("Exception occured while Processing the File");
 			LOG.error(e);
 			TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
 			ticketLogStatistics.setTicketId(ticketId);

@@ -195,7 +195,7 @@ public class FTPService {
 			failureCount++;
 			ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
 			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-			ticketStatistics.setComments("Exception occured While Processing the File");
+			ticketStatistics.setComments("Exception occured while Processing the File");
 			LOG.error(e);
 			TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
 			ticketLogStatistics.setTicketId(ticketId);
