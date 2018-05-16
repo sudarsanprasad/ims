@@ -43,9 +43,9 @@ import com.ims.util.DataMaskUtil;
 import com.ims.util.QueryBuilder;
 
 @Service
-public class FTPService {
+public class FTPCsvService {
 
-	private static final Logger LOG = Logger.getLogger(FTPService.class);
+	private static final Logger LOG = Logger.getLogger(FTPCsvService.class);
 
 	@Autowired
 	private FtpRemoteFileTemplate template;
@@ -58,9 +58,6 @@ public class FTPService {
 
 	@Autowired
 	TicketStatisticsRepository ticketStatisticsRepository;
-	
-	@Autowired
-	FTPXlsxService ftpXlsxService;
 
 	public boolean downloadExcel() throws ImsException {
 		boolean isFileSavedToLocalFlag = false;
@@ -92,7 +89,7 @@ public class FTPService {
 						"Exception occured while processing excel data", ex);
 			}
 		}else if("xlsx".equalsIgnoreCase(fileType)){
-			isFileSavedToLocalFlag = ftpXlsxService.downloadExcel();
+			
 		}else if("csv".equalsIgnoreCase(fileType)){
 			
 		}

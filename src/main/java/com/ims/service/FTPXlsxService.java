@@ -18,12 +18,12 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -31,7 +31,6 @@ import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 
-import com.google.common.io.Files;
 import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
 import com.ims.entity.TicketLogStatistics;
@@ -40,12 +39,13 @@ import com.ims.exception.ImsException;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketStatisticsRepository;
 import com.ims.util.DataMaskUtil;
+import com.ims.util.DateUtil;
 import com.ims.util.QueryBuilder;
 
 @Service
-public class FTPService {
+public class FTPXlsxService {
 
-	private static final Logger LOG = Logger.getLogger(FTPService.class);
+	private static final Logger LOG = Logger.getLogger(FTPXlsxService.class);
 
 	@Autowired
 	private FtpRemoteFileTemplate template;
@@ -58,9 +58,6 @@ public class FTPService {
 
 	@Autowired
 	TicketStatisticsRepository ticketStatisticsRepository;
-	
-	@Autowired
-	FTPXlsxService ftpXlsxService;
 
 	public boolean downloadExcel() throws ImsException {
 		boolean isFileSavedToLocalFlag = false;
@@ -70,10 +67,8 @@ public class FTPService {
 		String customer = (String)env.getProperty("customer");
 		
 		File remoteFile = new File((String)env.getProperty("file.location"));
-		String fileType = Files.getFileExtension(remoteFile.getAbsolutePath());
 		String ftpFileName = remoteFile.getName();
 		String location = (String)env.getProperty("file.location");
-		if("xls".equalsIgnoreCase(fileType)){
 			try {
 				for (FTPFile file : files) {
 					SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
@@ -91,11 +86,6 @@ public class FTPService {
 				throw new ImsException(
 						"Exception occured while processing excel data", ex);
 			}
-		}else if("xlsx".equalsIgnoreCase(fileType)){
-			isFileSavedToLocalFlag = ftpXlsxService.downloadExcel();
-		}else if("csv".equalsIgnoreCase(fileType)){
-			
-		}
 		
 		return isFileSavedToLocalFlag;
 	}
@@ -106,7 +96,11 @@ public class FTPService {
 			QueryBuilder queryBuilder = new QueryBuilder();
 			StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer);
 			FileInputStream excelFile = new FileInputStream(new File(filename));
-			Workbook workbook = new XSSFWorkbook(excelFile);
+			
+			
+			//Workbook workbook = new XSSFWorkbook(excelFile);
+			XSSFWorkbook  workbook = new XSSFWorkbook(excelFile);
+			
 			Sheet datatypeSheet = workbook.getSheetAt(0);
 			Iterator<Row> iterator = datatypeSheet.iterator();
 			ticketStatistics.setComments("Reading the data from Excel in Progress");
@@ -269,8 +263,17 @@ public class FTPService {
 			query.append(cellValue).append("\"").append(",");
 		} else if (currentCell.getCellTypeEnum() == CellType.NUMERIC) {
 			double value = currentCell.getNumericCellValue();
-			query.append(currentCell.getNumericCellValue()).append("\"").append(",");
-			cellValue = String.valueOf(value);
+			if (HSSFDateUtil.isCellDateFormatted(currentCell)) {
+				cellValue = DateUtil.convertDateToString(currentCell.getDateCellValue());
+				query.append(cellValue).append("\"").append(",");
+			}else{
+				query.append(currentCell.getNumericCellValue()).append("\"").append(",");
+				cellValue = String.valueOf(value);
+			}
+			
+			
+		} else{
+			query.append("").append("\"").append(",");
 		}
 		return cellValue;
 	}
