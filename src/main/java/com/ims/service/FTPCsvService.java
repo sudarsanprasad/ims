@@ -1,10 +1,10 @@
 package com.ims.service;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -12,26 +12,21 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.log4j.Logger;
 import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 
-import com.google.common.io.Files;
 import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
 import com.ims.entity.TicketLogStatistics;
@@ -39,7 +34,6 @@ import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketStatisticsRepository;
-import com.ims.util.DataMaskUtil;
 import com.ims.util.QueryBuilder;
 
 @Service
@@ -67,210 +61,158 @@ public class FTPCsvService {
 		String customer = (String)env.getProperty("customer");
 		
 		File remoteFile = new File((String)env.getProperty("file.location"));
-		String fileType = Files.getFileExtension(remoteFile.getAbsolutePath());
 		String ftpFileName = remoteFile.getName();
 		String location = (String)env.getProperty("file.location");
-		if("xls".equalsIgnoreCase(fileType)){
-			try {
-				for (FTPFile file : files) {
-					SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-					String formattedDate = formatDate.format(file.getTimestamp().getTime());
-					fileName = file.getName();
-					LOG.info(file.getName() + "     " + formattedDate);
-				}
-				isFileSavedToLocalFlag = template.get(ftpFileName, inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File(location))));
-				if (isFileSavedToLocalFlag) {
-					TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(fileName));
-					processExcelData(location, ticketStatistics, systemName, customer);
-				}
-			} catch (Exception ex) {
-				LOG.error(ex);
-				throw new ImsException(
-						"Exception occured while processing excel data", ex);
+		try {
+			for (FTPFile file : files) {
+				SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+				String formattedDate = formatDate.format(file.getTimestamp().getTime());
+				fileName = file.getName();
+				LOG.info(file.getName() + "     " + formattedDate);
 			}
-		}else if("xlsx".equalsIgnoreCase(fileType)){
-			
-		}else if("csv".equalsIgnoreCase(fileType)){
-			
+			isFileSavedToLocalFlag = template.get(ftpFileName, inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File(location))));
+			if (isFileSavedToLocalFlag) {
+				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(fileName));
+				processExcelData(location, ticketStatistics, systemName, customer);
+			}
+		} catch (Exception ex) {
+			LOG.error(ex);
+			throw new ImsException(
+					"Exception occured while processing excel data", ex);
 		}
 		
 		return isFileSavedToLocalFlag;
 	}
 
 	private void processExcelData(String filename, TicketStatistics ticketStatistics, String systemName, String customer) {
-		boolean isFailed = false;
-		try {
-			QueryBuilder queryBuilder = new QueryBuilder();
-			StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer,"FTP");
-			FileInputStream excelFile = new FileInputStream(new File(filename));
-			Workbook workbook = new XSSFWorkbook(excelFile);
-			Sheet datatypeSheet = workbook.getSheetAt(0);
-			Iterator<Row> iterator = datatypeSheet.iterator();
-			ticketStatistics.setComments("Reading the data from Excel in Progress");
-			ticketStatisticsRepository.save(ticketStatistics);
-			updateDataToHDFS(ticketStatistics, queryBuilder, qBuilder, iterator);
-			workbook.close();
-		} catch (FileNotFoundException e) {
-			isFailed = true;
-			LOG.error(e);
-			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-			ticketStatistics.setComments("File Not Found");
-		} catch (OLE2NotOfficeXmlFileException | IOException e) {
-			isFailed = true;
-			LOG.error(e);
-			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-			ticketStatistics.setComments("Exception occured While Reading the File");
-			
-		} 
-		if(isFailed){
-			ticketStatisticsRepository.save(ticketStatistics);
-		}
-	}
-	
-	private boolean updateDataToHDFS(TicketStatistics ticketStatistics,QueryBuilder queryBuilder, StringBuilder qBuilder, Iterator<Row> iterator) {
 		Long successCount = 0l;
 		Long failureCount = 0l;
 		ticketStatistics.setRecordsInserted(0l);
 		ticketStatistics.setRecordsFailed(0l);
 		boolean isFailed = false;
-		boolean skipFirstRow = false;
 		Connection con = null;
 		Statement stmt = null;
-		String ticketId = "";
+		String ticketId = null;
+		int skipFirstRow = 0;
 		List<TicketLogStatistics> ticketLogStatisticsList = new ArrayList<>();
+		QueryBuilder queryBuilder = new QueryBuilder();
+		StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer,"FTP");
 		try {
 			con = getConnection();
 			stmt = con.createStatement();
 			ticketStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
 			ticketStatistics.setForecastStatus(StatusType.OPEN.getDescription());
 			ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
+			ticketStatistics.setComments("Reading the data from CSV in Progress");
 			ticketStatisticsRepository.save(ticketStatistics);
-			while (iterator.hasNext()) {
-				try{
-					if (!skipFirstRow) {
-						iterator.next();
-					}
-					StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
-					skipFirstRow = true;
-					Row currentRow = iterator.next();
-					Iterator<Cell> cellIterator = currentRow.iterator();
-					while (cellIterator.hasNext()) {
-						Cell currentCell = cellIterator.next();
-						query.append("\"");
-						appendCellColumn(query, currentCell); 
-					}
-					query.append("\"");
-					query.append(String.valueOf(ticketStatistics.getJobId()));
-					query.append("\"").append(",");
-					query.append("\"");
-					query.append(String.valueOf(ticketStatistics.getVersionNumber()));
-					query.append("\"").append(")");
-					LOG.info(query.toString());
-					ticketId = "";
-					stmt.execute(query.toString());
-					successCount++;
-					ticketStatistics.setRecordsInserted(successCount);
-					ticketStatistics.setSource(SourceType.FTP.getDescription());
-				}catch (SQLException e) {
-					LOG.error(e);
-					TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
-					ticketLogStatistics.setTicketId(ticketId);
-					ticketLogStatistics.setMessage(e.getMessage());
-					ticketLogStatisticsList.add(ticketLogStatistics);
-					failureCount++;
-					ticketStatistics.setRecordsFailed(failureCount);
-					ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-					ticketStatistics.setComments("Exception occured while Processing the File");
-					ticketStatistics.setSource(SourceType.FTP.getDescription());
-					ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
-					isFailed = true;
-					continue;
-				}
-		}
-				
-		} catch (ImsException e) {
-			failureCount++;
-			ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
-			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-			ticketStatistics.setComments("Exception occured while Processing the File");
-			LOG.error(e);
-			TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
-			ticketLogStatistics.setTicketId(ticketId);
-			ticketLogStatistics.setMessage(e.getMessage());
-			ticketLogStatisticsList.add(ticketLogStatistics);
-			ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
-			isFailed = true;
-		} catch (SQLException e) {
-			LOG.error(e);
-			TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
-			ticketLogStatistics.setTicketId(ticketId);
-			ticketLogStatistics.setMessage(e.getMessage());
-			ticketLogStatisticsList.add(ticketLogStatistics);
-			ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
-			failureCount++;
-			ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
-			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-			ticketStatistics.setComments("Exception occured While Processing the File");
-			isFailed = true;
-		}
-		if(failureCount > 0){
-			try{
-				skipFirstRow = false;
-				stmt.execute("truncate table ticket_ftp_temp_data");
-			}catch (SQLException e) {
-				LOG.error(e);
-				TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
-				ticketLogStatistics.setTicketId(ticketId);
-				ticketLogStatistics.setMessage(e.getMessage());
-				ticketLogStatisticsList.add(ticketLogStatistics);
-				ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
-				failureCount++;
-				ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
-				ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-				ticketStatistics.setComments("Exception occured While Processing the File");
-				isFailed = true;
-			}
 			
-		}
-		closeConnection(con, stmt);
-		if(!isFailed){
-			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
-			ticketStatistics.setComments("Data inserted into HDFS");
-			ticketStatistics.setAutomationEndDate(new Date());
-			ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
-			ticketStatisticsRepository.save(ticketStatistics);
-		}else{
-			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
-			ticketStatistics.setAutomationEndDate(new Date());
-			ticketStatisticsRepository.save(ticketStatistics);
-		}
-		
-		return skipFirstRow;
-	}
-
-
-	private void closeConnection(Connection con, Statement stmt) {
-		try {
-			con.close();
-			stmt.close();
-		} catch (SQLException e) {
+            Reader reader = java.nio.file.Files.newBufferedReader(Paths.get(filename));
+            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader("Incident ID", "Affected Service", "Affective Service Captured", "Affected CI", "Area", "Subarea", "Title", "Open Time", "Close Time", "Resolution Time", "Priority", "Assignment Group", "Client Ticket", "Solution").withIgnoreHeaderCase().withTrim());
+               
+            	for (CSVRecord csvRecord : csvParser) {
+            		try{ 
+            			if(skipFirstRow > 0){
+    	            		StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
+    		            	
+    		                // Accessing values by the names assigned to each column
+    		                String incidentId = csvRecord.get("Incident ID");
+    		                String aService = csvRecord.get("Affected Service");
+    		                String aServiceCaptured = csvRecord.get("Affective Service Captured");
+    		                String aCi = csvRecord.get("Affected CI");
+    		                String area = csvRecord.get("Area");
+    		                String subArea = csvRecord.get("Subarea");
+    		                String title = csvRecord.get("Title");
+    		                String openTime = csvRecord.get("Open Time");
+    		                String closeTime = csvRecord.get("Close Time");
+    		                String resolutionTime = csvRecord.get("Resolution Time");
+    		                String priority = csvRecord.get("Priority");
+    		                String aGroup = csvRecord.get("Assignment Group");
+    		                String clientTicket = csvRecord.get("Client Ticket");
+    		                String solution = csvRecord.get("Solution");
+    		                
+    		                ticketId = incidentId;
+    		                query.append("\"").append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
+    						query.append("\"").append(String.valueOf(ticketStatistics.getVersionNumber())).append("\"").append(",");
+    		                query.append("\"").append(incidentId).append("\"").append(",");
+    		                query.append("\"").append(aService).append("\"").append(",");
+    		                query.append("\"").append(aServiceCaptured).append("\"").append(",");
+    		                query.append("\"").append(aCi).append("\"").append(",");
+    		                query.append("\"").append(area).append("\"").append(",");
+    		                query.append("\"").append(subArea).append("\"").append(",");
+    		                query.append("\"").append(title).append("\"").append(",");
+    		                query.append("\"").append(openTime).append("\"").append(",");
+    		                query.append("\"").append(closeTime).append("\"").append(",");
+    		                query.append("\"").append(resolutionTime).append("\"").append(",");
+    		                query.append("\"").append(priority).append("\"").append(",");
+    		                query.append("\"").append(aGroup).append("\"").append(",");
+    		                query.append("\"").append(clientTicket).append("\"").append(",");
+    		                query.append("\"").append(solution).append("\"");
+    		                query.append(")");
+    		                LOG.info("Query --->>"+query.toString());
+    		                stmt.execute(query.toString());
+    						successCount++;
+    						ticketStatistics.setRecordsInserted(successCount);
+    						ticketStatistics.setSource(SourceType.FTP.getDescription()); 
+    	            		}
+            		}catch(Exception e){
+    	            	LOG.error(e);
+    					TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
+    					ticketLogStatistics.setTicketId(ticketId);
+    					ticketLogStatistics.setMessage(e.getMessage());
+    					ticketLogStatisticsList.add(ticketLogStatistics);
+    					failureCount++;
+    					ticketStatistics.setRecordsFailed(failureCount);
+    					ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
+    					ticketStatistics.setComments("Exception occured while Processing the File");
+    					ticketStatistics.setSource(SourceType.FTP.getDescription());
+    					ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
+    					isFailed = true;
+    					continue;
+    	            }
+	            		skipFirstRow++;
+	            	}
+	            csvParser.close();
+	            if(failureCount > 0){
+	    			try{
+	    				stmt.execute("truncate table ticket_ftp_temp_data");
+	    			}catch (SQLException e) {
+	    				LOG.error(e);
+	    				TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
+	    				ticketLogStatistics.setTicketId(ticketId);
+	    				ticketLogStatistics.setMessage(e.getMessage());
+	    				ticketLogStatisticsList.add(ticketLogStatistics);
+	    				ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
+	    				failureCount++;
+	    				ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
+	    				ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
+	    				ticketStatistics.setComments("Exception occured While Processing the File");
+	    				isFailed = true;
+	    			}
+	    			
+	    		}
+	    		closeConnection(con, stmt);
+	    		if(!isFailed){
+	    			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
+	    			ticketStatistics.setComments("Data inserted into HDFS");
+	    			ticketStatistics.setAutomationEndDate(new Date());
+	    			ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
+	    			ticketStatisticsRepository.save(ticketStatistics);
+	    		}else{
+	    			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
+	    			ticketStatistics.setAutomationEndDate(new Date());
+	    			ticketStatisticsRepository.save(ticketStatistics);
+	    		}
+		} catch (OLE2NotOfficeXmlFileException | IOException | ImsException | SQLException e ) {
+			isFailed = true;
 			LOG.error(e);
+			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
+			ticketStatistics.setComments("Exception occured While Reading the File");
+		} 
+		if(isFailed){
+			ticketStatisticsRepository.save(ticketStatistics);
 		}
-		
 	}
-
-	private String appendCellColumn(StringBuilder query, Cell currentCell) {
-		String cellValue = null;
-		if (currentCell.getCellTypeEnum() == CellType.STRING) {
-			cellValue = DataMaskUtil.maskData(currentCell.getStringCellValue());
-			query.append(cellValue).append("\"").append(",");
-		} else if (currentCell.getCellTypeEnum() == CellType.NUMERIC) {
-			double value = currentCell.getNumericCellValue();
-			query.append(currentCell.getNumericCellValue()).append("\"").append(",");
-			cellValue = String.valueOf(value);
-		}
-		return cellValue;
-	}
+	
 	
 	private TicketStatistics getTicketStatistics(String fileName) {
 		TicketStatistics ticketStatistics = new TicketStatistics();
@@ -301,5 +243,15 @@ public class FTPCsvService {
 			LOG.error(e);
 			throw new ImsException("", e);
 		}
+	}
+	
+	private void closeConnection(Connection con, Statement stmt) {
+		try {
+			con.close();
+			stmt.close();
+		} catch (SQLException e) {
+			LOG.error(e);
+		}
+		
 	}
 }
