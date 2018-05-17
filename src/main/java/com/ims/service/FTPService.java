@@ -167,11 +167,11 @@ public class FTPService {
 						query.append("\"");
 						appendCellColumn(query, currentCell); 
 					}
-					query.append(")");
-					
-					LOG.info(query.toString());
+					String tempQueryBuilder = query.toString().substring(0, query.lastIndexOf(","));
+					StringBuilder finalQuery = new StringBuilder(tempQueryBuilder).append(")");
+					LOG.info(finalQuery.toString());
 					ticketId = currentRow.getCell(0).toString();
-					stmt.execute(query.toString());
+					stmt.execute(finalQuery.toString());
 					successCount++;
 					ticketStatistics.setRecordsInserted(successCount);
 					ticketStatistics.setSource(SourceType.FTP.getDescription());

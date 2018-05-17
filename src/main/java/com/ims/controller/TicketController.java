@@ -38,7 +38,7 @@ public class TicketController {
 		return ticketService.getTicketData();
 	}
 	
-	@GetMapping(value = "/downloadExcel")
+	@GetMapping(value = "/triggerFtp")
 	public boolean downloadExcel() {
 		if(imsConfigurationService.isFtpAutomationOn()){
 			try {
