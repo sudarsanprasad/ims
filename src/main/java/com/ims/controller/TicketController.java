@@ -40,13 +40,11 @@ public class TicketController {
 	
 	@GetMapping(value = "/triggerFtp")
 	public boolean downloadExcel() {
-		if(imsConfigurationService.isFtpAutomationOn()){
 			try {
 				return ftpService.downloadExcel();
 			} catch (ImsException e) {
 				LOG.error(e);
 			}
-		}
 		return false;
 	}
 	

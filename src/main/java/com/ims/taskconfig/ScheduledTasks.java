@@ -16,6 +16,8 @@ import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
 import com.ims.repository.ImsConfigurationRepository;
+import com.ims.service.FTPService;
+import com.ims.service.ImsConfigurationService;
 import com.ims.service.TicketService;
 import com.ims.service.TicketStatisticsService;
 import com.ims.util.DateUtil;
@@ -37,11 +39,17 @@ public class ScheduledTasks {
 	@Autowired
 	ImsConfigurationRepository imsConfigurationRepository;
 	
+	@Autowired
+	ImsConfigurationService imsConfigurationService;
+	
+	@Autowired
+	private FTPService ftpService;
+	
 
 	@Scheduled(cron = "${shedule.time.sec}")
-	public void performTaskUsingCron() throws ImsException {
+	public void performApiTaskUsingCron() throws ImsException {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-		LOG.info("Regular task performed using Cron at "+ dateFormat.format(new Date()));
+		LOG.info("Regular API task performed using Cron at "+ dateFormat.format(new Date()));
 		if("Y".equalsIgnoreCase(imsConfigurationRepository.findByProperty("apischedulerflag").getValue())){
 			TicketStatistics ticketStatistics = ticketService.updateTicketStatistics(getTicketStatistics());
 			ticketService.updateTicketData(getRecords(), ticketStatistics);
@@ -72,5 +80,13 @@ public class ScheduledTasks {
 		 return ticketURL.toString();
 	}
 	
-	
+	@Scheduled(cron = "${shedule.time.sec}")
+	public boolean performFtpTaskUsingCron() throws ImsException {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+		LOG.info("Regular FTP task performed using Cron at "+ dateFormat.format(new Date()));
+		if(imsConfigurationService.isFtpAutomationOn()){
+			return ftpService.downloadExcel();
+		}
+		return false;
+	}
 }
