@@ -161,7 +161,7 @@ public class FTPService {
 					Row currentRow = iterator.next();
 					Iterator<Cell> cellIterator = currentRow.iterator();
 					query.append("\"").append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
-					query.append("\"").append(String.valueOf(ticketStatistics.getVersionNumber())).append("\"");
+					query.append("\"").append(String.valueOf(ticketStatistics.getVersionNumber())).append("\"").append(",");
 					while (cellIterator.hasNext()) {
 						Cell currentCell = cellIterator.next();
 						query.append("\"");
@@ -170,7 +170,7 @@ public class FTPService {
 					query.append(")");
 					
 					LOG.info(query.toString());
-					ticketId = "";
+					ticketId = currentRow.getCell(0).toString();
 					stmt.execute(query.toString());
 					successCount++;
 					ticketStatistics.setRecordsInserted(successCount);

@@ -151,17 +151,15 @@ public class FTPXlsxService {
 					skipFirstRow = true;
 					Row currentRow = iterator.next();
 					Iterator<Cell> cellIterator = currentRow.iterator();
+					query.append("\"").append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
+					query.append("\"").append(String.valueOf(ticketStatistics.getVersionNumber())).append("\"").append(",");
 					while (cellIterator.hasNext()) {
 						Cell currentCell = cellIterator.next();
 						query.append("\"");
 						appendCellColumn(query, currentCell); 
 					}
-					query.append("\"");
-					query.append(String.valueOf(ticketStatistics.getJobId()));
-					query.append("\"").append(",");
-					query.append("\"");
-					query.append(String.valueOf(ticketStatistics.getVersionNumber()));
-					query.append("\"").append(")");
+					query.append(")");
+					
 					LOG.info(query.toString());
 					ticketId = currentRow.getCell(0).toString();
 					stmt.execute(query.toString());
