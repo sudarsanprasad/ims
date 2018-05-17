@@ -11,7 +11,7 @@ public class DateUtil {
 	}
 	
 	public static String convertDateToString(Date date){
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");  
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");  
         return dateFormat.format(date);  
 	}
 	

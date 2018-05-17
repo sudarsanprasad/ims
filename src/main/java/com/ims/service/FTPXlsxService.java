@@ -39,7 +39,6 @@ import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketStatisticsRepository;
-import com.ims.util.DataMaskUtil;
 import com.ims.util.DateUtil;
 import com.ims.util.QueryBuilder;
 
@@ -225,10 +224,30 @@ public class FTPXlsxService {
 				ticketStatistics.setComments("Exception occured While Processing the File");
 				isFailed = true;
 			}
-			
 		}
-		closeConnection(con, stmt);
+		
 		if(!isFailed){
+			try{
+				String mainQuery = "insert into TICKET_DATA (col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50) select col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50 from TICKET_FTP_TEMP_DATA";
+				LOG.info(mainQuery);
+				boolean flag = stmt.execute(mainQuery);
+				if(flag){
+					stmt.execute("truncate table ticket_ftp_temp_data");
+				}
+			}catch (SQLException e) {
+				LOG.error(e);
+				TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
+				ticketLogStatistics.setTicketId(ticketId);
+				ticketLogStatistics.setMessage(e.getMessage());
+				ticketLogStatisticsList.add(ticketLogStatistics);
+				ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
+				failureCount++;
+				ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
+				ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
+				ticketStatistics.setComments("Exception occured while moving data from Hive table to another");
+				isFailed = true;
+			}
+			
 			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
 			ticketStatistics.setComments("Data inserted into HDFS");
 			ticketStatistics.setAutomationEndDate(new Date());
@@ -239,8 +258,8 @@ public class FTPXlsxService {
 			ticketStatistics.setAutomationEndDate(new Date());
 			ticketStatisticsRepository.save(ticketStatistics);
 		}
-		
-		return skipFirstRow;
+		closeConnection(con, stmt);
+		return isFailed;
 	}
 
 
@@ -257,7 +276,7 @@ public class FTPXlsxService {
 	private String appendCellColumn(StringBuilder query, Cell currentCell) {
 		String cellValue = null;
 		if (currentCell.getCellTypeEnum() == CellType.STRING) {
-			cellValue = DataMaskUtil.maskData(currentCell.getStringCellValue());
+			cellValue = currentCell.getStringCellValue(); //DataMaskUtil.maskData(currentCell.getStringCellValue());
 			query.append(cellValue).append("\"").append(",");
 		} else if (currentCell.getCellTypeEnum() == CellType.NUMERIC) {
 			double value = currentCell.getNumericCellValue();
