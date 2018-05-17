@@ -34,4 +34,14 @@ public class ImsConfigurationController {
 		return imsConfigurationService.turnOffFtpAutomation();
 	}
 	
+	@GetMapping(value = "/getApiAutomationStatus")
+	public boolean getApiAutomationStatus() {
+		return imsConfigurationService.getApiAutomationStatus();
+	}
+	
+	@GetMapping(value = "/getFtpAutomationStatus")
+	public boolean getFtpAutomationStatus() {
+		return imsConfigurationService.getFtpAutomationStatus();
+	}
+	
 }

@@ -54,4 +54,18 @@ public class ImsConfigurationService {
 		return false;
 	}
 	
+	public boolean getApiAutomationStatus(){
+		if("Y".equalsIgnoreCase(imsConfigurationRepository.findByProperty("apischedulerflag").getValue())){
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean getFtpAutomationStatus(){
+		if("Y".equalsIgnoreCase(imsConfigurationRepository.findByProperty("ftpschedulerflag").getValue())){
+			return true;
+		}
+		return false;
+	}
+	
 }
