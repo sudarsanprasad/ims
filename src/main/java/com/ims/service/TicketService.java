@@ -19,14 +19,17 @@ import org.springframework.stereotype.Service;
 import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
 import com.ims.entity.FieldConfiguration;
+import com.ims.entity.ImsConfiguration;
 import com.ims.entity.Ticket;
 import com.ims.entity.TicketLogStatistics;
 import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
 import com.ims.repository.FieldConfigurationRepository;
+import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketRepository;
 import com.ims.repository.TicketStatisticsRepository;
+import com.ims.util.DateUtil;
 import com.ims.util.QueryBuilder;
 
 /**
@@ -53,6 +56,9 @@ public class TicketService {
 	
 	@Autowired
 	FieldConfigurationRepository fieldConfigurationRepository;
+	
+	@Autowired
+	ImsConfigurationRepository imsConfigurationRepository;
 	
 	public void updateTicketData(String result, TicketStatistics ticketStatistics) throws ImsException {
 		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(null);
@@ -110,7 +116,7 @@ public class TicketService {
 		ticketStatistics.setRecordsInserted(0l);
 		ticketStatistics.setRecordsFailed(0l);
 		boolean isFailed = false;
-		String ticketId = null;
+		String ticketId;
 		List<TicketLogStatistics> ticketLogStatisticsList = new ArrayList<>();
 		for (int i = 0; i < records.length(); i++) {
 			JSONObject record = records.getJSONObject(i);
@@ -142,6 +148,7 @@ public class TicketService {
 			ticketStatistics.setAutomationEndDate(new Date());
 			ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
 			ticketStatisticsRepository.save(ticketStatistics);
+			updateLastRunDate(ticketStatistics);
 		}else{
 			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
 			ticketStatistics.setAutomationEndDate(new Date());
@@ -152,7 +159,7 @@ public class TicketService {
 	private boolean prepareQuery(JSONObject record, StringBuilder query, TicketStatistics ticketStatistics, List<FieldConfiguration> fields) throws ImsException {
 		boolean isRecordExists = false;
 		try{
-			String tempField = null;
+			String tempField;
 		 	 for(FieldConfiguration field:fields){
 		 		 if("assignment_group".equals(field.getProperty()) || "cmdb_ci".equals(field.getProperty())){
 		 			tempField = "";
@@ -191,6 +198,13 @@ public class TicketService {
 
 	public List<Ticket> getTicketData(){
 		return ticketRepository.findAll();
+	}
+	
+	public String updateLastRunDate(TicketStatistics ticketStatistics) {
+		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("apilastrundate");
+		configuration.setValue(DateUtil.convertDateToString(ticketStatistics.getAutomationStartDate()));
+		imsConfigurationRepository.save(configuration);
+		return "Last Run Date Updated";
 	}
 	
 }

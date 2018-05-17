@@ -12,11 +12,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.ims.constant.StatusType;
+import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketStatistics;
 import com.ims.exception.ImsException;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.service.TicketService;
 import com.ims.service.TicketStatisticsService;
+import com.ims.util.DateUtil;
 
 @Component
 public class ScheduledTasks {
@@ -47,10 +49,9 @@ public class ScheduledTasks {
 	}
 	
 	private String getRecords() {
-		 final String ticketURL = env.getProperty("ticketsystem.url");
 		 RestTemplate restTemplate = new RestTemplate();
 		 restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(env.getProperty("servicenow.username"), env.getProperty("servicenow.password")));
-		 return restTemplate.getForObject(ticketURL, String.class);
+		 return restTemplate.getForObject(getUrl(), String.class);
 	}
 	
 	private TicketStatistics getTicketStatistics() {
@@ -61,6 +62,14 @@ public class ScheduledTasks {
 		ticketStatistics.setAutomationStartDate(new Date());
 		ticketStatistics.setComments("Scheduler started successfully");
 		return ticketStatistics;
+	}
+	
+	private String getUrl(){
+		 ImsConfiguration configuration = imsConfigurationRepository.findByProperty("apilastrundate");
+		 String dateAndTime[] = DateUtil.getDateAndTime(configuration.getValue());
+		 StringBuilder ticketURL = new StringBuilder(env.getProperty("ticketsystem.url"));
+		 ticketURL.append("('").append(dateAndTime[0]).append("','").append(dateAndTime[1]).append("')");
+		 return ticketURL.toString();
 	}
 	
 	

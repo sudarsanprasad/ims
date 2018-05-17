@@ -13,7 +13,10 @@ public class DateUtil {
 	public static String convertDateToString(Date date){
         DateFormat dateFormat = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");  
         return dateFormat.format(date);  
-        
+	}
+	
+	public static String[] getDateAndTime(String timestamp){
+		return timestamp.split(" ");
 	}
 
 }
