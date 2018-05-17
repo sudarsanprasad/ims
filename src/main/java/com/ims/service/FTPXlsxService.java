@@ -213,15 +213,6 @@ public class FTPXlsxService {
 				stmt.execute("truncate table ticket_ftp_temp_data");
 			}catch (SQLException e) {
 				LOG.error(e);
-				TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
-				ticketLogStatistics.setTicketId(ticketId);
-				ticketLogStatistics.setMessage(e.getMessage());
-				ticketLogStatisticsList.add(ticketLogStatistics);
-				ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
-				failureCount++;
-				ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
-				ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-				ticketStatistics.setComments("Exception occured While Processing the File");
 				isFailed = true;
 			}
 		}

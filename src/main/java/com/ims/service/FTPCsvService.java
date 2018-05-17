@@ -201,16 +201,6 @@ public class FTPCsvService {
 	    				}
 	    			}catch (SQLException e) {
 	    				LOG.error(e);
-	    				TicketLogStatistics ticketLogStatistics = new TicketLogStatistics();
-	    				ticketLogStatistics.setTicketId(ticketId);
-	    				ticketLogStatistics.setMessage(e.getMessage());
-	    				ticketLogStatisticsList.add(ticketLogStatistics);
-	    				ticketStatistics.setTicketLogStatistics(ticketLogStatisticsList);
-	    				failureCount++;
-	    				ticketStatistics.setRecordsFailed(ticketStatistics.getRecordsFailed() + failureCount);
-	    				ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-	    				ticketStatistics.setComments("Exception occured while moving data from Hive table to another");
-	    				isFailed = true;
 	    			}
 	    			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsFailed()+ ticketStatistics.getRecordsInserted());
 	    			ticketStatistics.setComments("Data inserted into HDFS");
