@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import com.ims.constant.StatusType;
@@ -34,7 +36,8 @@ public class TicketStatisticsService {
 	}
 
 	public List<TicketStatistics> findAll() {
-		return ticketStatisticsRepository.findAll();
+		Sort sort = new Sort(new Sort.Order(Direction.DESC, "jobId"));
+		return ticketStatisticsRepository.findAll(sort);
 	}
 	
 	public List<TicketStatistics> findAllByFileNameOrderByJobId(String fileName){
