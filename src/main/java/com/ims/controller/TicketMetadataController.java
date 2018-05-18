@@ -66,14 +66,14 @@ public class TicketMetadataController {
         return ticketMetadataService.findByCustomer(ticketMetadata.getCustomer());
     }
     
-    @GetMapping(value = "/findByIsForecast")
-    public List<String> findByIsForecast() {
-        return ticketMetadataService.findByIsForecast();
+    @GetMapping(value = "/findByIsForecast/{systemName}")
+    public List<String> findByIsForecast(@PathVariable String systemName) {
+        return ticketMetadataService.findByIsForecast(systemName);
     }
     
-    @GetMapping(value = "/findByIsProactive")
-    public List<String> findByIsProactive() {
-        return ticketMetadataService.findByIsProactive();
+    @GetMapping(value = "/findByIsProactive/{systemName}")
+    public List<String> findByIsProactive(@PathVariable String systemName) {
+        return ticketMetadataService.findByIsProactive(systemName);
     }
 	
 }

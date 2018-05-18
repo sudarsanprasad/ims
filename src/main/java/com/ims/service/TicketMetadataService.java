@@ -47,12 +47,12 @@ public class TicketMetadataService {
 		return ticketMetadataRepository.findByCustomer(customer);
 	}
 	
-	public List<String> findByIsForecast(){
-		return ticketMetadataRepository.findMappingColumnByIsForecast();
+	public List<String> findByIsForecast(String systemName){
+		return ticketMetadataRepository.findMappingColumnByIsForecast(systemName);
 	}
 	
-	public List<String> findByIsProactive(){
-		return ticketMetadataRepository.findMappingColumnByIsProactive();
+	public List<String> findByIsProactive(String systemName){
+		return ticketMetadataRepository.findMappingColumnByIsProactive(systemName);
 	}
 
 }
