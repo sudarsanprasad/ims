@@ -61,6 +61,8 @@ public class TicketService {
 	ImsConfigurationRepository imsConfigurationRepository;
 	
 	public void updateTicketData(String result, TicketStatistics ticketStatistics) throws ImsException {
+		Connection con = null;
+		Statement stmt = null;
 		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(null);
 		if(!CollectionUtils.isEmpty(list)){
 			ticketStatistics.setVersionNumber(list.size());
@@ -79,31 +81,32 @@ public class TicketService {
 		JSONArray records = jsonObj.getJSONArray("result");
 		try {
 			if (records != null && records.length() != 0) {
-				Connection con = getConnection();
+				con = getConnection();
 				ticketStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
 				ticketStatistics.setForecastStatus(StatusType.OPEN.getDescription());
 				ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
-				updateTicketStatistics(ticketStatistics);
-				Statement stmt = con.createStatement();
+				ticketStatistics = updateTicketStatistics(ticketStatistics);
+				stmt = con.createStatement();
 				updateDataToHDFS(queryBuilder, qBuilder, records, stmt, ticketStatistics, fields);
-				stmt.close();
-				con.close();
 				ticketStatistics.setAutomationEndDate(new Date());
 				ticketStatistics.setComments("Data inserted into HDFS");
 				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
 				updateTicketStatistics(ticketStatistics);
+				closeConnection(con, stmt);
 			}
 		} catch (SQLException e) {
 			ticketStatistics.setComments("Exception while processign data with Postgresql database");
 			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
 			updateTicketStatistics(ticketStatistics);
 			LOG.error(e);
+			closeConnection(con, stmt);
 			throw new ImsException("Exception while processign data with Postgresql database", e);
 		} catch (ImsException e) {
 			ticketStatistics.setComments("Exception occured while processing the data");
 			ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
 			updateTicketStatistics(ticketStatistics);
 			LOG.error(e);
+			closeConnection(con, stmt);
 			throw new ImsException("Exception while processing data with Hive database", e);
 		}
 	}
@@ -124,7 +127,9 @@ public class TicketService {
 			prepareQuery(record, query, ticketStatistics, fields);
 			
 				try{
-					stmt.execute(query.toString());
+					String tempQueryBuilder = query.toString().substring(0, query.lastIndexOf(","));
+					StringBuilder finalQuery = new StringBuilder(tempQueryBuilder).append(")");
+					stmt.execute(finalQuery.toString());
 					successCount++;
 					ticketStatistics.setRecordsInserted(successCount);
 				}catch (SQLException e) {
@@ -154,12 +159,10 @@ public class TicketService {
 		
 		if(!isFailed){
 			try{
-				String mainQuery = "insert into TICKET_DATA (col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50) select col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50 from TICKET_FTP_TEMP_DATA";
+				String mainQuery = "insert into TICKET_DATA2 (col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50) select col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50 from ticket_api_temp_data";
 				LOG.info(mainQuery);
-				boolean flag = stmt.execute(mainQuery);
-				if(flag){
-					stmt.execute("truncate table ticket_ftp_temp_data");
-				}
+				stmt.execute(mainQuery);
+				stmt.execute("truncate table ticket_api_temp_data");
 			}catch (SQLException e) {
 				LOG.error(e);
 			}
@@ -179,8 +182,15 @@ public class TicketService {
 	private boolean prepareQuery(JSONObject record, StringBuilder query, TicketStatistics ticketStatistics, List<FieldConfiguration> fields) throws ImsException {
 		boolean isRecordExists = false;
 		try{
+			 
+			 query.append("\"");
+			 query.append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
+			 query.append("\"");
+			 query.append(String.valueOf(ticketStatistics.getVersionNumber())).append("\"").append(",");
+			 
 			String tempField;
 		 	 for(FieldConfiguration field:fields){
+		 		LOG.info("Field   === >> "+field.getProperty());
 		 		 if("assignment_group".equals(field.getProperty()) || "cmdb_ci".equals(field.getProperty())){
 		 			tempField = "";
 		 		 }else{
@@ -189,10 +199,6 @@ public class TicketService {
 		 		query.append("\"");
 		 		query.append(tempField).append("\"").append(",");
 		 	 }
-			 query.append("\"");
-			 query.append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
-			 query.append("\"");
-			query.append(String.valueOf(ticketStatistics.getVersionNumber())).append("\"").append(")");
 			LOG.info(" \n \n "+query.toString());
 		 }catch (Exception e) {
 				LOG.error(e);
@@ -225,6 +231,16 @@ public class TicketService {
 		configuration.setValue(DateUtil.convertDateToString(ticketStatistics.getAutomationStartDate()));
 		imsConfigurationRepository.save(configuration);
 		return "Last Run Date Updated";
+	}
+	
+	private void closeConnection(Connection con, Statement stmt) {
+		try {
+			con.close();
+			stmt.close();
+		} catch (SQLException e) {
+			LOG.error(e);
+		}
+		
 	}
 	
 }
