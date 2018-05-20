@@ -126,5 +126,9 @@ public class DataMaskUtil {
 		Matcher matcher = pattern.matcher(ticketData);
 		return matcher.replaceAll("*********");
 	}
+	
+	public static String replaceSpecialChars(String ticketData){
+		return ticketData.replaceAll("[^a-zA-Z0-9]", " ");
+	}
 
 }

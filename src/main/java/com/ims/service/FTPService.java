@@ -18,13 +18,14 @@ import java.util.List;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
@@ -103,14 +104,15 @@ public class FTPService {
 		return isFileSavedToLocalFlag;
 	}
 
-	private void processExcelData(String filename, TicketStatistics ticketStatistics, String systemName, String customer) {
+	private void processExcelData(String filename, TicketStatistics ticketStatistics, String systemName, String customer) throws InvalidFormatException {
 		boolean isFailed = false;
 		try {
 			QueryBuilder queryBuilder = new QueryBuilder();
 			StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer,"FTP");
 			FileInputStream excelFile = new FileInputStream(new File(filename));
-			Workbook workbook = new XSSFWorkbook(excelFile);
-			Sheet datatypeSheet = workbook.getSheetAt(0);
+			 HSSFWorkbook workbook = new HSSFWorkbook(excelFile); //Read the Excel Workbook in a instance object    
+             HSSFSheet datatypeSheet = workbook.getSheetAt(0);
+			
 			Iterator<Row> iterator = datatypeSheet.iterator();
 			ticketStatistics.setComments("Reading the data from Excel in Progress");
 			ticketStatisticsRepository.save(ticketStatistics);
@@ -152,6 +154,7 @@ public class FTPService {
 			ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
 			ticketStatisticsRepository.save(ticketStatistics);
 			while (iterator.hasNext()) {
+				
 				try{
 					if (!skipFirstRow) {
 						iterator.next();
@@ -190,6 +193,7 @@ public class FTPService {
 					isFailed = true;
 					continue;
 				}
+				
 		}
 				
 		} catch (ImsException e) {
@@ -230,7 +234,7 @@ public class FTPService {
 		
 		if(!isFailed){
 			try{
-				String mainQuery = "insert into TICKET_DATA (col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50) select col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50 from TICKET_FTP_TEMP_DATA";
+				String mainQuery = "insert into TICKET_DATA2 (col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50) select col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50 from TICKET_FTP_TEMP_DATA";
 				LOG.info(mainQuery);
 				boolean flag = stmt.execute(mainQuery);
 				if(flag){
@@ -264,15 +268,26 @@ public class FTPService {
 		
 	}
 
+	
 	private String appendCellColumn(StringBuilder query, Cell currentCell) {
 		String cellValue = null;
+		String finalString;
 		if (currentCell.getCellTypeEnum() == CellType.STRING) {
 			cellValue = DataMaskUtil.maskData(currentCell.getStringCellValue());
-			query.append(cellValue).append("\"").append(",");
+			finalString = DataMaskUtil.replaceSpecialChars(cellValue);
+			query.append(finalString).append("\"").append(",");
 		} else if (currentCell.getCellTypeEnum() == CellType.NUMERIC) {
 			double value = currentCell.getNumericCellValue();
-			query.append(currentCell.getNumericCellValue()).append("\"").append(",");
-			cellValue = String.valueOf(value);
+			if (HSSFDateUtil.isCellDateFormatted(currentCell)) {
+				query.append(currentCell).append("\"").append(",");
+			}else{
+				query.append(currentCell.getNumericCellValue()).append("\"").append(",");
+				cellValue = String.valueOf(value);
+			}
+			
+			
+		} else{
+			query.append("").append("\"").append(",");
 		}
 		return cellValue;
 	}

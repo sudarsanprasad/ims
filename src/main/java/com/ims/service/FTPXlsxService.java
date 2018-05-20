@@ -40,7 +40,6 @@ import com.ims.exception.ImsException;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketStatisticsRepository;
 import com.ims.util.DataMaskUtil;
-import com.ims.util.DateUtil;
 import com.ims.util.QueryBuilder;
 
 @Service
@@ -220,7 +219,7 @@ public class FTPXlsxService {
 		
 		if(!isFailed){
 			try{
-				String mainQuery = "insert into TICKET_DATA (col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50) select col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50 from TICKET_FTP_TEMP_DATA";
+				String mainQuery = "insert into TICKET_DATA2 (col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50) select col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50 from TICKET_FTP_TEMP_DATA";
 				LOG.info(mainQuery);
 				boolean flag = stmt.execute(mainQuery);
 				if(flag){
@@ -267,14 +266,15 @@ public class FTPXlsxService {
 
 	private String appendCellColumn(StringBuilder query, Cell currentCell) {
 		String cellValue = null;
+		String finalString;
 		if (currentCell.getCellTypeEnum() == CellType.STRING) {
 			cellValue = DataMaskUtil.maskData(currentCell.getStringCellValue());
-			query.append(cellValue).append("\"").append(",");
+			finalString = DataMaskUtil.replaceSpecialChars(cellValue);
+			query.append(finalString).append("\"").append(",");
 		} else if (currentCell.getCellTypeEnum() == CellType.NUMERIC) {
 			double value = currentCell.getNumericCellValue();
 			if (HSSFDateUtil.isCellDateFormatted(currentCell)) {
-				cellValue = DateUtil.convertDateToString(currentCell.getDateCellValue());
-				query.append(cellValue).append("\"").append(",");
+				query.append(currentCell).append("\"").append(",");
 			}else{
 				query.append(currentCell.getNumericCellValue()).append("\"").append(",");
 				cellValue = String.valueOf(value);
