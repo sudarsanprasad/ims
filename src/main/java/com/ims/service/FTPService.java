@@ -154,7 +154,7 @@ public class FTPService {
 			ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
 			ticketStatisticsRepository.save(ticketStatistics);
 			while (iterator.hasNext()) {
-				
+				int counter = 1;
 				try{
 					if (!skipFirstRow) {
 						iterator.next();
@@ -168,7 +168,8 @@ public class FTPService {
 					while (cellIterator.hasNext()) {
 						Cell currentCell = cellIterator.next();
 						query.append("\"");
-						appendCellColumn(query, currentCell); 
+						appendCellColumn(query, currentCell, counter); 
+						counter++;
 					}
 					String tempQueryBuilder = query.toString().substring(0, query.lastIndexOf(","));
 					StringBuilder finalQuery = new StringBuilder(tempQueryBuilder).append(")");
@@ -267,11 +268,15 @@ public class FTPService {
 	}
 
 	
-	private String appendCellColumn(StringBuilder query, Cell currentCell) {
+	private String appendCellColumn(StringBuilder query, Cell currentCell, int counter) {
 		String cellValue = null;
 		String finalString;
 		if (currentCell.getCellTypeEnum() == CellType.STRING) {
-			cellValue = DataMaskUtil.maskData(currentCell.getStringCellValue());
+			if(counter == 7 || counter == 14){
+				cellValue = DataMaskUtil.maskData(currentCell.getStringCellValue());
+			}else{
+				cellValue = currentCell.getStringCellValue();
+			}
 			finalString = DataMaskUtil.replaceSpecialChars(cellValue);
 			query.append(finalString).append("\"").append(",");
 		} else if (currentCell.getCellTypeEnum() == CellType.NUMERIC) {
