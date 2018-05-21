@@ -111,7 +111,21 @@ public class DataMaskUtil {
 		Pattern pattern = Pattern.compile("\\d{2}[-\\.\\s]\\d{3}[-\\.\\s]\\d{3}[-\\.\\s]\\d{4}");
 		Matcher matcher = pattern.matcher(ticketData);
 		String maskedPhoneNumberFormatFour = matcher.replaceAll("**********");
-		return ssn(maskedPhoneNumberFormatFour);
+		return maskPhoneNumberFormatFive(maskedPhoneNumberFormatFour);
+	}
+	
+	private static String maskPhoneNumberFormatFive(String ticketData){
+		Pattern pattern = Pattern.compile("\\d{10}");
+		Matcher matcher = pattern.matcher(ticketData);
+		String maskedPhoneNumberFormatFour = matcher.replaceAll("**********");
+		return maskPhoneNumberFormatSix(maskedPhoneNumberFormatFour);
+	}
+	
+	private static String maskPhoneNumberFormatSix(String ticketData){
+		Pattern pattern = Pattern.compile("\\d{2}[-\\.\\s]\\d{2}[-\\.\\s]\\d{8}");
+		Matcher matcher = pattern.matcher(ticketData);
+		String maskedPhoneNumberFormatFive = matcher.replaceAll("**********");
+		return ssn(maskedPhoneNumberFormatFive);
 	}
 	
 	private static String ssn(String ticketData){
