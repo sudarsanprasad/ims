@@ -16,12 +16,11 @@ public class TicketLogStatistics {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
-	
+
 	private String ticketId;
-	
+
 	private String message;
-	
-	
-	
-	
+
+	private Long jobId;
+
 }
