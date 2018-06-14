@@ -20,6 +20,7 @@ import com.ims.exception.ImsException;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
 import com.ims.service.FTPService;
+import com.ims.service.ForecastKRService;
 import com.ims.service.ImsConfigurationService;
 import com.ims.service.ImsJobService;
 import com.ims.service.TicketService;
@@ -54,6 +55,9 @@ public class ScheduledTasks {
 	
 	@Autowired
 	private FTPService ftpService;
+	
+	@Autowired
+	private ForecastKRService forecastKRService;
 	
 
 	//@Scheduled(cron = "${shedule.time.sec}")
@@ -104,6 +108,21 @@ public class ScheduledTasks {
 	public void createJobs() throws ImsException {
 		List<TicketSystem> ticketSystems =  ticketSystemRepository.findAll();
 		imsJobService.createJobs(ticketSystems);
+	}
+	
+	//@Scheduled(cron = "0/60 * * * * ?")
+	public void runForecastScheduler() throws ImsException {
+		forecastKRService.runForecastScheduler();
+	}
+	
+	//@Scheduled(cron = "0/60 * * * * ?")
+	public void runForecastModelScheduler() throws ImsException {
+		forecastKRService.runForecastModelScheduler();
+	}
+	
+	//@Scheduled(cron = "0/60 * * * * ?")
+	public void runKRScheduler() throws ImsException {
+		forecastKRService.runKRScheduler();
 	}
 		
 }
