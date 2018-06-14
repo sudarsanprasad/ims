@@ -21,6 +21,8 @@ public class TicketLogStatistics {
 	
 	private String message;
 	
+	private Long jobId;
+	
 	
 	
 	
