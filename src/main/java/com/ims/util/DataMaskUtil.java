@@ -56,16 +56,6 @@ public class DataMaskUtil {
 		return replaceSpecialChars(maskedEmail);
 	}
 	
-	private static String maskSignature(String ticketData){
-		String maskedSignature = null;
-		if(ticketData.contains("Thanks")){
-			maskedSignature = ticketData.substring(0, ticketData.lastIndexOf("Thanks"));
-		}else if(ticketData.contains("Regards")){
-			maskedSignature = ticketData.substring(0, ticketData.lastIndexOf("Regards"));
-		}
-		return replaceSpecialChars(maskedSignature);
-	}
-	
 	public static String replaceSpecialChars(String ticketData){
 		return ticketData.replaceAll("[^a-zA-Z0-9]", " ");
 	}

@@ -13,7 +13,6 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.ims.dto.AffectedServiceDto;
@@ -47,10 +46,10 @@ public class ElasticSearchService {
 	    HttpEntity<String> entity = new HttpEntity<>(requestObject.toString(), headers);
 	    String result = restTemplate.postForObject( url, entity, String.class );
 		
-		List<IncidentDto> incidents = null;
-		JSONObject resultObject = null;
+		List<IncidentDto> incidents;
+		JSONObject resultObject;
 	    Set<String> affServices = new HashSet<>();
-	    double maxScore = 0.0;
+	    double maxScore;
 	    ResponseDto responseDto = new ResponseDto();
 	    ResultDto resultDto = new ResultDto();
 	    List<TopicDto> topicDtos = new ArrayList<>();
@@ -71,7 +70,7 @@ public class ElasticSearchService {
 	    			affServices.add(source.getString("affective_service_captured"));
 	    			LOG.info("AFF Service == "+source.getString("affective_service_captured"));
 	    		}
-	    		int numberOfIncidents = 0;
+	    		int numberOfIncidents;
 	    		
 	    		for(String service:affServices){
 	    			incidents = new ArrayList<>();

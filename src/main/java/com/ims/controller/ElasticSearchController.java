@@ -1,6 +1,5 @@
 package com.ims.controller;
 
-import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,8 +12,6 @@ import com.ims.service.ElasticSearchService;
 @RestController
 @RequestMapping("/es")
 public class ElasticSearchController {
-	
-	private static final Logger LOG = Logger.getLogger(ElasticSearchController.class);
 	
 	@Autowired
 	private ElasticSearchService elasticSearchService;
