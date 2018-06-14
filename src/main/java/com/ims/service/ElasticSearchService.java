@@ -33,7 +33,7 @@ public class ElasticSearchService {
 	private static final Logger LOG = Logger.getLogger(ElasticSearchService.class);
 	public ResponseDto elasticsearch(String searchtext) {
 		
-		String url = "http://192.168.204.13:9200/ims/_search?size=500&q=title:"+searchtext;
+		String url = "http://192.168.204.13:9200/ims3/es3/_search?size=500&q="+searchtext;
 		RestTemplate restTemplate = new RestTemplate();
 		JSONObject requestObject = new JSONObject();
 	    JSONObject requestObject2 = new JSONObject();
