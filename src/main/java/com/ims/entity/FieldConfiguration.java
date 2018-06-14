@@ -21,4 +21,6 @@ public class FieldConfiguration {
 	
 	private String systemName;
 	
+	private String customer;
+	
 }

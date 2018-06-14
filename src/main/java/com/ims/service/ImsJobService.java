@@ -40,7 +40,7 @@ public class ImsJobService {
 				if(system.getEnableFlag().equalsIgnoreCase("Y")){
 					List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
 					TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
-					triggerDescriptor.setCron(system.getCronValue());
+					triggerDescriptor.setCron(system.getAutomationCronValue());
 					triggerDescriptor.setGroup(system.getCustomer());
 					triggerDescriptor.setName(system.getSystemName());
 					

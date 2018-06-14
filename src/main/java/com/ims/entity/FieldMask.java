@@ -10,34 +10,19 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "ticket_system")
-public class TicketSystem {
+@Table(name = "field_mask")
+public class FieldMask {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
+	private String fieldName;
+	
 	private String systemName;
 	
 	private String customer;
 	
-	private String url;
-	
-	private String type;
-	
-	private String userName;
-	
-	private String password;
-	
-	private String enableFlag;
-	
-	private String forecastCronValue;
-	
-	private String lastRunDate;
-	
-	private String krCronValue;
-	
-	private String automationCronValue;
-	
+	private String maskEnabled;
 	
 }
