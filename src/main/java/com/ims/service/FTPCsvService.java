@@ -60,25 +60,25 @@ public class FTPCsvService {
 		String systemName = (String)env.getProperty("ftpticketsystem");
 		String customer = (String)env.getProperty("customer");
 		
-		File remoteFile = new File((String)env.getProperty("file.location"));
-		String ftpFileName = remoteFile.getName();
 		String location = (String)env.getProperty("file.location");
+		for (FTPFile file : files) {
+			SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+			String formattedDate = formatDate.format(file.getTimestamp().getTime());
+			fileName = file.getName();
+			LOG.info(file.getName() + "     " + formattedDate);
+		}
+		String pathName = location+fileName;
+		
 		try {
-			for (FTPFile file : files) {
-				SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-				String formattedDate = formatDate.format(file.getTimestamp().getTime());
-				fileName = file.getName();
-				LOG.info(file.getName() + "     " + formattedDate);
-			}
-			isFileSavedToLocalFlag = template.get(ftpFileName, inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File(location))));
+			isFileSavedToLocalFlag = template.get(fileName, inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File(pathName))));
 			if (isFileSavedToLocalFlag) {
 				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(fileName));
-				processExcelData(location, ticketStatistics, systemName, customer);
+				processExcelData(pathName, ticketStatistics, systemName, customer);
 			}
 		} catch (Exception ex) {
 			LOG.error(ex);
 			throw new ImsException(
-					"Exception occured while processing excel data", ex);
+					"Exception occured while processing csv data", ex);
 		}
 		
 		return isFileSavedToLocalFlag;

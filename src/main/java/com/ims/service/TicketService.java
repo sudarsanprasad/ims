@@ -14,7 +14,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
@@ -29,6 +31,7 @@ import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketRepository;
 import com.ims.repository.TicketStatisticsRepository;
+import com.ims.util.DataMaskUtil;
 import com.ims.util.DateUtil;
 import com.ims.util.QueryBuilder;
 
@@ -121,11 +124,15 @@ public class TicketService {
 		boolean isFailed = false;
 		String ticketId;
 		List<TicketLogStatistics> ticketLogStatisticsList = new ArrayList<>();
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(env.getProperty("servicenow.username"), env.getProperty("servicenow.password")));
 		for (int i = 0; i < records.length(); i++) {
 			JSONObject record = records.getJSONObject(i);
 			StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
 			prepareQuery(record, query, ticketStatistics, fields);
-			
+			String comments = getUrl(restTemplate, (String) record.get((String)env.getProperty("ticketid").trim()));
+			String maskedData = DataMaskUtil.maskData(comments);
+			record.put("comments", DataMaskUtil.replaceSpecialChars(maskedData));
 				try{
 					String tempQueryBuilder = query.toString().substring(0, query.lastIndexOf(","));
 					StringBuilder finalQuery = new StringBuilder(tempQueryBuilder).append(")");
@@ -241,6 +248,12 @@ public class TicketService {
 			LOG.error(e);
 		}
 		
+	}
+	
+	private String getUrl(RestTemplate restTemplate, String ticketId){
+		 StringBuilder ticketURL = new StringBuilder(env.getProperty("comments.url"));
+		 ticketURL.append(ticketId);
+		 return restTemplate.getForObject(ticketURL.toString(), String.class);
 	}
 	
 }
