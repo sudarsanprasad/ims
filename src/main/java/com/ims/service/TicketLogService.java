@@ -29,10 +29,10 @@ public class TicketLogService {
 		try {
 			List<TicketLogStatistics> ticketLogStatisticsList = ticketLogStatisticsRepository.findByjobId(jobId);
 
-			StringBuilder filecontent = new StringBuilder("ID, TicketId, Message\n");
+			StringBuilder filecontent = new StringBuilder("TicketId : Message\n");
 			for (TicketLogStatistics ticketLogStatistics : ticketLogStatisticsList) {
-				filecontent.append(ticketLogStatistics.getId()).append(",").append(ticketLogStatistics.getTicketId())
-						.append(",").append(ticketLogStatistics.getMessage()).append("\n");
+				filecontent.append(ticketLogStatistics.getTicketId())
+						.append(" :").append(ticketLogStatistics.getMessage()).append("\n");
 			}
 
 			String filename = "ticketlog.log";

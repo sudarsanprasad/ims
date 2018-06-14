@@ -19,27 +19,27 @@ public class TicketSystemController {
 	@Autowired
 	private TicketSystemService ticketSystemService;
 
-	@GetMapping("/getbyid/{id}")
+	@GetMapping("/{id}")
 	public TicketSystem getTicketSystemById(@PathVariable("id") Long id) {
 		return ticketSystemService.getTicketSystemById(id);
 	}
 
-	@PostMapping("/save")
+	@PostMapping
 	public void saveTicketSystem(@RequestBody TicketSystem ticketSystem) {
 		ticketSystemService.saveTicketSystem(ticketSystem);
 	}
 
-	@PutMapping("/update")
+	@PutMapping
 	public void updateTicketSystem(@RequestBody TicketSystem ticketSystem) {
 		ticketSystemService.updateTicketSystem(ticketSystem);
 	}
 
-	@DeleteMapping("/delete")
+	@DeleteMapping
 	public void deleteTicketSystem(@RequestBody TicketSystem ticketSystem) {
 		ticketSystemService.deleteTicketSystem(ticketSystem);
 	}
 
-	@DeleteMapping("/deletebyid/{id}")
+	@DeleteMapping("/{id}")
 	public void deleteTicketSystemById(@PathVariable("id") Long id) {
 		ticketSystemService.deleteTicketSystemById(id);
 	}
