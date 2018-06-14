@@ -28,9 +28,9 @@ import com.ims.service.TicketStatisticsService;
 import com.ims.util.DateUtil;
 
 @Component
-public class ScheduledTasks {
+public class JobScheduler {
 	
-	private static final Logger LOG = Logger.getLogger(ScheduledTasks.class);
+	private static final Logger LOG = Logger.getLogger(JobScheduler.class);
 	
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;

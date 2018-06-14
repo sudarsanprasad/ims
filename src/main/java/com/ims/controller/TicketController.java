@@ -13,7 +13,7 @@ import com.ims.exception.ImsException;
 import com.ims.service.FTPService;
 import com.ims.service.ImsConfigurationService;
 import com.ims.service.TicketService;
-import com.ims.taskconfig.ScheduledTasks;
+import com.ims.taskconfig.JobScheduler;
 
 @RestController
 @RequestMapping("/ticket")
@@ -28,7 +28,7 @@ public class TicketController {
 	private FTPService ftpService;
 	
 	@Autowired
-	private ScheduledTasks scheduledTasks;
+	private JobScheduler scheduledTasks;
 	
 	@Autowired
 	ImsConfigurationService imsConfigurationService;
