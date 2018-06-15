@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.ims.entity.FieldMask;
 import com.ims.entity.TicketSystem;
@@ -24,6 +25,10 @@ public class TicketSystemService {
 	}
 
 	public void saveTicketSystem(TicketSystem ticketSystem) {
+		List<TicketSystem> ticketSystems =  ticketSystemRepository.findByCustomer(ticketSystem.getCustomer());
+		if(CollectionUtils.isEmpty(ticketSystems)){
+			ticketSystem.setFirstTimeFlag("Y");
+		}
 		ticketSystemRepository.save(ticketSystem);
 	}
 
