@@ -17,6 +17,7 @@ import com.ims.entity.TicketSystem;
 import com.ims.exception.ImsException;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
+import com.ims.service.FTPService;
 import com.ims.service.TicketService;
 
 @Slf4j
@@ -30,6 +31,9 @@ public class ImsSystemJob implements Job {
 	
 	@Autowired
 	private TicketService ticketService;
+	
+	@Autowired
+	private FTPService ftpService;
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -39,7 +43,11 @@ public class ImsSystemJob implements Job {
 		TicketSystem ticketSystem = ticketSystemRepository.findBySystemNameAndCustomer(system, customer);
 		TicketStatistics ticketStatistics = ticketService.updateTicketStatistics(getTicketStatistics(ticketSystem));
 		try {
-			ticketService.updateTicketData(getRecords(ticketSystem), ticketStatistics);
+			if("API".equalsIgnoreCase(ticketSystem.getType())){
+				ticketService.updateTicketData(getRecords(ticketSystem), ticketStatistics);
+			}else{
+				ftpService.downloadExcel();
+			}
 		} catch (ImsException e) {
 			log.error("Exception == "+e);
 		}

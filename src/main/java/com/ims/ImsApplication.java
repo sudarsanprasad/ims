@@ -6,8 +6,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
-import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
-import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
 
@@ -22,20 +20,6 @@ public class ImsApplication {
 		SpringApplication.run(new Object[] { ImsApplication.class }, args);
 	}
 
-	@Bean
-	public DefaultFtpSessionFactory ftpSessionFactory() {
-		DefaultFtpSessionFactory factory = new DefaultFtpSessionFactory();
-		factory.setHost((String)env.getProperty("ftp.location"));
-		factory.setUsername((String)env.getProperty("ftp.username"));
-		factory.setPassword((String)env.getProperty("ftp.password"));
-		return factory;
-	}
-
-	@Bean
-	public FtpRemoteFileTemplate template(DefaultFtpSessionFactory factory) {
-		return new FtpRemoteFileTemplate(factory);
-	}
-	
 	@Bean
 	public SchedulerFactoryBean schedulerFactory(ApplicationContext applicationContext) {
 		SchedulerFactoryBean factoryBean = new SchedulerFactoryBean();

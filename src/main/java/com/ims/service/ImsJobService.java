@@ -78,7 +78,7 @@ public class ImsJobService {
 			scheduler.scheduleJob(jobDetail, triggersForJob, false);
 			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
 		} catch (SchedulerException e) {
-			log.info("Exception "+e);
+			log.info("Exception details"+e);
 			log.error("Could not save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
 			throw new IllegalArgumentException(e.getLocalizedMessage());
 		}
@@ -95,7 +95,7 @@ public class ImsJobService {
 						JobDescriptor.buildDescriptor(jobDetail, 
 								scheduler.getTriggersOfJob(jobKey(name, group))));
 		} catch (SchedulerException e) {
-			log.info("Exception "+e);
+			log.info("S Exception "+e);
 			log.error("Could not find job with key - {}.{} due to error - {}", group, name, e.getLocalizedMessage());
 		}
 		// @formatter:on
@@ -116,7 +116,7 @@ public class ImsJobService {
 			}
 			log.warn("Could not find job with key - {}.{} to update", group, name);
 		} catch (SchedulerException e) {
-			log.info("Exception "+e);
+			log.info("SCH Exception "+e);
 			log.error("Could not find job with key - {}.{} to update due to error - {}", group, name, e.getLocalizedMessage());
 		}
 	}
@@ -126,7 +126,7 @@ public class ImsJobService {
 			scheduler.deleteJob(jobKey(name, group));
 			log.info("Deleted job with key - {}.{}", group, name);
 		} catch (SchedulerException e) {
-			log.info("Exception "+e);
+			log.info("Exception Log"+e);
 			log.error("Could not delete job with key - {}.{} due to error - {}", group, name, e.getLocalizedMessage());
 		}
 	}
@@ -136,7 +136,7 @@ public class ImsJobService {
 			scheduler.pauseJob(jobKey(name, group));
 			log.info("Paused job with key - {}.{}", group, name);
 		} catch (SchedulerException e) {
-			log.info("Exception "+e);
+			log.info("Scheduler Exception "+e);
 			log.error("Could not pause job with key - {}.{} due to error - {}", group, name, e.getLocalizedMessage());
 		}
 	}
@@ -146,7 +146,7 @@ public class ImsJobService {
 			scheduler.resumeJob(jobKey(name, group));
 			log.info("Resumed job with key - {}.{}", group, name);
 		} catch (SchedulerException e) {
-			log.info("Exception "+e);
+			log.info("SchedulerException "+e);
 			log.error("Could not resume job with key - {}.{} due to error - {}", group, name, e.getLocalizedMessage());
 		}
 	}

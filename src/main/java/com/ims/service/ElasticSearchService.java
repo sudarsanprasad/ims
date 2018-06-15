@@ -9,6 +9,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -29,15 +31,21 @@ import com.ims.dto.TopicDto;
 @Service
 public class ElasticSearchService {
 	
+	@Autowired
+	private Environment env;
+	
 	private static final Logger LOG = Logger.getLogger(ElasticSearchService.class);
+
+	public static final String SOLUTION = "solution";
+	public static final String ASC = "affective_service_captured";
 	public ResponseDto elasticsearch(String searchtext) {
-		
-		String url = "http://192.168.204.13:9200/ims3/es3/_search?size=500&q="+searchtext;
+		String esurl = (String)env.getProperty("es.url");
+		String url = esurl+searchtext;
 		RestTemplate restTemplate = new RestTemplate();
 		JSONObject requestObject = new JSONObject();
 	    JSONObject requestObject2 = new JSONObject();
 	    JSONObject requestObject3 = new JSONObject();
-	    requestObject3.put("field", "solution");
+	    requestObject3.put("field", SOLUTION);
 	    requestObject2.put("exists", requestObject3);
 	    requestObject.put("query", requestObject2);
 	    
@@ -67,8 +75,8 @@ public class ElasticSearchService {
 	    		for(int i=0; i < hits.length(); i++){
 	    			JSONObject hit = (JSONObject)hits.getJSONObject(i); 
 	    			JSONObject source = (JSONObject) hit.get("_source");
-	    			affServices.add(source.getString("affective_service_captured"));
-	    			LOG.info("AFF Service == "+source.getString("affective_service_captured"));
+	    			affServices.add(source.getString(ASC));
+	    			LOG.info("AFF Service == "+source.getString(ASC));
 	    		}
 	    		int numberOfIncidents;
 	    		
@@ -81,19 +89,7 @@ public class ElasticSearchService {
 		    			JSONObject hit = (JSONObject)hits.getJSONObject(i); 
 		    			int score = hit.getInt("_score");
 		    			JSONObject source = (JSONObject) hit.get("_source");
-		    			if(service.equals(source.get("affective_service_captured"))){
-		    				LOG.info("Solution == "+source.get("solution"));
-		    				if(!org.json.JSONObject.NULL.equals(source.get("solution"))){
-		    					IncidentDto dto = new IncidentDto();
-			    				numberOfIncidents++;
-			    				dto.setAffective_service_captured(service);
-			    				dto.setId(source.getString("id"));
-			    				dto.setSimilarity(score/maxScore);
-			    				dto.setSolution((String)source.get("solution"));
-			    				dto.setTitle(source.getString("title"));
-			    				incidents.add(dto);
-		    				}
-		    			}
+		    			numberOfIncidents = getIncidents(incidents, maxScore, service, score, source);
 		    		}
 	    			affectedServiceDto.setIncidents(incidents);
 	    			affectedServiceDto.setNum_incidents(numberOfIncidents);
@@ -110,5 +106,22 @@ public class ElasticSearchService {
 	    	LOG.info(hits);
 	    }
 		return responseDto;
+	}
+	private int getIncidents(List<IncidentDto> incidents, double maxScore, String service, int score, JSONObject source) {
+		int numberOfIncidents=0;
+		if(service.equals(source.get(ASC))){
+			LOG.info("Solution == "+source.get(SOLUTION));
+			if(!org.json.JSONObject.NULL.equals(source.get(SOLUTION))){
+				IncidentDto dto = new IncidentDto();
+				numberOfIncidents++;
+				dto.setAffective_service_captured(service);
+				dto.setId(source.getString("id"));
+				dto.setSimilarity(score/maxScore);
+				dto.setSolution((String)source.get(SOLUTION));
+				dto.setTitle(source.getString("title"));
+				incidents.add(dto);
+			}
+		}
+		return numberOfIncidents;
 	}
 }

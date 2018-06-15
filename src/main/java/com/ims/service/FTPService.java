@@ -26,20 +26,27 @@ import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 
 import com.google.common.io.Files;
+import com.ims.constant.FileType;
 import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
 import com.ims.entity.TicketLogStatistics;
 import com.ims.entity.TicketStatistics;
+import com.ims.entity.TicketSystem;
 import com.ims.exception.ImsException;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketStatisticsRepository;
+import com.ims.repository.TicketSystemRepository;
 import com.ims.util.DataMaskUtil;
 import com.ims.util.QueryBuilder;
 
@@ -48,8 +55,7 @@ public class FTPService {
 
 	private static final Logger LOG = Logger.getLogger(FTPService.class);
 
-	@Autowired
-	private FtpRemoteFileTemplate template;
+	
 
 	@Autowired
 	private Environment env;
@@ -61,62 +67,96 @@ public class FTPService {
 	TicketStatisticsRepository ticketStatisticsRepository;
 	
 	@Autowired
-	FTPXlsxService ftpXlsxService;
+	FTPCsvService ftpCsvService;
 	
 	@Autowired
-	FTPCsvService ftpCsvService;
+	TicketSystemRepository ticketSystemRepository;
 
 	public boolean downloadExcel() throws ImsException {
-		boolean isFileSavedToLocalFlag = false;
-		String fileName = null;
-		FTPFile[] files = template.list("");
+		
+		List<TicketSystem> list = ticketSystemRepository.findByCustomerAndEnableFlagAndType("Deloitte", "Y", "FTP");
+		
 		String systemName = (String)env.getProperty("ftpticketsystem");
 		String customer = (String)env.getProperty("customer");
-		
 		String location = (String)env.getProperty("file.location");
-		for (FTPFile file : files) {
-			SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-			String formattedDate = formatDate.format(file.getTimestamp().getTime());
-			fileName = file.getName();
-			LOG.info(file.getName() + "     " + formattedDate);
-		}
-		String pathName = location+fileName;
-		String fileType = Files.getFileExtension(pathName);
-		if("xls".equalsIgnoreCase(fileType)){
-			try {
-				isFileSavedToLocalFlag = template.get(fileName, inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File(pathName))));
-				if (isFileSavedToLocalFlag) {
-					TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(fileName));
-					processExcelData(pathName, ticketStatistics, systemName, customer);
-				}
-			} catch (Exception ex) {
-				LOG.error(ex);
-				throw new ImsException(
-						"Exception occured while processing excel data", ex);
+		boolean isFileSavedToLocalFlag = false;
+		String fileName;
+		
+		for(TicketSystem ticketSystem:list){
+			DefaultFtpSessionFactory factory = new DefaultFtpSessionFactory();
+			factory.setHost(ticketSystem.getUrl());
+			factory.setUsername(ticketSystem.getUserName());
+			factory.setPassword(ticketSystem.getPassword());
+			FtpRemoteFileTemplate template = new FtpRemoteFileTemplate(factory); 
+			FTPFile[] files = template.list("");
+			for (FTPFile file : files) {
+				SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+				String formattedDate = formatDate.format(file.getTimestamp().getTime());
+				fileName = file.getName();
+				String pathName = location+fileName;
+				template.get(fileName, inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File(pathName))));
+				LOG.info(file.getName() + "     " + formattedDate);
 			}
-		}else if("xlsx".equalsIgnoreCase(fileType)){
-			isFileSavedToLocalFlag = ftpXlsxService.downloadExcel();
-		}else if("csv".equalsIgnoreCase(fileType)){
-			ftpCsvService.downloadExcel();
+		}
+		
+		
+		
+		File folder = new File(location);
+		File[] listOfFiles = folder.listFiles();
+		for (File file : listOfFiles) {
+		    if (file.isFile()) {
+		    	String pathName = location+file.getName();
+				String fileType = Files.getFileExtension(pathName);
+				processFile(systemName, customer, file, pathName, fileType, file.getName());
+		    }
 		}
 		
 		return isFileSavedToLocalFlag;
 	}
 
-	private void processExcelData(String filename, TicketStatistics ticketStatistics, String systemName, String customer) throws InvalidFormatException {
+	private void processFile(String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
+		if("csv".equalsIgnoreCase(fileType)){
+			ftpCsvService.downloadExcel(fileName,pathName,systemName, customer);
+		}else {
+			try {
+				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName()));
+				processExcelData(pathName, ticketStatistics, systemName, customer, fileType);
+			} catch (Exception ex) {
+				LOG.error(ex);
+				throw new ImsException("Exception occured while processing excel data", ex);
+			}
+		}
+	}
+
+	private void processExcelData(String filename, TicketStatistics ticketStatistics, String systemName, String customer, String fileType) throws InvalidFormatException {
 		boolean isFailed = false;
 		try {
 			QueryBuilder queryBuilder = new QueryBuilder();
 			StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer,"FTP");
 			FileInputStream excelFile = new FileInputStream(new File(filename));
-			 HSSFWorkbook workbook = new HSSFWorkbook(excelFile); //Read the Excel Workbook in a instance object    
-             HSSFSheet datatypeSheet = workbook.getSheetAt(0);
+			Iterator<Row> iterator;
+			Workbook workbook2 = null;
+			HSSFWorkbook workbook = null;
+            if(fileType.equalsIgnoreCase(FileType.XLSX.getDescription())){
+            	workbook2 = new XSSFWorkbook(excelFile);
+     			Sheet datatypeSheet2 = workbook2.getSheetAt(0);
+     			iterator = datatypeSheet2.iterator();
+            }else{
+            	workbook = new HSSFWorkbook(excelFile);    
+                HSSFSheet datatypeSheet = workbook.getSheetAt(0);
+            	iterator = datatypeSheet.iterator();
+            }
 			
-			Iterator<Row> iterator = datatypeSheet.iterator();
 			ticketStatistics.setComments("Reading the data from Excel in Progress");
 			ticketStatisticsRepository.save(ticketStatistics);
 			updateDataToHDFS(ticketStatistics, queryBuilder, qBuilder, iterator);
-			workbook.close();
+			if(workbook != null){
+				workbook.close();
+			}
+			if(workbook2 != null){
+				workbook2.close();
+			}
+			excelFile.close();
 		} catch (FileNotFoundException e) {
 			isFailed = true;
 			LOG.error(e);
@@ -232,6 +272,13 @@ public class FTPService {
 			
 		}
 		
+		updateHDFS(ticketStatistics, isFailed, stmt);
+		closeConnection(con, stmt);
+		return skipFirstRow;
+	}
+
+	private void updateHDFS(TicketStatistics ticketStatistics,
+			boolean isFailed, Statement stmt) {
 		if(!isFailed){
 			try{
 				String mainQuery = "insert into TICKET_DATA2 (col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50) select col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50 from TICKET_FTP_TEMP_DATA";
@@ -251,8 +298,6 @@ public class FTPService {
 			ticketStatistics.setAutomationEndDate(new Date());
 			ticketStatisticsRepository.save(ticketStatistics);
 		}
-		closeConnection(con, stmt);
-		return skipFirstRow;
 	}
 
 
@@ -272,7 +317,7 @@ public class FTPService {
 		String finalString;
 		if (currentCell.getCellTypeEnum() == CellType.STRING) {
 			if(counter == 7 || counter == 14){
-				cellValue = DataMaskUtil.maskData(currentCell.getStringCellValue());
+				cellValue = DataMaskUtil.replaceSpecialChars(currentCell.getStringCellValue());
 			}else{
 				cellValue = currentCell.getStringCellValue();
 			}

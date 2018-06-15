@@ -1,7 +1,5 @@
 package com.ims.service;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Paths;
@@ -9,7 +7,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,14 +15,11 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.net.ftp.FTPFile;
 import org.apache.log4j.Logger;
 import org.apache.poi.openxml4j.exceptions.OLE2NotOfficeXmlFileException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
-import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.FileCopyUtils;
 
 import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
@@ -42,9 +36,6 @@ public class FTPCsvService {
 	private static final Logger LOG = Logger.getLogger(FTPCsvService.class);
 
 	@Autowired
-	private FtpRemoteFileTemplate template;
-
-	@Autowired
 	private Environment env;
 
 	@Autowired
@@ -53,28 +44,13 @@ public class FTPCsvService {
 	@Autowired
 	TicketStatisticsRepository ticketStatisticsRepository;
 
-	public boolean downloadExcel() throws ImsException {
+	public boolean downloadExcel(String fileName, String pathName, String systemName, String customer) throws ImsException {
 		boolean isFileSavedToLocalFlag = false;
-		String fileName = null;
-		FTPFile[] files = template.list("");
-		String systemName = (String)env.getProperty("ftpticketsystem");
-		String customer = (String)env.getProperty("customer");
 		
-		String location = (String)env.getProperty("file.location");
-		for (FTPFile file : files) {
-			SimpleDateFormat formatDate = new SimpleDateFormat("dd.MM.yyyy HH:mm");
-			String formattedDate = formatDate.format(file.getTimestamp().getTime());
-			fileName = file.getName();
-			LOG.info(file.getName() + "     " + formattedDate);
-		}
-		String pathName = location+fileName;
 		
 		try {
-			isFileSavedToLocalFlag = template.get(fileName, inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File(pathName))));
-			if (isFileSavedToLocalFlag) {
 				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(fileName));
 				processExcelData(pathName, ticketStatistics, systemName, customer);
-			}
 		} catch (Exception ex) {
 			LOG.error(ex);
 			throw new ImsException(

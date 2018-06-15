@@ -25,12 +25,14 @@ import com.ims.entity.ImsConfiguration;
 import com.ims.entity.Ticket;
 import com.ims.entity.TicketLogStatistics;
 import com.ims.entity.TicketStatistics;
+import com.ims.entity.TicketSystem;
 import com.ims.exception.ImsException;
 import com.ims.repository.FieldConfigurationRepository;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketRepository;
 import com.ims.repository.TicketStatisticsRepository;
+import com.ims.repository.TicketSystemRepository;
 import com.ims.util.DataMaskUtil;
 import com.ims.util.DateUtil;
 import com.ims.util.QueryBuilder;
@@ -63,7 +65,11 @@ public class TicketService {
 	@Autowired
 	ImsConfigurationRepository imsConfigurationRepository;
 	
+	@Autowired
+	TicketSystemRepository ticketSystemRepository;
+	
 	public void updateTicketData(String result, TicketStatistics ticketStatistics) throws ImsException {
+		TicketSystem ticketSystem = ticketSystemRepository.findBySystemNameAndCustomer(ticketStatistics.getSystemName(), ticketStatistics.getCustomer());
 		Connection con = null;
 		Statement stmt = null;
 		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(null);
@@ -72,7 +78,7 @@ public class TicketService {
 		}else{
 			ticketStatistics.setVersionNumber(1);
 		}
-		List<FieldConfiguration> fields = fieldConfigurationRepository.findPropertyBySystemNameOrderById((String)env.getProperty("ticketsystem"));
+		List<FieldConfiguration> fields = fieldConfigurationRepository.findPropertyBySystemNameOrderById(ticketSystem.getSystemName());
 		QueryBuilder queryBuilder = new QueryBuilder();
 		ticketStatistics.setComments("Scheduler pulled the data from ticketing system");
 		updateTicketStatistics(ticketStatistics);
@@ -90,7 +96,7 @@ public class TicketService {
 				ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
 				ticketStatistics = updateTicketStatistics(ticketStatistics);
 				stmt = con.createStatement();
-				updateDataToHDFS(queryBuilder, qBuilder, records, stmt, ticketStatistics, fields);
+				updateDataToHDFS(queryBuilder, qBuilder, records, stmt, ticketStatistics, fields, ticketSystem);
 				ticketStatistics.setAutomationEndDate(new Date());
 				ticketStatistics.setComments("Data inserted into HDFS");
 				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
@@ -116,7 +122,7 @@ public class TicketService {
 
 
 
-	private void updateDataToHDFS(QueryBuilder queryBuilder, StringBuilder qBuilder, JSONArray records, Statement stmt, TicketStatistics ticketStatistics, List<FieldConfiguration> fields) throws ImsException, SQLException {
+	private void updateDataToHDFS(QueryBuilder queryBuilder, StringBuilder qBuilder, JSONArray records, Statement stmt, TicketStatistics ticketStatistics, List<FieldConfiguration> fields, TicketSystem ticketSystem) throws ImsException, SQLException {
 		Long successCount = 0l;
 		Long failureCount = 0l;
 		ticketStatistics.setRecordsInserted(0l);
@@ -125,14 +131,17 @@ public class TicketService {
 		String ticketId;
 		List<TicketLogStatistics> ticketLogStatisticsList = new ArrayList<>();
 		RestTemplate restTemplate = new RestTemplate();
-		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(env.getProperty("servicenow.username"), env.getProperty("servicenow.password")));
+		restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(ticketSystem.getUserName(), ticketSystem.getPassword()));
 		for (int i = 0; i < records.length(); i++) {
 			JSONObject record = records.getJSONObject(i);
 			StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
 			prepareQuery(record, query, ticketStatistics, fields);
-			String comments = getUrl(restTemplate, (String) record.get((String)env.getProperty("ticketid").trim()));
-			String maskedData = DataMaskUtil.maskData(comments);
-			record.put("comments", DataMaskUtil.replaceSpecialChars(maskedData));
+				if("Service Now".equalsIgnoreCase(ticketSystem.getSystemName())){
+					String comments = getUrl(restTemplate, (String) record.get((String)env.getProperty("ticketid").trim()));
+					String maskedData = DataMaskUtil.maskData(comments);
+					record.put("comments", DataMaskUtil.replaceSpecialChars(maskedData));
+				}
+			
 				try{
 					String tempQueryBuilder = query.toString().substring(0, query.lastIndexOf(","));
 					StringBuilder finalQuery = new StringBuilder(tempQueryBuilder).append(")");
