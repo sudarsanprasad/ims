@@ -45,6 +45,8 @@ public class TicketSystem {
 	
 	private String automationCronValue;
 	
+	private String firstTimeFlag;
+	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "ticketSystemId")
 	private List<FieldMask> fieldsMask;

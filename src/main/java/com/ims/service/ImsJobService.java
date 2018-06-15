@@ -17,6 +17,7 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -24,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 import com.ims.entity.TicketSystem;
 import com.ims.jobs.JobDescriptor;
 import com.ims.jobs.TriggerDescriptor;
+import com.ims.repository.TicketSystemRepository;
 
 @Slf4j
 @Service
@@ -31,6 +33,9 @@ import com.ims.jobs.TriggerDescriptor;
 @RequiredArgsConstructor
 public class ImsJobService {
 	private final Scheduler scheduler;
+	
+	@Autowired
+	TicketSystemRepository ticketSystemRepository;
 	
 	public JobDescriptor createJobs(List<TicketSystem> ticketSystems) {
 		
@@ -150,4 +155,35 @@ public class ImsJobService {
 			log.error("Could not resume job with key - {}.{} due to error - {}", group, name, e.getLocalizedMessage());
 		}
 	}
+	
+	/*public JobDescriptor createForecastJobs(String customerName) {
+		
+			List<TicketSystem> ticketSystems =  ticketSystemRepository.findAll();
+		
+			JobDescriptor descriptor = new JobDescriptor();
+			List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
+			TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
+			triggerDescriptor.setCron(system.getAutomationCronValue());
+			triggerDescriptor.setGroup(system.getCustomer());
+			triggerDescriptor.setName(system.getSystemName());
+			
+			triggerDescriptors.add(triggerDescriptor);
+			descriptor.setTriggerDescriptors(triggerDescriptors);
+			descriptor.setGroup("Forecast");
+			descriptor.setName(customerName);
+			JobDetail jobDetail = descriptor.buildJobDetail();
+			Set<Trigger> triggersForJob = descriptor.buildTriggers();
+			log.info("About to save job with key - {}", jobDetail.getKey());
+			try {
+				scheduler.scheduleJob(jobDetail, triggersForJob, false);
+				log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
+			} catch (SchedulerException e) {
+				log.info("Exception "+e);
+				log.error("Could not save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
+				throw new IllegalArgumentException(e.getLocalizedMessage());
+			}
+			
+			
+			return descriptor;
+	}*/
 }

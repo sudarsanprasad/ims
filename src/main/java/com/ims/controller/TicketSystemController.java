@@ -48,7 +48,7 @@ public class TicketSystemController {
 		ticketSystemService.deleteTicketSystemById(id);
 	}
 
-	@GetMapping("/loadfm")
+	@GetMapping("/loadmaskingfields")
 	public List<FieldMask> getFieldMask() {
 		return ticketSystemService.getFieldMask();
 	}
