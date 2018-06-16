@@ -8,7 +8,7 @@ import com.ims.entity.TicketStatistics;
 
 public interface TicketStatisticsRepository extends JpaRepository<TicketStatistics, Long> {
 	
-	List<TicketStatistics> findAllByFileNameOrderByJobIdDesc(String fileName);
+	List<TicketStatistics> findAllByOrderByJobIdDesc();
 	
 	List<TicketStatistics> findAllByAutomationStatusOrderByJobIdDesc(String automationStatus);
 	

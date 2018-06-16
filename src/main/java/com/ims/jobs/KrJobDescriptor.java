@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
-public class JobDescriptor {
+public class KrJobDescriptor {
 	@NotBlank
 	private String name;
 	private String group;
@@ -29,24 +29,24 @@ public class JobDescriptor {
 	@JsonProperty("triggers")
 	private List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
 
-	public JobDescriptor setName(final String name) {
+	public KrJobDescriptor setName(final String name) {
 		this.name = name;
 		return this;
 	}
 
-	public JobDescriptor setGroup(final String group) {
+	public KrJobDescriptor setGroup(final String group) {
 		this.group = group;
 		return this;
 	}
 
 	
 
-	public JobDescriptor setData(final Map<String, Object> data) {
+	public KrJobDescriptor setData(final Map<String, Object> data) {
 		this.data = data;
 		return this;
 	}
 
-	public JobDescriptor setTriggerDescriptors(final List<TriggerDescriptor> triggerDescriptors) {
+	public KrJobDescriptor setTriggerDescriptors(final List<TriggerDescriptor> triggerDescriptors) {
 		this.triggerDescriptors = triggerDescriptors;
 		return this;
 	}
@@ -73,7 +73,7 @@ public class JobDescriptor {
 	 */
 	public JobDetail buildJobDetail() {
 		JobDataMap jobDataMap = new JobDataMap(getData());
-		return newJob(ImsDataAutomationJob.class)
+		return newJob(ImsKrAutomationJob.class)
                 .withIdentity(getName(), getGroup())
                 .usingJobData(jobDataMap)
                 .build();
@@ -86,9 +86,9 @@ public class JobDescriptor {
 	 *            the JobDetail instance
 	 * @param triggersOfJob
 	 *            the Trigger(s) to associate with the Job
-	 * @return the JobDescriptor
+	 * @return the KrJobDescriptor
 	 */
-	public static JobDescriptor buildDescriptor(JobDetail jobDetail, List<? extends Trigger> triggersOfJob) {
+	public static KrJobDescriptor buildDescriptor(JobDetail jobDetail, List<? extends Trigger> triggersOfJob) {
 		// @formatter:off
 		List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
 
@@ -96,7 +96,7 @@ public class JobDescriptor {
 		    triggerDescriptors.add(TriggerDescriptor.buildDescriptor(trigger));
 		}
 		
-		return new JobDescriptor()
+		return new KrJobDescriptor()
 				.setName(jobDetail.getKey().getName())
 				.setGroup(jobDetail.getKey().getGroup())
 				.setTriggerDescriptors(triggerDescriptors);

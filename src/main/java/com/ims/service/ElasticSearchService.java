@@ -38,7 +38,9 @@ public class ElasticSearchService {
 
 	public static final String SOLUTION = "solution";
 	public static final String ASC = "affective_service_captured";
-	public ResponseDto elasticsearch(String url) {
+	public ResponseDto elasticsearch(String searchtext) {
+		String esurl = (String)env.getProperty("es.url");
+		String url = esurl+searchtext;
 		RestTemplate restTemplate = new RestTemplate();
 		JSONObject requestObject = new JSONObject();
 	    JSONObject requestObject2 = new JSONObject();

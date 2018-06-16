@@ -2,6 +2,7 @@ package com.ims.controller;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
+import org.quartz.Trigger.TriggerState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,7 +18,7 @@ import com.ims.jobs.JobDescriptor;
 import com.ims.service.ImsJobService;
 
 @RestController
-@RequestMapping("/ims/job")
+@RequestMapping("/job")
 public class ImsJobController {
 	
 	@Autowired
@@ -51,4 +52,17 @@ public class ImsJobController {
 		imsJobService.resumeJob(group, name);
 		return ResponseEntity.noContent().build();
 	}
+	
+	@PatchMapping(path = "/{customerName}/forecast/job/build")
+	public ResponseEntity<Void> triggerForecastModelScheduler(@PathVariable String customerName) {
+		imsJobService.triggerForecastModelScheduler(customerName);
+		return ResponseEntity.noContent().build();
+	}
+	
+	@PatchMapping(path = "/groups/{group}/jobs/{name}/state")
+	public TriggerState statusJob(@PathVariable String group, @PathVariable String name) {
+		return imsJobService.statusJob(group, name);
+		 
+	}
+	
 }

@@ -19,29 +19,40 @@ public class TicketSystemService {
 	
 	@Autowired
 	private FieldMaskRepository fieldMaskRepository;
+	
+	@Autowired
+	ImsJobService imsJobService;
 
 	public TicketSystem getTicketSystemById(Long id) {
 		return ticketSystemRepository.findOne(id);
 	}
+	
+	public List<TicketSystem> findAll() {
+		return ticketSystemRepository.findAll();
+	}
 
-	public void saveTicketSystem(TicketSystem ticketSystem) {
+	public TicketSystem saveTicketSystem(TicketSystem ticketSystem) {
 		List<TicketSystem> ticketSystems =  ticketSystemRepository.findByCustomer(ticketSystem.getCustomer());
 		if(CollectionUtils.isEmpty(ticketSystems)){
 			ticketSystem.setFirstTimeFlag("Y");
 		}
-		ticketSystemRepository.save(ticketSystem);
+		ticketSystem.setAutomationCronValue("0/50 * * * * ?");
+		return ticketSystemRepository.save(ticketSystem);
 	}
 
-	public void updateTicketSystem(TicketSystem ticketSystem) {
-		ticketSystemRepository.save(ticketSystem);
+	public TicketSystem updateTicketSystem(TicketSystem ticketSystem) {
+		return ticketSystemRepository.save(ticketSystem);
 	}
 
 	public void deleteTicketSystem(TicketSystem ticketSystem) {
 		ticketSystemRepository.delete(ticketSystem);
 	}
 
-	public void deleteTicketSystemById(Long id) {
+	public String deleteTicketSystemById(Long id) {
+		TicketSystem system = ticketSystemRepository.findById(id);
 		ticketSystemRepository.delete(id);
+		imsJobService.deleteJob(system.getCustomer(), system.getSystemName());
+		return "System Deleted Successfully";
 	}
 	
 	public List<FieldMask> getFieldMask() {

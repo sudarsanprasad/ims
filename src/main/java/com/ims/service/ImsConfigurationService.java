@@ -3,6 +3,7 @@ package com.ims.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ims.constant.JobType;
 import com.ims.entity.ImsConfiguration;
 import com.ims.repository.ImsConfigurationRepository;
 
@@ -17,55 +18,32 @@ public class ImsConfigurationService {
 	@Autowired
 	ImsConfigurationRepository imsConfigurationRepository;
 	
+	@Autowired
+	ImsJobService imsJobService;
 	
-	
-	public String turnOnApiAutomation() {
-		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("apischedulerflag");
-		configuration.setValue("Y");
-		imsConfigurationRepository.save(configuration);
-		return "API Automation Turned On";
-	}
-	
-	public String turnOffApiAutomation() {
-		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("apischedulerflag");
-		configuration.setValue("N");
-		imsConfigurationRepository.save(configuration);
-		return "API Automation Turned Off";
-	}
-	
-	public String turnOnFtpAutomation() {
-		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("ftpschedulerflag");
-		configuration.setValue("Y");
-		imsConfigurationRepository.save(configuration);
-		return "FTP Automation Turned On";
-	}
-	
-	public String turnOffFtpAutomation() {
-		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("ftpschedulerflag");
-		configuration.setValue("N");
-		imsConfigurationRepository.save(configuration);
-		return "FTP Automation Turned Off";
+	public String updateCronValue(String type, String cronValue){
+		if(JobType.FORECAST.getDescription().equalsIgnoreCase(type)){
+			ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("forecast.cronvalue");
+			imsConfiguration.setValue(cronValue);
+			imsConfigurationRepository.save(imsConfiguration);
+			imsJobService.deleteJob(JobType.FORECAST.getDescription(), JobType.FORECAST.getDescription());
+		}else if(JobType.KR.getDescription().equalsIgnoreCase(type)){
+			ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("kr.cronvalue");
+			imsConfiguration.setValue(cronValue);
+			imsConfigurationRepository.save(imsConfiguration);
+			imsJobService.deleteJob(JobType.KR.getDescription(), JobType.KR.getDescription());
+		}
+		return "Successfully updated";
 	}
 
-	public boolean isFtpAutomationOn() {
-		if("Y".equalsIgnoreCase(imsConfigurationRepository.findByProperty("ftpschedulerflag").getValue())){
-			return true;
-		}
-		return false;
+	public String getForecastModelStatus() {
+		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("forecast.model.status");
+		return imsConfiguration.getValue();
 	}
-	
-	public boolean getApiAutomationStatus(){
-		if("Y".equalsIgnoreCase(imsConfigurationRepository.findByProperty("apischedulerflag").getValue())){
-			return true;
-		}
-		return false;
-	}
-	
-	public boolean getFtpAutomationStatus(){
-		if("Y".equalsIgnoreCase(imsConfigurationRepository.findByProperty("ftpschedulerflag").getValue())){
-			return true;
-		}
-		return false;
+
+	public String getKrStatus() {
+		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("kr.build.status");
+		return imsConfiguration.getValue();
 	}
 	
 }

@@ -14,7 +14,7 @@ public interface TicketSystemRepository extends JpaRepository<TicketSystem, Long
 	TicketSystem findBySystemNameAndCustomerAndEnableFlag(String systemName, String customer,String enableFlag);
 	List<TicketSystem> findByCustomerAndEnableFlagAndType(String customer,String enableFlag, String type);
 	List<TicketSystem> findByCustomer(String customer);
-	
+	TicketSystem findById(Long id);
 	@Modifying(clearAutomatically = true)
 	@Query("update TicketSystem ts set ts.firstTimeFlag ='N'  where ts.customer = :customer")
 	void updateFirstTimeFlagAsN(@Param("customer") String customer);

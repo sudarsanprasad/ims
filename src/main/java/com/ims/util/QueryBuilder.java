@@ -19,7 +19,7 @@ public class QueryBuilder {
 	public StringBuilder buildHiveQuery(TicketMetadataRepository ticketMetadataRepository, String systemName, String customer, String source){
 		StringBuilder queryBuilder;
 		if("FTP".equalsIgnoreCase(source)){
-			queryBuilder = new StringBuilder("insert into ticket_ftp_temp_data (");
+			queryBuilder = new StringBuilder("insert into TICKET_DATA (");
 		}else{
 			queryBuilder = new StringBuilder("insert into ticket_api_temp_data (");
 		}
@@ -30,7 +30,7 @@ public class QueryBuilder {
 	
 	
 	private void buildInsertQueryWithMetadata(StringBuilder queryBuilder, TicketMetadataRepository ticketMetadataRepository, String systemName, String customer) {
-		List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomer(systemName, customer);
+		List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomerOrderById(systemName, customer);
 		if(!CollectionUtils.isEmpty(metadata)){
 			for(TicketMetadata data : metadata){
 				queryBuilder.append(data.getMappingColumn()).append(",");
@@ -44,6 +44,18 @@ public class QueryBuilder {
 		StringBuilder query = new StringBuilder(tempQueryBuilder);
 		query.append(") values (");
 		return query;
+	}
+	
+	public StringBuilder getSelectValue(StringBuilder queryBuilder) {
+		String tempQueryBuilder = queryBuilder.toString().substring(0, queryBuilder.lastIndexOf(","));
+		StringBuilder query = new StringBuilder(tempQueryBuilder);
+		query.append(") select ");
+		return query;
+	}
+	
+	public StringBuilder getFromValue(StringBuilder queryBuilder, String tableName) {
+		queryBuilder.append(" from ").append(tableName);
+		return queryBuilder;
 	}
 
 }

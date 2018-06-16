@@ -40,13 +40,13 @@ public class TicketStatisticsService {
 		return ticketStatisticsRepository.findAll(sort);
 	}
 	
-	public List<TicketStatistics> findAllByFileNameOrderByJobId(String fileName){
-		return ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(fileName);
+	public List<TicketStatistics> findAllByFileNameOrderByJobId(){
+		return ticketStatisticsRepository.findAllByOrderByJobIdDesc();
 	}
 	
-	public TicketStatistics findMostRecentRecord(String fileName){
+	public TicketStatistics findMostRecentRecord(){
 		TicketStatistics ticketStatistics = null;
-		List<TicketStatistics> ticketStatisticsList = ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(fileName);
+		List<TicketStatistics> ticketStatisticsList = ticketStatisticsRepository.findAllByOrderByJobIdDesc();
 		if(!CollectionUtils.isEmpty(ticketStatisticsList)){
 			ticketStatistics = ticketStatisticsList.get(0);
 		}

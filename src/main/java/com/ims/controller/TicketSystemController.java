@@ -27,15 +27,20 @@ public class TicketSystemController {
 	public TicketSystem getTicketSystemById(@PathVariable("id") Long id) {
 		return ticketSystemService.getTicketSystemById(id);
 	}
+	
+	@GetMapping
+	public List<TicketSystem> findAll() {
+		return ticketSystemService.findAll();
+	}
 
 	@PostMapping
-	public void saveTicketSystem(@RequestBody TicketSystem ticketSystem) {
-		ticketSystemService.saveTicketSystem(ticketSystem);
+	public TicketSystem saveTicketSystem(@RequestBody TicketSystem ticketSystem) {
+		return ticketSystemService.saveTicketSystem(ticketSystem);
 	}
 
 	@PutMapping
-	public void updateTicketSystem(@RequestBody TicketSystem ticketSystem) {
-		ticketSystemService.updateTicketSystem(ticketSystem);
+	public TicketSystem updateTicketSystem(@RequestBody TicketSystem ticketSystem) {
+		return ticketSystemService.updateTicketSystem(ticketSystem);
 	}
 
 	@DeleteMapping
@@ -44,8 +49,8 @@ public class TicketSystemController {
 	}
 
 	@DeleteMapping("/{id}")
-	public void deleteTicketSystemById(@PathVariable("id") Long id) {
-		ticketSystemService.deleteTicketSystemById(id);
+	public String deleteTicketSystemById(@PathVariable("id") Long id) {
+		return ticketSystemService.deleteTicketSystemById(id);
 	}
 
 	@GetMapping("/loadmaskingfields")

@@ -36,7 +36,7 @@ public class TicketMetadataService {
 	}
 	
 	public List<TicketMetadata> findBySystemNameAndCustomer(String systemName, String customer){
-		return ticketMetadataRepository.findBySystemNameAndCustomer(systemName, customer);
+		return ticketMetadataRepository.findBySystemNameAndCustomerOrderById(systemName, customer);
 	}
 	
 	public List<TicketMetadata> findBySystemName(String systemName){

@@ -17,14 +17,21 @@ import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.quartz.Trigger.TriggerState;
+import org.quartz.TriggerKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import com.ims.constant.JobType;
+import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketSystem;
+import com.ims.jobs.ForecastJobDescriptor;
 import com.ims.jobs.JobDescriptor;
+import com.ims.jobs.KrJobDescriptor;
 import com.ims.jobs.TriggerDescriptor;
+import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
 
 @Slf4j
@@ -36,6 +43,9 @@ public class ImsJobService {
 	
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
+	
+	@Autowired
+	ImsConfigurationRepository imsConfigurationRepository;
 	
 	public JobDescriptor createJobs(List<TicketSystem> ticketSystems) {
 		
@@ -55,13 +65,13 @@ public class ImsJobService {
 					descriptor.setName(system.getSystemName());
 					JobDetail jobDetail = descriptor.buildJobDetail();
 					Set<Trigger> triggersForJob = descriptor.buildTriggers();
-					log.info("About to save job with key - {}", jobDetail.getKey());
+					log.info("About to save job with key - { }", jobDetail.getKey());
 					try {
 						scheduler.scheduleJob(jobDetail, triggersForJob, false);
-						log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
+						log.info("Job with key - { } saved sucessfully", jobDetail.getKey());
 					} catch (SchedulerException e) {
-						log.info("Exception "+e);
-						log.error("Could not save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
+						log.info("S Exception "+e);
+						log.error("Couldn't save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
 						throw new IllegalArgumentException(e.getLocalizedMessage());
 					}
 				}
@@ -78,13 +88,13 @@ public class ImsJobService {
 		descriptor.setGroup(group);
 		JobDetail jobDetail = descriptor.buildJobDetail();
 		Set<Trigger> triggersForJob = descriptor.buildTriggers();
-		log.info("About to save job with key - {}", jobDetail.getKey());
+		log.info("About to save job with key - { }", jobDetail.getKey());
 		try {
 			scheduler.scheduleJob(jobDetail, triggersForJob, false);
-			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
+			log.info("Job with key - {} saved sucesfully", jobDetail.getKey());
 		} catch (SchedulerException e) {
 			log.info("Exception details"+e);
-			log.error("Could not save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
+			log.error("Couldnot save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
 			throw new IllegalArgumentException(e.getLocalizedMessage());
 		}
 		return descriptor;
@@ -138,6 +148,9 @@ public class ImsJobService {
 	
 	public void pauseJob(String group, String name) {
 		try {
+			TicketSystem system = ticketSystemRepository.findBySystemNameAndCustomer(name, group);
+			system.setEnableFlag("N");
+			ticketSystemRepository.save(system);
 			scheduler.pauseJob(jobKey(name, group));
 			log.info("Paused job with key - {}.{}", group, name);
 		} catch (SchedulerException e) {
@@ -148,6 +161,9 @@ public class ImsJobService {
 	
 	public void resumeJob(String group, String name) {
 		try {
+			TicketSystem system = ticketSystemRepository.findBySystemNameAndCustomer(name, group);
+			system.setEnableFlag("Y");
+			ticketSystemRepository.save(system);
 			scheduler.resumeJob(jobKey(name, group));
 			log.info("Resumed job with key - {}.{}", group, name);
 		} catch (SchedulerException e) {
@@ -156,34 +172,83 @@ public class ImsJobService {
 		}
 	}
 	
-	/*public JobDescriptor createForecastJobs(String customerName) {
+	public void triggerForecastModelScheduler(String customerName){
+		/*String url = "http://192.168.204.13:3004/model_building/"+customerName;
+		RestTemplate restTemplate = new RestTemplate();
+		String result = restTemplate.getForObject(url, String.class);
+		if("Success".equalsIgnoreCase(result)){
+			ticketSystemRepository.updateFirstTimeFlagAsN(customerName);
+		}*/
+		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("forecast.model.status");
+		imsConfiguration.setValue("COMPLETED");
+		imsConfigurationRepository.save(imsConfiguration);
+	}
+	
+	public TriggerState statusJob(String group, String name) {
+		TriggerState state = null;
+		try {
+			TriggerKey triggerKey = new TriggerKey(group, name);
+			state = scheduler.getTriggerState(triggerKey);
+			log.info("Resumed job with key - {}.{}", group, name);
+		} catch (SchedulerException e) {
+			log.info("SchedulerException "+e);
+			log.error("Could not resume job with key - {}.{} due to error - {}", group, name, e.getLocalizedMessage());
+		}
+		return state;
+	}
+	
+	public ForecastJobDescriptor createForecastJob() {
+		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("forecast.cronvalue");
+		ForecastJobDescriptor descriptor = new ForecastJobDescriptor();
+		List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
+		TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
+		triggerDescriptor.setCron(configuration.getValue());
+		triggerDescriptor.setGroup(JobType.FORECAST.getDescription());
+		triggerDescriptor.setName(JobType.FORECAST.getDescription());
 		
-			List<TicketSystem> ticketSystems =  ticketSystemRepository.findAll();
+		triggerDescriptors.add(triggerDescriptor);
+		descriptor.setTriggerDescriptors(triggerDescriptors);
+		descriptor.setGroup(JobType.FORECAST.getDescription());
+		descriptor.setName(JobType.FORECAST.getDescription());
+		JobDetail jobDetail = descriptor.buildJobDetail();
+		Set<Trigger> triggersForJob = descriptor.buildTriggers();
+		log.info("Forecast About to save job with key - {}", jobDetail.getKey());
+		try {
+			scheduler.scheduleJob(jobDetail, triggersForJob, false);
+			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
+		} catch (SchedulerException e) {
+			//log.info("Exception "+e);
+			//log.error("Could not save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
+			throw new IllegalArgumentException(e.getLocalizedMessage());
+		}
+		return descriptor;
+	}
+	
+	public KrJobDescriptor createKrJob() {
+		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("forecast.cronvalue");
+		KrJobDescriptor descriptor = new KrJobDescriptor();
+		List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
+		TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
+		triggerDescriptor.setCron(configuration.getValue());
+		triggerDescriptor.setGroup(JobType.KR.getDescription());
+		triggerDescriptor.setName(JobType.KR.getDescription());
 		
-			JobDescriptor descriptor = new JobDescriptor();
-			List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
-			TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
-			triggerDescriptor.setCron(system.getAutomationCronValue());
-			triggerDescriptor.setGroup(system.getCustomer());
-			triggerDescriptor.setName(system.getSystemName());
-			
-			triggerDescriptors.add(triggerDescriptor);
-			descriptor.setTriggerDescriptors(triggerDescriptors);
-			descriptor.setGroup("Forecast");
-			descriptor.setName(customerName);
-			JobDetail jobDetail = descriptor.buildJobDetail();
-			Set<Trigger> triggersForJob = descriptor.buildTriggers();
-			log.info("About to save job with key - {}", jobDetail.getKey());
-			try {
-				scheduler.scheduleJob(jobDetail, triggersForJob, false);
-				log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
-			} catch (SchedulerException e) {
-				log.info("Exception "+e);
-				log.error("Could not save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
-				throw new IllegalArgumentException(e.getLocalizedMessage());
-			}
-			
-			
-			return descriptor;
-	}*/
+		triggerDescriptors.add(triggerDescriptor);
+		descriptor.setTriggerDescriptors(triggerDescriptors);
+		descriptor.setGroup(JobType.KR.getDescription());
+		descriptor.setName(JobType.KR.getDescription());
+		JobDetail jobDetail = descriptor.buildJobDetail();
+		Set<Trigger> triggersForJob = descriptor.buildTriggers();
+		log.info("KR About to save job with key - {}", jobDetail.getKey());
+		try {
+			scheduler.scheduleJob(jobDetail, triggersForJob, false);
+			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
+		} catch (SchedulerException e) {
+			log.info("Exception "+e);
+			log.error("Could not save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
+			throw new IllegalArgumentException(e.getLocalizedMessage());
+		}
+		return descriptor;
+	}
+	
 }

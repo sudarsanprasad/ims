@@ -72,7 +72,7 @@ public class TicketService {
 		TicketSystem ticketSystem = ticketSystemRepository.findBySystemNameAndCustomer(ticketStatistics.getSystemName(), ticketStatistics.getCustomer());
 		Connection con = null;
 		Statement stmt = null;
-		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByFileNameOrderByJobIdDesc(null);
+		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByOrderByJobIdDesc();
 		if(!CollectionUtils.isEmpty(list)){
 			ticketStatistics.setVersionNumber(list.size());
 		}else{
@@ -135,7 +135,7 @@ public class TicketService {
 		for (int i = 0; i < records.length(); i++) {
 			JSONObject record = records.getJSONObject(i);
 			StringBuilder query = queryBuilder.getInsertQueryWithValue(qBuilder);
-			prepareQuery(record, query, ticketStatistics, fields);
+			prepareQuery(record, query, ticketStatistics, fields, ticketSystem);
 				if("Service Now".equalsIgnoreCase(ticketSystem.getSystemName())){
 					String comments = getUrl(restTemplate, (String) record.get((String)env.getProperty("ticketid").trim()));
 					String maskedData = DataMaskUtil.maskData(comments);
@@ -143,9 +143,7 @@ public class TicketService {
 				}
 			
 				try{
-					String tempQueryBuilder = query.toString().substring(0, query.lastIndexOf(","));
-					StringBuilder finalQuery = new StringBuilder(tempQueryBuilder).append(")");
-					stmt.execute(finalQuery.toString());
+					stmt.execute(query.toString());
 					successCount++;
 					ticketStatistics.setRecordsInserted(successCount);
 				}catch (SQLException e) {
@@ -166,7 +164,7 @@ public class TicketService {
 		
 		if(failureCount > 0){
 			try{
-				stmt.execute("truncate table ticket_ftp_temp_data");
+				stmt.execute("truncate table ticket_api_temp_data");
 			}catch (SQLException e) {
 				LOG.error(e);
 				isFailed = true;
@@ -175,7 +173,7 @@ public class TicketService {
 		
 		if(!isFailed){
 			try{
-				String mainQuery = "insert into TICKET_DATA2 (col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50) select col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50 from ticket_api_temp_data";
+				String mainQuery = "insert into TICKET_DATA (col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50) select col1,col2,col3,col4,col5,col6,col7,col8,col9,col10,col11,col12,col13,col14,col15,col16,col17,col18,col19,col20,col21,col22,col23,col24,col25,col26,col27,col28,col29,col30,col31,col32,col33,col34,col35,col36,col37,col38,col39,col40,col41,col42,col43,col44,col45,col46,col47,col48,col49,col50 from ticket_api_temp_data";
 				LOG.info(mainQuery);
 				stmt.execute(mainQuery);
 				stmt.execute("truncate table ticket_api_temp_data");
@@ -195,7 +193,7 @@ public class TicketService {
 		}
 	}
 
-	private boolean prepareQuery(JSONObject record, StringBuilder query, TicketStatistics ticketStatistics, List<FieldConfiguration> fields) throws ImsException {
+	private boolean prepareQuery(JSONObject record, StringBuilder query, TicketStatistics ticketStatistics, List<FieldConfiguration> fields, TicketSystem ticketSystem) throws ImsException {
 		boolean isRecordExists = false;
 		try{
 			 
@@ -212,9 +210,10 @@ public class TicketService {
 		 		 }else{
 		 			 tempField = ((String) record.get(field.getProperty())).replace("\"", "\\\"");
 		 		 }
-		 		query.append("\"");
-		 		query.append(tempField).append("\"").append(",");
+		 		query.append("\"").append(tempField).append("\"").append(",");
 		 	 }
+		 	query.append("\"").append(ticketSystem.getCustomer()).append("\"").append(",");
+	 		query.append("\"").append(ticketSystem.getSystemName()).append("\"").append(")");
 			LOG.info(" \n \n "+query.toString());
 		 }catch (Exception e) {
 				LOG.error(e);

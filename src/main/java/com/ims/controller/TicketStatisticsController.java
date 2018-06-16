@@ -43,12 +43,12 @@ public class TicketStatisticsController {
 	
 	@GetMapping(value = "/log/{fileName}")
 	public List<TicketStatistics> findAllByFileNameOrderByJobId(@PathVariable String fileName) {
-		return ticketStatisticsService.findAllByFileNameOrderByJobId(fileName);
+		return ticketStatisticsService.findAllByFileNameOrderByJobId();
 	}
 	
 	@GetMapping(value = "/record/{fileName}")
 	public TicketStatistics findMostRecentRecord(@PathVariable String fileName) {
-		return ticketStatisticsService.findMostRecentRecord(fileName);
+		return ticketStatisticsService.findMostRecentRecord();
 	}
 	
 	@GetMapping(value = "/getCurrentRecords")

@@ -18,10 +18,11 @@ import com.ims.exception.ImsException;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
 import com.ims.service.FTPService;
+import com.ims.service.ImsJobService;
 import com.ims.service.TicketService;
 
 @Slf4j
-public class ImsSystemJob implements Job {
+public class ImsDataAutomationJob implements Job {
 	
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
@@ -34,14 +35,18 @@ public class ImsSystemJob implements Job {
 	
 	@Autowired
 	private FTPService ftpService;
+	
+	@Autowired
+	ImsJobService imsJobService;
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
-		log.info("Job triggered to send emails");
+		log.info("Job triggered to get data");
 		String customer = context.getTrigger().getKey().getGroup();
 		String system = context.getTrigger().getKey().getName();
 		TicketSystem ticketSystem = ticketSystemRepository.findBySystemNameAndCustomer(system, customer);
 		TicketStatistics ticketStatistics = ticketService.updateTicketStatistics(getTicketStatistics(ticketSystem));
+		boolean isFailed = false;
 		try {
 			if("API".equalsIgnoreCase(ticketSystem.getType())){
 				ticketService.updateTicketData(getRecords(ticketSystem), ticketStatistics);
@@ -50,8 +55,12 @@ public class ImsSystemJob implements Job {
 			}
 		} catch (ImsException e) {
 			log.error("Exception == "+e);
+			isFailed =true;
 		}
 		log.info("Job completed");
+		if(!isFailed){
+			imsJobService.triggerForecastModelScheduler(customer);
+		}
 	}
 	
 	private String getRecords(TicketSystem ticketSystem) {
