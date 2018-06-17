@@ -1,7 +1,5 @@
 package com.ims.jobs;
 
-import java.util.Date;
-
 import lombok.extern.slf4j.Slf4j;
 
 import org.quartz.Job;
@@ -11,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.web.client.RestTemplate;
 
-import com.ims.constant.StatusType;
-import com.ims.entity.TicketStatistics;
 import com.ims.entity.TicketSystem;
 import com.ims.exception.ImsException;
 import com.ims.repository.ImsConfigurationRepository;
@@ -45,11 +41,11 @@ public class ImsDataAutomationJob implements Job {
 		String customer = context.getTrigger().getKey().getGroup();
 		String system = context.getTrigger().getKey().getName();
 		TicketSystem ticketSystem = ticketSystemRepository.findBySystemNameAndCustomer(system, customer);
-		TicketStatistics ticketStatistics = ticketService.updateTicketStatistics(getTicketStatistics(ticketSystem));
+		
 		boolean isFailed = false;
 		try {
 			if("API".equalsIgnoreCase(ticketSystem.getType())){
-				ticketService.updateTicketData(getRecords(ticketSystem), ticketStatistics);
+				ticketService.updateTicketData(getRecords(ticketSystem), ticketSystem);
 			}else{
 				ftpService.downloadExcel();
 			}
@@ -73,13 +69,4 @@ public class ImsDataAutomationJob implements Job {
 		 return ticketSystem.getUrl();
 	}
 	
-	private TicketStatistics getTicketStatistics(TicketSystem ticketSystem) {
-		TicketStatistics ticketStatistics = new TicketStatistics();
-		ticketStatistics.setSystemName(ticketSystem.getSystemName());
-		ticketStatistics.setCustomer(ticketSystem.getCustomer());
-		ticketStatistics.setAutomationStatus(StatusType.OPEN.getDescription());
-		ticketStatistics.setAutomationStartDate(new Date());
-		ticketStatistics.setComments("Scheduler started successfully");
-		return ticketStatistics;
-	}
 }

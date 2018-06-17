@@ -109,7 +109,7 @@ public class ExcelToCsvUtil {
                 Logger.getLogger(ExcelToCsvUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        return recordsCount-1;
+        return recordsCount;
     }
     
 }

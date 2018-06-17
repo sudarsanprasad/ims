@@ -2,6 +2,7 @@ package com.ims.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,5 +31,15 @@ public class ImsConfigurationController {
 	@GetMapping(value = "/getKrStatus")
 	public String getKrStatus() {
 		return imsConfigurationService.getKrStatus();
+	}
+	
+	@GetMapping(value = "/updateForecastStatus/{status}")
+	public String updateForecastStatus(@PathVariable String status) {
+		return imsConfigurationService.updateForecastStatus(status);
+	}
+	
+	@GetMapping(value = "/updateKrStatus/{status}")
+	public String updateKrStatus(@PathVariable String status) {
+		return imsConfigurationService.updateKrStatus(status);
 	}
 }

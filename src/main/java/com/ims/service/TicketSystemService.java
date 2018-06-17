@@ -36,7 +36,7 @@ public class TicketSystemService {
 		if(CollectionUtils.isEmpty(ticketSystems)){
 			ticketSystem.setFirstTimeFlag("Y");
 		}
-		ticketSystem.setAutomationCronValue("0/50 * * * * ?");
+		ticketSystem.setAutomationCronValue("0 0/2 * * * ?");
 		return ticketSystemRepository.save(ticketSystem);
 	}
 

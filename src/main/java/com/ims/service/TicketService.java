@@ -68,8 +68,8 @@ public class TicketService {
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
 	
-	public void updateTicketData(String result, TicketStatistics ticketStatistics) throws ImsException {
-		TicketSystem ticketSystem = ticketSystemRepository.findBySystemNameAndCustomer(ticketStatistics.getSystemName(), ticketStatistics.getCustomer());
+	public void updateTicketData(String result, TicketSystem ticketSystem) throws ImsException {
+		TicketStatistics ticketStatistics = updateTicketStatistics(getTicketStatistics(ticketSystem));
 		Connection con = null;
 		Statement stmt = null;
 		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByOrderByJobIdDesc();
@@ -98,7 +98,7 @@ public class TicketService {
 				stmt = con.createStatement();
 				updateDataToHDFS(queryBuilder, qBuilder, records, stmt, ticketStatistics, fields, ticketSystem);
 				ticketStatistics.setAutomationEndDate(new Date());
-				ticketStatistics.setComments("Data inserted into HDFS");
+				ticketStatistics.setComments("Data Inserted successfully");
 				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
 				updateTicketStatistics(ticketStatistics);
 				closeConnection(con, stmt);
@@ -262,6 +262,17 @@ public class TicketService {
 		 StringBuilder ticketURL = new StringBuilder(env.getProperty("comments.url"));
 		 ticketURL.append(ticketId);
 		 return restTemplate.getForObject(ticketURL.toString(), String.class);
+	}
+	
+	private TicketStatistics getTicketStatistics(TicketSystem ticketSystem) {
+		TicketStatistics ticketStatistics = new TicketStatistics();
+		ticketStatistics.setSystemName(ticketSystem.getSystemName());
+		ticketStatistics.setCustomer(ticketSystem.getCustomer());
+		ticketStatistics.setAutomationStatus(StatusType.OPEN.getDescription());
+		ticketStatistics.setAutomationStartDate(new Date());
+		ticketStatistics.setComments("Scheduler started successfully");
+		ticketStatistics.setFileName("NA");
+		return ticketStatistics;
 	}
 	
 }

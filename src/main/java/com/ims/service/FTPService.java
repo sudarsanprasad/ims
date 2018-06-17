@@ -108,7 +108,7 @@ public class FTPService {
 	private void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
 				
 			try {
-				
+				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName()));
 				LOG.info("location ==>> "+location);
 				LOG.info("systemName ==>> "+systemName);
 				LOG.info("file ==>> "+file);
@@ -140,7 +140,7 @@ public class FTPService {
 				StringBuilder qBuilder = prepareQuery.buildHiveQuery(ticketMetadataRepository, systemName, customer,"FTP");
 				StringBuilder query = prepareQuery.getSelectValue(qBuilder);
 				
-				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName()));
+				
 				
 				List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomerOrderById(systemName, customer);
 				if(!CollectionUtils.isEmpty(metadata)){
@@ -172,6 +172,9 @@ public class FTPService {
 				}
 				ticketStatistics.setRecordsInserted(Long.valueOf(recordsCount));
 				ticketStatistics.setRecordsFailed(0l);
+				ticketStatistics.setAutomationEndDate(new Date());
+				ticketStatistics.setComments("Data Inserted successfully");
+				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
 				ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
 				ticketStatisticsRepository.save(ticketStatistics);
 			} catch (Exception ex) {
@@ -197,6 +200,7 @@ public class FTPService {
 		ticketStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
 		ticketStatistics.setAutomationStartDate(new Date());
 		ticketStatistics.setFileName(fileName);
+		ticketStatistics.setSource("FTP");
 		ticketStatistics.setComments("Excel downloaded successfully");
 		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByOrderByJobIdDesc();
 		if(!CollectionUtils.isEmpty(list)){

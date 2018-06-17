@@ -173,14 +173,18 @@ public class ImsJobService {
 	}
 	
 	public void triggerForecastModelScheduler(String customerName){
+		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("forecast.model.status");
+		imsConfiguration.setValue("INPROGRESS");
+		imsConfigurationRepository.save(imsConfiguration);
 		/*String url = "http://192.168.204.13:3004/model_building/"+customerName;
 		RestTemplate restTemplate = new RestTemplate();
 		String result = restTemplate.getForObject(url, String.class);
 		if("Success".equalsIgnoreCase(result)){
 			ticketSystemRepository.updateFirstTimeFlagAsN(customerName);
+			imsConfiguration.setValue("COMPLETED");
+		}else{
+		imsConfiguration.setValue("FAILED");
 		}*/
-		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("forecast.model.status");
-		imsConfiguration.setValue("COMPLETED");
 		imsConfigurationRepository.save(imsConfiguration);
 	}
 	

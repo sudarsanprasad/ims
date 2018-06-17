@@ -46,4 +46,18 @@ public class ImsConfigurationService {
 		return imsConfiguration.getValue();
 	}
 	
+	public String updateKrStatus(String status) {
+		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("kr.build.status");
+		imsConfiguration.setValue(status);
+		imsConfigurationRepository.save(imsConfiguration);
+		return "Status Updated Successfully";
+	}
+	
+	public String updateForecastStatus(String status) {
+		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("forecast.model.status");
+		imsConfiguration.setValue(status);
+		imsConfigurationRepository.save(imsConfiguration);
+		return "Status Updated Successfully";
+	}
+	
 }
