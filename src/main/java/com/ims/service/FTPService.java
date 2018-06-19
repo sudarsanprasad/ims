@@ -59,12 +59,15 @@ public class FTPService {
 		
 		
 		String location = (String)env.getProperty("file.location");
-		LOG.info("Location === >>"+location);
+		LOG.info("Configured Location === >>"+location);
 		boolean isFileSavedToLocalFlag = false;
 		String fileName;
 		try{
 		for(TicketSystem ticketSystem:list){
 			DefaultFtpSessionFactory factory = new DefaultFtpSessionFactory();
+			LOG.info("URL === >>"+ticketSystem.getUrl());
+			LOG.info("User Name === >>"+ticketSystem.getUserName());
+			LOG.info("Password === >>"+ticketSystem.getPassword());
 			factory.setHost(ticketSystem.getUrl());
 			factory.setUsername(ticketSystem.getUserName());
 			factory.setPassword(ticketSystem.getPassword());
@@ -95,6 +98,7 @@ public class FTPService {
 		    	LOG.info("Reading location == >> "+pathName);
 				String fileType = Files.getFileExtension(pathName);
 				if(FileType.XLS.getDescription().equalsIgnoreCase(fileType) || FileType.XLSX.getDescription().equalsIgnoreCase(fileType)|| FileType.CSV.getDescription().equalsIgnoreCase(fileType)){
+					LOG.info("XL location ==>> "+pathName);
 					processFile(location, FileNameUtil.getSystemName(file.getName()), FileNameUtil.getCustomerName(file.getName()), file, pathName, fileType, file.getName());
 				}
 		    }
@@ -106,9 +110,8 @@ public class FTPService {
 	}
 
 	private void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
-				
+		TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName(), systemName, customer));
 			try {
-				TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName()));
 				LOG.info("location ==>> "+location);
 				LOG.info("systemName ==>> "+systemName);
 				LOG.info("file ==>> "+file);
@@ -158,18 +161,18 @@ public class FTPService {
 						}
 					}
 				}
-				LOG.info(query.toString());
 				StringBuilder finalQuery = prepareQuery.getFromValue(query, "temp_ims_ampm");
 				LOG.info(finalQuery.toString());
-				stmt.execute(finalQuery.toString());
-				closeConnection(con, stmt);
-				if(file.delete()) {
-					LOG.info(file.getName() +" delete successfully");
+				try{
+					stmt.execute(finalQuery.toString());
+				}catch(Exception ex){
+					ex.printStackTrace();
 				}
+				LOG.info("Deleting file ====>> "+file);
+				file.delete();
 				File csvFile = new File(csvFileName);
-				if(csvFile.delete()) {
-					LOG.info(csvFile.getName() +" delete successfully");
-				}
+				LOG.info("Deleting csv file ====>> "+csvFile);
+				csvFile.delete();
 				ticketStatistics.setRecordsInserted(Long.valueOf(recordsCount));
 				ticketStatistics.setRecordsFailed(0l);
 				ticketStatistics.setAutomationEndDate(new Date());
@@ -177,7 +180,15 @@ public class FTPService {
 				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
 				ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
 				ticketStatisticsRepository.save(ticketStatistics);
+				closeConnection(con, stmt);
 			} catch (Exception ex) {
+				ticketStatistics.setRecordsInserted(Long.valueOf(0));
+				ticketStatistics.setRecordsFailed(0l);
+				ticketStatistics.setAutomationEndDate(new Date());
+				ticketStatistics.setComments("Data Inserted successfully");
+				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
+				ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
+				ticketStatisticsRepository.save(ticketStatistics);
 				ex.printStackTrace();
 				throw new ImsException("Exception occured while processing excel data", ex);
 			}
@@ -193,10 +204,10 @@ public class FTPService {
 		
 	}
 	
-	private TicketStatistics getTicketStatistics(String fileName) {
+	private TicketStatistics getTicketStatistics(String fileName, String systemName, String customer) {
 		TicketStatistics ticketStatistics = new TicketStatistics();
-		ticketStatistics.setSystemName((String) env.getProperty("ticketsystem"));
-		ticketStatistics.setCustomer((String) env.getProperty("customer"));
+		ticketStatistics.setSystemName(systemName);
+		ticketStatistics.setCustomer(customer);
 		ticketStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
 		ticketStatistics.setAutomationStartDate(new Date());
 		ticketStatistics.setFileName(fileName);
