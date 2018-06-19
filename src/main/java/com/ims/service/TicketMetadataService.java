@@ -51,8 +51,8 @@ public class TicketMetadataService {
 		return ticketMetadataRepository.findMappingColumnByIsForecast(systemName);
 	}
 	
-	public List<String> findByIsProactive(String systemName){
-		return ticketMetadataRepository.findMappingColumnByIsProactive(systemName);
+	public List<String> findMappingColumnByIsKnowledgement(String systemName){
+		return ticketMetadataRepository.findMappingColumnByIsKnowledgement(systemName);
 	}
 
 }

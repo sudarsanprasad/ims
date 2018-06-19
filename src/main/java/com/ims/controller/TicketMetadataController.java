@@ -71,9 +71,9 @@ public class TicketMetadataController {
         return ticketMetadataService.findByIsForecast(systemName);
     }
     
-    @GetMapping(value = "/findByIsProactive/{systemName}")
-    public List<String> findByIsProactive(@PathVariable String systemName) {
-        return ticketMetadataService.findByIsProactive(systemName);
+    @GetMapping(value = "/findByIsKnowledgement/{systemName}")
+    public List<String> findByIsKnowledgement(@PathVariable String systemName) {
+        return ticketMetadataService.findMappingColumnByIsKnowledgement(systemName);
     }
 	
 }
