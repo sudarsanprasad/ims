@@ -99,6 +99,8 @@ public class TicketService {
 				updateDataToHDFS(queryBuilder, qBuilder, records, stmt, ticketStatistics, fields, ticketSystem);
 				ticketStatistics.setAutomationEndDate(new Date());
 				ticketStatistics.setComments("Data Inserted successfully");
+				ticketStatistics.setForecastStatus(StatusType.OPEN.getDescription());
+				ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
 				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
 				updateTicketStatistics(ticketStatistics);
 				closeConnection(con, stmt);

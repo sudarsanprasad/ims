@@ -178,6 +178,8 @@ public class FTPService {
 				ticketStatistics.setAutomationEndDate(new Date());
 				ticketStatistics.setComments("Data Inserted successfully");
 				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
+				ticketStatistics.setForecastStatus(StatusType.OPEN.getDescription());
+				ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
 				ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
 				ticketStatisticsRepository.save(ticketStatistics);
 				closeConnection(con, stmt);
@@ -186,7 +188,7 @@ public class FTPService {
 				ticketStatistics.setRecordsFailed(0l);
 				ticketStatistics.setAutomationEndDate(new Date());
 				ticketStatistics.setComments("Data Inserted successfully");
-				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
+				ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
 				ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
 				ticketStatisticsRepository.save(ticketStatistics);
 				ex.printStackTrace();
