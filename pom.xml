@@ -21,6 +21,11 @@
 		<java.version>1.8</java.version>
 		<sonar.language>java</sonar.language>
 		<sonar.java.source>8</sonar.java.source>
+		<sonar.exclusions>
+			**com/ims/dto/*.java,
+			**com/ims/entity/*.java,
+			**com/ims/util/ExcelToCsvUtil.java
+		</sonar.exclusions>
 	</properties>
 
 	<dependencies>

@@ -7,6 +7,7 @@ package com.ims.util;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,23 +24,23 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 public class ExcelToCsvUtil {
 
     public void echoAsCSV(Sheet sheet, String file) {
-        Row row;
-        StringBuilder fileContent = new StringBuilder();
+        Row row = null;
+        String fileContent = "";
         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
             row = sheet.getRow(i);
             String line = "";
             for (int j = 0; j < row.getLastCellNum(); j++) {
                 line +="\"" + row.getCell(j).toString().replaceAll("[\r\n]+", " ") + "\",";
             }
-            fileContent.append(line).append("\n");
+            fileContent += line + '\n';
             line = "";
         }
-        write2File(fileContent.toString(), file);
+        write2File(fileContent, file);
     }
     
     public void write2File(String text,String filePath){
         File file = new File(filePath);
-        Writer writer;
+        Writer writer = null;
         if(!file.exists()){
             try {
                 file.createNewFile();
@@ -49,6 +50,7 @@ public class ExcelToCsvUtil {
             }
         }
         try {
+        	System.out.println("Saving csv file ==== >>"+file);
             writer = new BufferedWriter(new FileWriter(file));
             writer.write(text);
             writer.close();
@@ -64,19 +66,22 @@ public class ExcelToCsvUtil {
     public void readExcelFile(String fileName, String file) {
         InputStream inp = null;
         try {
+        	System.out.println("Reading excel file=====");
             inp = new FileInputStream(fileName);
             Workbook wb = WorkbookFactory.create(inp);
 
             for(int i=0;i<wb.getNumberOfSheets();i++) {
                 echoAsCSV(wb.getSheetAt(i), file);
             }
-        } catch (InvalidFormatException | IOException ex) {
+        } catch (InvalidFormatException ex) {
             Logger.getLogger(ExcelToCsvUtil.class.getName()).log(Level.SEVERE, null, ex);
-        }  finally {
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ExcelToCsvUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ExcelToCsvUtil.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
             try {
-            	if(inp != null){
-            		inp.close();
-            	}
+                inp.close();
             } catch (IOException ex) {
                 Logger.getLogger(ExcelToCsvUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -87,22 +92,19 @@ public class ExcelToCsvUtil {
         InputStream inp = null;
         int recordsCount = 0;
         try {
+        	System.out.println("Reading excel file=====");
             inp = new FileInputStream(fileName);
             Workbook wb = WorkbookFactory.create(inp);
             Sheet sheet = null;
             for(int i=0;i<wb.getNumberOfSheets();i++) {
             	sheet = wb.getSheetAt(i);
             }
-            if(sheet != null){
-            	recordsCount = sheet.getLastRowNum();
-            }
+            recordsCount = sheet.getLastRowNum();
         } catch (Exception ex) {
             Logger.getLogger(ExcelToCsvUtil.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             try {
-            	if(inp != null){
-            		inp.close();
-            	}
+                inp.close();
             } catch (IOException ex) {
                 Logger.getLogger(ExcelToCsvUtil.class.getName()).log(Level.SEVERE, null, ex);
             }
