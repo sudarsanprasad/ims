@@ -44,7 +44,7 @@ public class JobScheduler {
 	@Autowired
 	private FTPService ftpService;
 	
-	@Scheduled(cron = "0 0/2 * * * ?")
+	//@Scheduled(cron = "0 0/2 * * * ?")
 	public void createJobs() throws ImsException {
 		List<TicketSystem> ticketSystems =  ticketSystemRepository.findAll();
 		imsJobService.createJobs(ticketSystems);

@@ -20,9 +20,11 @@ import org.quartz.Trigger;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.TriggerKey;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestTemplate;
 
 import com.ims.constant.JobType;
 import com.ims.entity.ImsConfiguration;
@@ -40,6 +42,9 @@ import com.ims.repository.TicketSystemRepository;
 @RequiredArgsConstructor
 public class ImsJobService {
 	private final Scheduler scheduler;
+	
+	@Autowired
+	private Environment env;
 	
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
@@ -176,15 +181,16 @@ public class ImsJobService {
 		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("forecast.model.status");
 		imsConfiguration.setValue("INPROGRESS");
 		imsConfigurationRepository.save(imsConfiguration);
-		/*String url = "http://192.168.204.13:3004/model_building/"+customerName;
+		String location = (String)env.getProperty("forecast.model.url");
+		StringBuilder url = new StringBuilder(location).append(customerName); 
 		RestTemplate restTemplate = new RestTemplate();
-		String result = restTemplate.getForObject(url, String.class);
+		String result = restTemplate.getForObject(url.toString(), String.class);
 		if("Success".equalsIgnoreCase(result)){
 			ticketSystemRepository.updateFirstTimeFlagAsN(customerName);
 			imsConfiguration.setValue("COMPLETED");
 		}else{
 		imsConfiguration.setValue("FAILED");
-		}*/
+		}
 		imsConfigurationRepository.save(imsConfiguration);
 	}
 	
@@ -221,8 +227,7 @@ public class ImsJobService {
 			scheduler.scheduleJob(jobDetail, triggersForJob, false);
 			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
 		} catch (SchedulerException e) {
-			//log.info("Exception "+e);
-			//log.error("Could not save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
+			log.info("Exception "+e);
 			throw new IllegalArgumentException(e.getLocalizedMessage());
 		}
 		return descriptor;

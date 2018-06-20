@@ -80,10 +80,7 @@ public class FTPService {
 				String pathName = location+fileName;
 				String fileType = Files.getFileExtension(pathName);
 				LOG.info("Saving to location ===>> "+pathName);
-				if("xls".equalsIgnoreCase(fileType)){
-					template.get(fileName, inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File(pathName))));
-				}
-				
+				readFileFromFtp(fileName, template, pathName, fileType);
 				LOG.info(file.getName() + "     " + formattedDate);
 			}
 		}
@@ -97,10 +94,7 @@ public class FTPService {
 		    	String pathName = location+file.getName();
 		    	LOG.info("Reading location == >> "+pathName);
 				String fileType = Files.getFileExtension(pathName);
-				if(FileType.XLS.getDescription().equalsIgnoreCase(fileType) || FileType.XLSX.getDescription().equalsIgnoreCase(fileType)|| FileType.CSV.getDescription().equalsIgnoreCase(fileType)){
-					LOG.info("XL location ==>> "+pathName);
-					processFile(location, FileNameUtil.getSystemName(file.getName()), FileNameUtil.getCustomerName(file.getName()), file, pathName, fileType, file.getName());
-				}
+				readFile(location, file, pathName, fileType);
 		    }
 		}
 		}catch(Exception e){
@@ -109,7 +103,22 @@ public class FTPService {
 		return isFileSavedToLocalFlag;
 	}
 
-	private void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
+	private void readFileFromFtp(String fileName,
+			FtpRemoteFileTemplate template, String pathName, String fileType) {
+		if(FileType.XLS.getDescription().equalsIgnoreCase(fileType) || FileType.XLSX.getDescription().equalsIgnoreCase(fileType)|| FileType.CSV.getDescription().equalsIgnoreCase(fileType)){
+			template.get(fileName, inputStream -> FileCopyUtils.copy(inputStream, new FileOutputStream(new File(pathName))));
+		}
+	}
+
+	private void readFile(String location, File file, String pathName,
+			String fileType) throws ImsException {
+		if(FileType.XLS.getDescription().equalsIgnoreCase(fileType) || FileType.XLSX.getDescription().equalsIgnoreCase(fileType)|| FileType.CSV.getDescription().equalsIgnoreCase(fileType)){
+			LOG.info("XL location ==>> "+pathName);
+			processFile(location, FileNameUtil.getSystemName(file.getName()), FileNameUtil.getCustomerName(file.getName()), file, pathName, fileType, file.getName());
+		}
+	}
+
+	void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
 		TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName(), systemName, customer));
 			try {
 				LOG.info("location ==>> "+location);
@@ -122,7 +131,7 @@ public class FTPService {
 				if(FileType.CSV.getDescription().equals(fileType)){
 					csvFileName = file.getName();
 				}else{
-					String fileVar[] = fileName.split("\\.");
+					String[] fileVar = fileName.split("\\.");
 					csvFileName = location+fileVar[0]+".csv";
 				}
 				ExcelToCsvUtil excelToCsvUtil = new ExcelToCsvUtil();
@@ -143,36 +152,16 @@ public class FTPService {
 				StringBuilder qBuilder = prepareQuery.buildHiveQuery(ticketMetadataRepository, systemName, customer,"FTP");
 				StringBuilder query = prepareQuery.getSelectValue(qBuilder);
 				
-				
-				
 				List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomerOrderById(systemName, customer);
 				if(!CollectionUtils.isEmpty(metadata)){
 					for(TicketMetadata data : metadata){
-						if(data.getBusinessColumn().equalsIgnoreCase("jobid")){
-							query.append("\"").append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
-						}else if(data.getBusinessColumn().equalsIgnoreCase("version")){
-							query.append("\"").append(String.valueOf(ticketStatistics.getVersionNumber())).append("\"").append(",");
-						}else if(data.getBusinessColumn().equalsIgnoreCase("customername")){
-							query.append("\"").append(customer).append("\"").append(",");
-						}else if(data.getBusinessColumn().equalsIgnoreCase("systemname")){
-							query.append("\"").append(systemName).append("\"");
-						}else{
-							query.append(data.getBusinessColumn()).append(",");
-						}
+						buildQuery(systemName, customer, ticketStatistics,query, data);
 					}
 				}
 				StringBuilder finalQuery = prepareQuery.getFromValue(query, "temp_ims_ampm");
 				LOG.info(finalQuery.toString());
-				try{
-					stmt.execute(finalQuery.toString());
-				}catch(Exception ex){
-					ex.printStackTrace();
-				}
-				LOG.info("Deleting file ====>> "+file);
-				file.delete();
-				File csvFile = new File(csvFileName);
-				LOG.info("Deleting csv file ====>> "+csvFile);
-				csvFile.delete();
+				stmt.execute(finalQuery.toString());
+				deleteFiles(file, csvFileName);
 				ticketStatistics.setRecordsInserted(Long.valueOf(recordsCount));
 				ticketStatistics.setRecordsFailed(0l);
 				ticketStatistics.setAutomationEndDate(new Date());
@@ -191,9 +180,36 @@ public class FTPService {
 				ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
 				ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
 				ticketStatisticsRepository.save(ticketStatistics);
-				ex.printStackTrace();
 				throw new ImsException("Exception occured while processing excel data", ex);
 			}
+	}
+
+	private void buildQuery(String systemName, String customer,
+			TicketStatistics ticketStatistics, StringBuilder query,
+			TicketMetadata data) {
+		if("jobid".equalsIgnoreCase(data.getBusinessColumn())){
+			query.append("\"").append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
+		}else if("version".equalsIgnoreCase(data.getBusinessColumn())){
+			query.append("\"").append(String.valueOf(ticketStatistics.getVersionNumber())).append("\"").append(",");
+		}else if("customername".equalsIgnoreCase(data.getBusinessColumn())){
+			query.append("\"").append(customer).append("\"").append(",");
+		}else if("systemname".equalsIgnoreCase(data.getBusinessColumn())){
+			query.append("\"").append(systemName).append("\"");
+		}else{
+			query.append(data.getBusinessColumn()).append(",");
+		}
+	}
+
+	private void deleteFiles(File file, String csvFileName) {
+		LOG.info("Deleting file ====>> "+file);
+		if(file.delete()){
+			LOG.info("Deleted file ====>> "+file);
+		}
+		File csvFile = new File(csvFileName);
+		LOG.info("Deleting csv file ====>> "+csvFile);
+		if(csvFile.delete()){
+			LOG.info("Deleted csv file ====>> "+csvFile);
+		}
 	}
 
 	private void closeConnection(Connection con, Statement stmt) {

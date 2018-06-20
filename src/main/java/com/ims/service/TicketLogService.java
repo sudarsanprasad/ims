@@ -6,6 +6,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -19,6 +20,8 @@ import com.ims.repository.TicketLogStatisticsRepository;
 
 @Service
 public class TicketLogService {
+	
+	private static final Logger LOG = Logger.getLogger(TicketLogService.class);
 
 	@Autowired
 	private TicketLogStatisticsRepository ticketLogStatisticsRepository;
@@ -49,10 +52,9 @@ public class TicketLogService {
 			headers.add("Cache-Control", "no-cache, no-store, must-revalidate");
 			headers.add("Pragma", "no-cache");
 			headers.add("Expires", "0");
-			ResponseEntity<Object> responseEntity = ResponseEntity.ok().headers(headers).contentLength(file.length())
-					.contentType(MediaType.parseMediaType("application/txt")).body(resource);
-			return responseEntity;
+			return ResponseEntity.ok().headers(headers).contentLength(file.length()).contentType(MediaType.parseMediaType("application/txt")).body(resource);
 		} catch (Exception e) {
+			LOG.info(e);
 			return new ResponseEntity<>("error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
 		} finally {
 			if (filewriter != null)
