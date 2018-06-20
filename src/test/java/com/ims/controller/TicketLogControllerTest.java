@@ -24,6 +24,7 @@ public class TicketLogControllerTest {
 	@Mock
 	private TicketLogService ticketLogService;
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Test
 	public void downloadLogStatistics() throws IOException {
 		when(ticketLogService.downloadLogStatistics(10L)).thenReturn(new ResponseEntity(HttpStatus.OK));
