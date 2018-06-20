@@ -41,13 +41,13 @@ public class TicketStatisticsController {
 		return ticketStatisticsService.findAll();
 	}
 	
-	@GetMapping(value = "/log/{fileName}")
-	public List<TicketStatistics> findAllByFileNameOrderByJobId(@PathVariable String fileName) {
+	@GetMapping(value = "/log")
+	public List<TicketStatistics> findAllByFileNameOrderByJobId() {
 		return ticketStatisticsService.findAllByFileNameOrderByJobId();
 	}
 	
-	@GetMapping(value = "/record/{fileName}")
-	public TicketStatistics findMostRecentRecord(@PathVariable String fileName) {
+	@GetMapping(value = "/record")
+	public TicketStatistics findMostRecentRecord() {
 		return ticketStatisticsService.findMostRecentRecord();
 	}
 	

@@ -59,17 +59,22 @@ public class TicketStatisticsControllerTest {
 		notEmpty(ticketStatisticsListResp);
 	}
 
-	//@Test
+	@Test
 	public void findAllByFileNameOrderByJobId() {
 		TicketStatistics ticketStatistics = constructTicketStatostics();
 		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
 		ticketStatisticsList.add(ticketStatistics);
-		ticketStatisticsService.findAllByFileNameOrderByJobId();
+		when(ticketStatisticsService.findAllByFileNameOrderByJobId()).thenReturn(ticketStatisticsList);
+		List<TicketStatistics> ticketStatisticsListResp = ticketStatisticsController.findAllByFileNameOrderByJobId();
+		notEmpty(ticketStatisticsListResp);
 	}
 
-	//@Test
+	@Test
 	public void findMostRecentRecord() {
-		ticketStatisticsService.findMostRecentRecord();
+		TicketStatistics ticketStatistics = constructTicketStatostics();
+		when(ticketStatisticsService.findMostRecentRecord()).thenReturn(ticketStatistics);
+		TicketStatistics ticketStatisticsResp = ticketStatisticsController.findMostRecentRecord();
+		notNull(ticketStatisticsResp);
 	}
 
 	@Test
@@ -88,7 +93,7 @@ public class TicketStatisticsControllerTest {
 		when(ticketStatisticsService.getCurrentRecordStatus(10L)).thenReturn(ticketStatistics);
 		TicketStatistics ticketStatisticsResp = ticketStatisticsController.getCurrentRecordStatus(10L);
 		notNull(ticketStatisticsResp);
-		
+
 	}
 
 	private TicketStatistics constructTicketStatostics() {
