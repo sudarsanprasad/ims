@@ -23,8 +23,7 @@
 		<sonar.java.source>8</sonar.java.source>
 		<sonar.exclusions>
 			**com/ims/dto/*.java,
-			**com/ims/entity/*.java,
-			**com/ims/util/ExcelToCsvUtil.java
+			**com/ims/entity/*.java
 		</sonar.exclusions>
 	</properties>
 
