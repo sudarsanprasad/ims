@@ -24,12 +24,15 @@ public class ExcelToCsvUtil {
 	
 	private static final Logger LOG = Logger.getAnonymousLogger();
 
-    public void echoAsCSV(Sheet sheet, String file) {
+    public void echoAsCSV(Sheet sheet, String file, String ppmFile) {
         Row row;
         StringBuilder fileContent = new StringBuilder("");
+        StringBuilder fileContentStatusNew = new StringBuilder("");
+        int statusColumnIndex= getColumnIndex(sheet);
         for (int i = 1; i <= sheet.getLastRowNum(); i++) {
             row = sheet.getRow(i);
             StringBuilder line = new StringBuilder("");
+            StringBuilder lineStatusNew = new StringBuilder("");
             for (int j = 0; j < row.getLastCellNum(); j++) {
             	 String cellValue;
             	 if (row.getCell(j).getCellTypeEnum() == CellType.NUMERIC) {
@@ -44,11 +47,31 @@ public class ExcelToCsvUtil {
             		 cellValue = row.getCell(j).getStringCellValue();
             	 }
             	 line.append(cellValue).append(",");
+            	 lineStatusNew.append(cellValue).append(",");
             }
             fileContent.append(line.toString()).append("\n");
+            if("NEW".equalsIgnoreCase(row.getCell(statusColumnIndex).toString())){
+            	fileContentStatusNew.append(line.toString()).append("\n");
+            }
         }
         write2File(fileContent.toString(), file);
+        write2File(fileContentStatusNew.toString(), ppmFile);
     }
+
+	private int getColumnIndex(Sheet sheet) {
+		int statusColumnIndex = 0;
+		Row row;
+		for (int i = 0; i <= 1; i++) {
+            row = sheet.getRow(i);
+            for (int j = 0; j < row.getLastCellNum(); j++) {
+            	if("Status".equalsIgnoreCase(row.getCell(j).toString()) || "State".equalsIgnoreCase(row.getCell(j).toString())){
+            		statusColumnIndex = row.getCell(j).getColumnIndex();
+            	}
+            }
+            LOG.info(""+row.getCell(statusColumnIndex));
+        }
+		return statusColumnIndex;
+	}
 
 	private String getValue(Row row, int j) {
 		String cellValue;
@@ -94,12 +117,12 @@ public class ExcelToCsvUtil {
     /**
      * @param args the command line arguments
      */
-    public void readExcelFile(String fileName, String file) {
+    public void readExcelFile(String fileName, String file, String ppmFile) {
         try (InputStream inp = new FileInputStream(fileName)){
             Workbook wb = WorkbookFactory.create(inp);
 
             for(int i=0;i<wb.getNumberOfSheets();i++) {
-                echoAsCSV(wb.getSheetAt(i), file);
+                echoAsCSV(wb.getSheetAt(i), file, ppmFile);
             }
         } catch (InvalidFormatException | IOException ex) {
             Logger.getLogger(ExcelToCsvUtil.class.getName()).log(Level.SEVERE, null, ex);
