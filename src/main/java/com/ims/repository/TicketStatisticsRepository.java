@@ -1,5 +1,6 @@
 package com.ims.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -27,4 +28,7 @@ public interface TicketStatisticsRepository extends JpaRepository<TicketStatisti
 	
 	List<TicketStatistics> findAllByCustomerIn(List<String> customers);
 	
+	List<TicketStatistics> findDistinctByCustomer(String customer);
+	
+	List<TicketStatistics> findBySystemNameAndAutomationStartDateAndAutomationEndDate(String systemName,Date automationStartDate,Date automationEndDate);
 }
