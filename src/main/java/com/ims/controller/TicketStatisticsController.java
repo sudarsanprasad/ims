@@ -60,5 +60,10 @@ public class TicketStatisticsController {
 	public TicketStatistics getCurrentRecordStatus(@PathVariable Long id) {
 		return ticketStatisticsService.getCurrentRecordStatus(id);
 	}
+	
+	@GetMapping(value = "/{customerName}")
+	public List<TicketStatistics> getStatistics(@PathVariable String customerName) {
+		return ticketStatisticsService.getStatistics(customerName);
+	}
 
 }

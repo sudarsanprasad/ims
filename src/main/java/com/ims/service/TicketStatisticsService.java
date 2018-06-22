@@ -60,5 +60,9 @@ public class TicketStatisticsService {
 	public TicketStatistics getCurrentRecordStatus(Long id) {
 		return ticketStatisticsRepository.findByJobId(id);
 	}
+
+	public List<TicketStatistics> getStatistics(String customerName) {
+		return ticketStatisticsRepository.findDistinctByCustomer(customerName);
+	}
 	
 }
