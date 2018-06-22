@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
@@ -63,6 +64,14 @@ public class TicketStatisticsService {
 
 	public List<TicketStatistics> getStatistics(String customerName) {
 		return ticketStatisticsRepository.findDistinctByCustomer(customerName);
+	}
+
+	public List<String> getSystemNames() {
+		return ticketStatisticsRepository.findDistinctSystems();
+	}
+
+	public List<TicketStatistics> getStatistics(TicketStatistics ticketStatistics) {
+		return ticketStatisticsRepository.findAll(Example.of(ticketStatistics));
 	}
 	
 }

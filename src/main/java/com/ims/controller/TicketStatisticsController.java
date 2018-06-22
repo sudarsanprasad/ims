@@ -65,5 +65,15 @@ public class TicketStatisticsController {
 	public List<TicketStatistics> getStatistics(@PathVariable String customerName) {
 		return ticketStatisticsService.getStatistics(customerName);
 	}
+	
+	@GetMapping(value = "/getSystemNames")
+	public List<String> getSystemNames() {
+		return ticketStatisticsService.getSystemNames();
+	}
+	
+	@PostMapping(value = "/getStatistics")
+	public List<TicketStatistics> getStatistics(@RequestBody TicketStatistics ticketStatistics) {
+		return ticketStatisticsService.getStatistics(ticketStatistics);
+	}
 
 }

@@ -31,4 +31,9 @@ public interface TicketStatisticsRepository extends JpaRepository<TicketStatisti
 	List<TicketStatistics> findDistinctByCustomer(String customer);
 	
 	List<TicketStatistics> findBySystemNameAndAutomationStartDateAndAutomationEndDate(String systemName,Date automationStartDate,Date automationEndDate);
+	
+	@Query("SELECT DISTINCT ts.systemName FROM TicketStatistics ts")
+	List<String> findDistinctSystems();
+
+	
 }

@@ -53,12 +53,13 @@ public class FTPService {
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
 	
-	String ppmLocation = (String)env.getProperty("ppm.file.location");
+	String ppmLocation = null;
 
 	public boolean downloadExcel(TicketSystem system) throws ImsException {
 		
 		List<TicketSystem> list = ticketSystemRepository.findByCustomerAndEnableFlagAndType(system.getCustomer(), "Y", "FTP");
 		
+		ppmLocation = (String)env.getProperty("ppm.file.location");
 		
 		String location = (String)env.getProperty("file.location");
 		
