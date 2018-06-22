@@ -41,7 +41,7 @@ public class ExcelToCsvUtil {
 					cellValue = row.getCell(j).getStringCellValue()
 							.replaceAll("[\r\n]+", " ").replaceAll(",", " ");
 				} else if (row.getCell(j).getCellTypeEnum() == CellType.BOOLEAN) {
-					cellValue = "" + row.getCell(j).getBooleanCellValue();
+					cellValue = Boolean.toString(row.getCell(j).getBooleanCellValue());
 				} else if (row.getCell(j).getCellTypeEnum() == CellType.FORMULA) {
 					cellValue = "" + row.getCell(j).getCellFormula();
 				} else {

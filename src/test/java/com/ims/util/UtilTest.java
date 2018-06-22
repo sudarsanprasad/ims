@@ -54,18 +54,41 @@ public class UtilTest {
 		DateUtil.getDateAndTime("12 10 00");
 	}
 	
-	//@Test
+	@Test
+	public void convertDateParseException() {
+		DateUtil.convertDate("31/12/1998");
+	}
+	
+	@Test
+	public void convertDate() {
+		DateUtil.convertDate("2018-06-06 01:11:50");
+	}
+	
+	@Test
 	public void echoAsCSV() {
 		Sheet sheet=mock(Sheet.class);
 		Row row=mock(Row.class);
 		Cell cell=mock(Cell.class);
 		ExcelToCsvUtil excelToCsvUtil=new ExcelToCsvUtil();
 		when(sheet.getLastRowNum()).thenReturn(2).thenReturn(0);
+		when(sheet.getRow(0)).thenReturn(row);
 		when(sheet.getRow(1)).thenReturn(row);
 		when(row.getLastCellNum()).thenReturn((short) 1).thenReturn((short) 0);
 		when(row.getCell(0)).thenReturn(cell);
 		when(cell.toString()).thenReturn("Hi John How are you" );
 		excelToCsvUtil.echoAsCSV(sheet,"abc.text","");
+	}
+	
+	@Test
+	public void readExcelFileException() {
+		ExcelToCsvUtil excelToCsvUtil=new ExcelToCsvUtil();
+		excelToCsvUtil.readExcelFile("abc", "text", "ppm");
+	}
+	
+	@Test
+	public void getRecordsCountException() {
+		ExcelToCsvUtil excelToCsvUtil=new ExcelToCsvUtil();
+		excelToCsvUtil.getRecordsCount("abc");
 	}
 	
 	@Test
@@ -104,6 +127,16 @@ public class UtilTest {
 		queryBuilder.getFromValue(queryBuilders,"ticket_system");
 	}
 	
+	@Test
+	public void getCustomerName() {
+		FileNameUtil.getCustomerName("deloite_servicenow.text");
+	}
+	
+	@Test
+	public void getSystemName() {
+		FileNameUtil.getSystemName("deloite_servicenow.text");
+	}
+	
 	private List<TicketMetadata> constructTicketMetaDataList() {
 		List<TicketMetadata> ticketMetadataList = new ArrayList<TicketMetadata>();
 		TicketMetadata ticketMetadata = new TicketMetadata();
@@ -112,5 +145,6 @@ public class UtilTest {
 		ticketMetadataList.add(ticketMetadata);
 		return ticketMetadataList;
 	}
+
 
 }

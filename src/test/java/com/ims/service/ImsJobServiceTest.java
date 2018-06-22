@@ -27,17 +27,14 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.impl.JobDetailImpl;
-import org.springframework.data.util.ReflectionUtils;
+import org.springframework.core.env.Environment;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.RestTemplate;
 
 import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketSystem;
-import com.ims.jobs.ForecastJobDescriptor;
 import com.ims.jobs.JobDescriptor;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
-import java.lang.reflect.Field;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ImsJobServiceTest {
@@ -114,7 +111,6 @@ public class ImsJobServiceTest {
 	@Test
 	public void updateJobJobDetailAsNull() throws SchedulerException {
 		JobDescriptor descriptor=new JobDescriptor().setName("Deloite");
-		JobDetailImpl  jobDetail =mock(JobDetailImpl.class);
 		when(scheduler.getJobDetail(anyObject())).thenReturn(null);
 		imsJobService.updateJob("Deloite", "Deloite", descriptor);
 	}
@@ -178,16 +174,19 @@ public class ImsJobServiceTest {
 		imsJobService.resumeJob("Deloite", "Deloite");
 	}
 	
-/*	@Test
+	@Test(expected=Exception.class)
 	public void triggerForecastModelScheduler() {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
 		ReflectionTestUtils.setField(imsJobService, "imsConfigurationRepository", imsConfigurationRepository);
-		RestTemplate restTemplate=Mockito.mock(RestTemplate.class);
-		ReflectionTestUtils.setField(imsJobService, "restTemplate", restTemplate);
+		//RestTemplate restTemplate=Mockito.mock(RestTemplate.class);
+		//ReflectionTestUtils.setField(imsJobService, "restTemplate", restTemplate);
 		when(imsConfigurationRepository.findByProperty("forecast.model.status")).thenReturn(imsConfiguration);
+		Environment env=Mockito.mock(Environment.class);
+		ReflectionTestUtils.setField(imsJobService, "env", env);
+		when(env.getProperty("forecast.model.url")).thenReturn("localhost:8080");
 		when(imsConfigurationRepository.save(imsConfiguration)).thenReturn(imsConfiguration);
 		imsJobService.triggerForecastModelScheduler("Deloite");
-	}*/
+	}
 	
 	@Test
 	public void statusJob() throws SchedulerException {
@@ -201,6 +200,7 @@ public class ImsJobServiceTest {
 		imsJobService.statusJob("Deloite", "Deloite");
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void createForecastJob() throws SchedulerException {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
@@ -211,6 +211,7 @@ public class ImsJobServiceTest {
 		imsJobService.createForecastJob();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test(expected=Exception.class)
 	public void createForecastJobException() throws SchedulerException {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
@@ -222,6 +223,7 @@ public class ImsJobServiceTest {
 	}
 	
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void createKrJob() throws SchedulerException {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
@@ -232,6 +234,7 @@ public class ImsJobServiceTest {
 		imsJobService.createKrJob();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test(expected=Exception.class)
 	public void createKrJobException() throws SchedulerException {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
