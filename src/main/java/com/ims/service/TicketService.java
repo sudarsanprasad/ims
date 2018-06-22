@@ -82,8 +82,8 @@ public class TicketService {
 		QueryBuilder queryBuilder = new QueryBuilder();
 		ticketStatistics.setComments("Scheduler pulled the data from ticketing system");
 		updateTicketStatistics(ticketStatistics);
-		String systemName = (String)env.getProperty("ticketsystem");
-		String customer = (String)env.getProperty("customer");
+		String systemName = env.getProperty("ticketsystem");
+		String customer = env.getProperty("customer");
 		StringBuilder qBuilder = queryBuilder.buildHiveQuery(ticketMetadataRepository, systemName, customer,"API");
 		LOG.info("Result in Service === " + result);
 		JSONObject jsonObj = new JSONObject(result);

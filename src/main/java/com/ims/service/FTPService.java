@@ -62,7 +62,7 @@ public class FTPService {
 		List<TicketSystem> list = ticketSystemRepository.findByCustomerAndEnableFlagAndType(system.getCustomer(), "Y", "FTP");
 		
 		
-		String location = (String)env.getProperty("file.location");
+		String location = env.getProperty("file.location");
 		
 		LOG.info("Configured Location === >>"+location);
 		boolean isFileSavedToLocalFlag = false;

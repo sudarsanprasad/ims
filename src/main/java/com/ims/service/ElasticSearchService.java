@@ -39,7 +39,7 @@ public class ElasticSearchService {
 	public static final String SOLUTION = "solution";
 	public static final String ASC = "affective_service_captured";
 	public ResponseDto elasticsearch(String searchtext) {
-		String esurl = (String)env.getProperty("es.url");
+		String esurl = env.getProperty("es.url");
 		String url = esurl+searchtext;
 		RestTemplate restTemplate = new RestTemplate();
 		JSONObject requestObject = new JSONObject();
@@ -72,7 +72,7 @@ public class ElasticSearchService {
 	    	JSONArray hits = (JSONArray) hitsObject.get("hits");
 	    	if(hits != null && hits.length() > 0){
 	    		for(int i=0; i < hits.length(); i++){
-	    			JSONObject hit = (JSONObject)hits.getJSONObject(i); 
+	    			JSONObject hit = hits.getJSONObject(i); 
 	    			JSONObject source = (JSONObject) hit.get("_source");
 	    			affServices.add(source.getString(ASC));
 	    			LOG.info("AFF Service == "+source.getString(ASC));
@@ -99,7 +99,7 @@ public class ElasticSearchService {
 			AffectedServiceDto affectedServiceDto = new AffectedServiceDto();
 			LOG.info("AFF SERV === "+service);
 			for(int i=0; i < hits.length(); i++){
-				JSONObject hit = (JSONObject)hits.getJSONObject(i); 
+				JSONObject hit = hits.getJSONObject(i); 
 				int score = hit.getInt("_score");
 				JSONObject source = (JSONObject) hit.get("_source");
 				numberOfIncidents = getIncidents(incidents, maxScore, service, score, source);
