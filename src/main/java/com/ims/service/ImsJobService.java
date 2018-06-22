@@ -184,7 +184,7 @@ public class ImsJobService {
 		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("forecast.model.status");
 		imsConfiguration.setValue("INPROGRESS");
 		imsConfigurationRepository.save(imsConfiguration);
-		String location = (String)env.getProperty("forecast.model.url");
+		String location = env.getProperty("forecast.model.url");
 		StringBuilder url = new StringBuilder(location).append(customerName); 
 		RestTemplate restTemplate = new RestTemplate();
 		String result = restTemplate.getForObject(url.toString(), String.class);
