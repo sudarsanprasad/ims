@@ -123,7 +123,12 @@ public class FTPService {
 
 	void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
 		TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName(), systemName, customer));
-			try(Connection con = getConnection();Statement stmt = con.createStatement()) {
+		List<TicketMetadata> systemFields = ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(systemName, "Y");
+		StringBuilder tableBuilder = createTempTableQuery(systemName, systemFields);
+		
+		LOG.info("Teamp Table Query  ==>> "+tableBuilder);
+		try(Connection con = getConnection();Statement stmt = con.createStatement()) {
+				stmt.execute(tableBuilder.toString());
 				LOG.info("location ==>> "+location);
 				LOG.info("systemName ==>> "+systemName);
 				LOG.info("file ==>> "+file);
@@ -147,10 +152,10 @@ public class FTPService {
 				LOG.info("Count ==>> "+recordsCount);
 				
 				StringBuilder queryBuilder = new StringBuilder("load data local inpath \"");
-				queryBuilder.append(csvFileName).append("\" into table temp_ims_ampm");
+				queryBuilder.append(csvFileName).append("\" into table temp_ims_").append(systemName);
 				LOG.info("Query Builder === >>"+queryBuilder.toString());
 				
-				stmt.execute("truncate table temp_ims_ampm");
+				stmt.execute("truncate table temp_ims_"+systemName);
 				stmt.execute(queryBuilder.toString());
 				
 				QueryBuilder prepareQuery = new QueryBuilder();
@@ -163,7 +168,7 @@ public class FTPService {
 						buildQuery(systemName, customer, ticketStatistics,query, data);
 					}
 				}
-				StringBuilder finalQuery = prepareQuery.getFromValue(query, "temp_ims_ampm");
+				StringBuilder finalQuery = prepareQuery.getFromValue(query, "temp_ims_"+systemName);
 				LOG.info(finalQuery.toString());
 				stmt.execute(finalQuery.toString());
 				deleteFiles(file, csvFileName);
@@ -187,6 +192,18 @@ public class FTPService {
 				ticketStatisticsRepository.save(ticketStatistics);
 				throw new ImsException("Exception occured while processing excel data", ex);
 			}
+	}
+
+	private StringBuilder createTempTableQuery(String systemName,
+			List<TicketMetadata> systemFields) {
+		StringBuilder tempTableBuilder = new StringBuilder("CREATE EXTERNAL TABLE IF NOT EXISTS temp_ims_").append(systemName).append("(");
+		for(TicketMetadata field:systemFields){
+			tempTableBuilder.append(field.getBusinessColumn()).append(" string, ");
+		}
+		String builder = tempTableBuilder.toString().substring(0, tempTableBuilder.lastIndexOf(","));
+		StringBuilder tableBuilder = new StringBuilder(builder).append(") COMMENT 'port_data ' ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\,' STORED AS TEXTFILE LOCATION '/apps/hive/warehouse/ims.db/temp_ims_");
+		tableBuilder.append(systemName).append("'");
+		return tableBuilder;
 	}
 
 	private void buildQuery(String systemName, String customer,

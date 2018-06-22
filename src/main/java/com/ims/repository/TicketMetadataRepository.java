@@ -14,6 +14,8 @@ public interface TicketMetadataRepository extends JpaRepository<TicketMetadata, 
 	
 	List<TicketMetadata> findBySystemName(String systemName);
 	
+	List<TicketMetadata> findBySystemNameAndIsProactiveOrderById(String systemName, String isProactive);
+	
 	List<TicketMetadata> findByCustomer(String customer);
 	
 	@Query("SELECT m.mappingColumn  FROM TicketMetadata m where isForecast = 'Y' AND systemName = :systemName")
