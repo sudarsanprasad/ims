@@ -14,6 +14,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
@@ -53,13 +54,13 @@ public class FTPService {
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
 	
-	String ppmLocation = null;
+	@Value("${ppm.file.location}")
+	String ppmLocation;
 
 	public boolean downloadExcel(TicketSystem system) throws ImsException {
 		
 		List<TicketSystem> list = ticketSystemRepository.findByCustomerAndEnableFlagAndType(system.getCustomer(), "Y", "FTP");
 		
-		ppmLocation = (String)env.getProperty("ppm.file.location");
 		
 		String location = (String)env.getProperty("file.location");
 		
@@ -122,7 +123,7 @@ public class FTPService {
 
 	void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
 		TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName(), systemName, customer));
-			try(Connection con = getConnection()) {
+			try(Connection con = getConnection();Statement stmt = con.createStatement()) {
 				LOG.info("location ==>> "+location);
 				LOG.info("systemName ==>> "+systemName);
 				LOG.info("file ==>> "+file);
@@ -144,7 +145,7 @@ public class FTPService {
 				LOG.info("csvFileName ==>> "+csvFileName);
 				int recordsCount = excelToCsvUtil.getRecordsCount(pathName);
 				LOG.info("Count ==>> "+recordsCount);
-				Statement stmt = con.createStatement();
+				
 				StringBuilder queryBuilder = new StringBuilder("load data local inpath \"");
 				queryBuilder.append(csvFileName).append("\" into table temp_ims_ampm");
 				LOG.info("Query Builder === >>"+queryBuilder.toString());
