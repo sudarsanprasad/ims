@@ -58,7 +58,7 @@ public class ImsDataAutomationJobTest {
 		//when(triggerKey.getGroup()).thenReturn("Deloite");
 		doNothing().when(ticketService).updateTicketData(anyString(), anyObject());
 		when(ticketSystemRepository.findBySystemNameAndCustomer("Deloite","DEFAULT")).thenReturn(ticketSystem);
-		when(ftpService.downloadExcel()).thenReturn(true);
+		when(ftpService.downloadExcel(ticketSystem)).thenReturn(true);
 		imsDataAutomationJob.execute(context);
 	}
 	
@@ -76,7 +76,7 @@ public class ImsDataAutomationJobTest {
 		//when(triggerKey.getGroup()).thenReturn("Deloite");
 		doNothing().when(ticketService).updateTicketData(anyString(), anyObject());
 		when(ticketSystemRepository.findBySystemNameAndCustomer("Deloite","DEFAULT")).thenReturn(ticketSystem);
-		when(ftpService.downloadExcel()).thenThrow(ImsException.class);
+		when(ftpService.downloadExcel(null)).thenThrow(ImsException.class);
 		imsDataAutomationJob.execute(context);
 	}
 	

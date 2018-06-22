@@ -38,8 +38,10 @@ public class FTPServiceTest {
 	
 	@Test
 	public void downloadExcel() throws ImsException {
+		TicketSystem ticketSystem = new TicketSystem();
+		ticketSystem.setCustomer("Deloitte");
 		when(ticketSystemRepository.findByCustomerAndEnableFlagAndType("Deloitte", "Y", "FTP")).thenReturn(getTicketSystemList());
-		fTPService.downloadExcel();
+		fTPService.downloadExcel(ticketSystem);
 	}
 	
 	private TicketSystem constructTicketSystem() {

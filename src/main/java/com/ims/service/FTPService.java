@@ -52,14 +52,16 @@ public class FTPService {
 	
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
+	
+	String ppmLocation = (String)env.getProperty("ppm.file.location");
 
-	public boolean downloadExcel() throws ImsException {
+	public boolean downloadExcel(TicketSystem system) throws ImsException {
 		
-		List<TicketSystem> list = ticketSystemRepository.findByCustomerAndEnableFlagAndType("Deloitte", "Y", "FTP");
+		List<TicketSystem> list = ticketSystemRepository.findByCustomerAndEnableFlagAndType(system.getCustomer(), "Y", "FTP");
 		
 		
 		String location = (String)env.getProperty("file.location");
-		String ppmLocation = (String)env.getProperty("ppm.file.location");
+		
 		LOG.info("Configured Location === >>"+location);
 		boolean isFileSavedToLocalFlag = false;
 		String fileName;
@@ -95,7 +97,7 @@ public class FTPService {
 		    	String pathName = location+file.getName();
 		    	LOG.info("Reading location == >> "+pathName);
 				String fileType = Files.getFileExtension(pathName);
-				readFile(location, file, pathName, fileType, ppmLocation);
+				readFile(location, file, pathName, fileType);
 		    }
 		}
 		}catch(Exception e){
@@ -110,16 +112,16 @@ public class FTPService {
 		}
 	}
 
-	private void readFile(String location, File file, String pathName, String fileType, String ppmLocation) throws ImsException {
+	private void readFile(String location, File file, String pathName, String fileType) throws ImsException {
 		if(FileType.XLS.getDescription().equalsIgnoreCase(fileType) || FileType.XLSX.getDescription().equalsIgnoreCase(fileType)|| FileType.CSV.getDescription().equalsIgnoreCase(fileType)){
 			LOG.info("XL location ==>> "+pathName);
-			processFile(location, FileNameUtil.getSystemName(file.getName()), FileNameUtil.getCustomerName(file.getName()), file, pathName, fileType, file.getName(), ppmLocation);
+			processFile(location, FileNameUtil.getSystemName(file.getName()), FileNameUtil.getCustomerName(file.getName()), file, pathName, fileType, file.getName());
 		}
 	}
 
-	void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName, String ppmLocation) throws ImsException {
+	void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
 		TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName(), systemName, customer));
-			try {
+			try(Connection con = getConnection()) {
 				LOG.info("location ==>> "+location);
 				LOG.info("systemName ==>> "+systemName);
 				LOG.info("file ==>> "+file);
@@ -141,7 +143,6 @@ public class FTPService {
 				LOG.info("csvFileName ==>> "+csvFileName);
 				int recordsCount = excelToCsvUtil.getRecordsCount(pathName);
 				LOG.info("Count ==>> "+recordsCount);
-				Connection con = getConnection();
 				Statement stmt = con.createStatement();
 				StringBuilder queryBuilder = new StringBuilder("load data local inpath \"");
 				queryBuilder.append(csvFileName).append("\" into table temp_ims_ampm");

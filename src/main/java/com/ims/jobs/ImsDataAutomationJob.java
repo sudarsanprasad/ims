@@ -47,7 +47,7 @@ public class ImsDataAutomationJob implements Job {
 			if("API".equalsIgnoreCase(ticketSystem.getType())){
 				ticketService.updateTicketData(getRecords(ticketSystem), ticketSystem);
 			}else{
-				ftpService.downloadExcel();
+				ftpService.downloadExcel(ticketSystem);
 			}
 		} catch (ImsException e) {
 			log.error("Exception == "+e);
