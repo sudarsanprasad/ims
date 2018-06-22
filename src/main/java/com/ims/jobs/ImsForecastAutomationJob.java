@@ -30,7 +30,7 @@ public class ImsForecastAutomationJob implements Job {
 		List<String> customers = ticketStatisticsRepository.findDistinctForecastCustomers();
 		List<TicketStatistics> systems = ticketStatisticsRepository.findAllByCustomerIn(customers);
 		if(!CollectionUtils.isEmpty(systems)){
-			String forecastUrl = (String)env.getProperty("forecast.url");
+			String forecastUrl = env.getProperty("forecast.url");
 			StringBuilder url = new StringBuilder(forecastUrl);
 			RestTemplate restTemplate = new RestTemplate();
 			for(TicketStatistics system:systems){
