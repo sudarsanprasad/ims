@@ -49,7 +49,7 @@ public class ImsKrAutomationJob implements Job {
 		if(CollectionUtils.isEmpty(list)){
 			for(TicketStatistics record : list){
 				log.info("Calling KR API for file "+record.getFileName());
-				String url = (String)env.getProperty("kr.url");
+				String url = env.getProperty("kr.url");
 				RestTemplate restTemplate = new RestTemplate();
 				restTemplate.getForObject(url, String.class);
 			}
