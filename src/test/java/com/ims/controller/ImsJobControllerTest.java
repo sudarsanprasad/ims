@@ -36,8 +36,8 @@ public class ImsJobControllerTest {
 
 	@Test
 	public void updateJob() {
-		doNothing().when(imsJobService).updateJob(group, name, descriptor);
-		imsJobController.updateJob(group, name, descriptor);
+		doNothing().when(imsJobService).updateJob(group, name);
+		imsJobController.updateJob(group, name);
 	}
 
 	@Test

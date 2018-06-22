@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
@@ -27,17 +26,13 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger.TriggerState;
 import org.quartz.impl.JobDetailImpl;
-import org.springframework.data.util.ReflectionUtils;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.web.client.RestTemplate;
 
 import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketSystem;
-import com.ims.jobs.ForecastJobDescriptor;
 import com.ims.jobs.JobDescriptor;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
-import java.lang.reflect.Field;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ImsJobServiceTest {
@@ -98,7 +93,6 @@ public class ImsJobServiceTest {
 	
 	@Test
 	public void updateJob() throws SchedulerException {
-		JobDescriptor descriptor=new JobDescriptor().setName("Deloite");
 		JobDetailImpl  jobDetail =mock(JobDetailImpl.class);
 		when(scheduler.getJobDetail(anyObject())).thenReturn(jobDetail);
 		when(jobDetail.getJobDataMap()).thenReturn(new JobDataMap());
@@ -108,22 +102,19 @@ public class ImsJobServiceTest {
 		when(jobBuilder.storeDurably()).thenReturn(jobBuilder);
 		when(jobBuilder.build()).thenReturn(jobDetail);
 		when(jobDetail.getKey()).thenReturn(new JobKey("test"));
-		imsJobService.updateJob("Deloite", "Deloite", descriptor);
+		imsJobService.updateJob("Deloite", "Deloite");
 	}
 	
 	@Test
 	public void updateJobJobDetailAsNull() throws SchedulerException {
-		JobDescriptor descriptor=new JobDescriptor().setName("Deloite");
-		JobDetailImpl  jobDetail =mock(JobDetailImpl.class);
 		when(scheduler.getJobDetail(anyObject())).thenReturn(null);
-		imsJobService.updateJob("Deloite", "Deloite", descriptor);
+		imsJobService.updateJob("Deloite", "Deloite");
 	}
 	
 	@Test
 	public void updateJobJobDetailException() throws SchedulerException {
 		doThrow(new SchedulerException()).when(scheduler).getJobDetail(anyObject());
-		JobDescriptor descriptor=new JobDescriptor().setName("Deloite");
-		imsJobService.updateJob("Deloite", "Deloite", descriptor);
+		imsJobService.updateJob("Deloite", "Deloite");
 	}
 	
 	@Test
@@ -201,6 +192,7 @@ public class ImsJobServiceTest {
 		imsJobService.statusJob("Deloite", "Deloite");
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void createForecastJob() throws SchedulerException {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
@@ -211,6 +203,7 @@ public class ImsJobServiceTest {
 		imsJobService.createForecastJob();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test(expected=Exception.class)
 	public void createForecastJobException() throws SchedulerException {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
@@ -222,6 +215,7 @@ public class ImsJobServiceTest {
 	}
 	
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void createKrJob() throws SchedulerException {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
@@ -232,6 +226,7 @@ public class ImsJobServiceTest {
 		imsJobService.createKrJob();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test(expected=Exception.class)
 	public void createKrJobException() throws SchedulerException {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();

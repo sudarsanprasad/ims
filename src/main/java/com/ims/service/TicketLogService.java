@@ -27,9 +27,9 @@ public class TicketLogService {
 	private TicketLogStatisticsRepository ticketLogStatisticsRepository;
 
 	public ResponseEntity<Object> downloadLogStatistics(Long jobId) throws IOException {
-		FileWriter filewriter = null;
-
-		try {
+		
+		String filename = "ticketlog.log";
+		try(FileWriter filewriter = new FileWriter(filename)) {
 			List<TicketLogStatistics> ticketLogStatisticsList = ticketLogStatisticsRepository.findByjobId(jobId);
 
 			StringBuilder filecontent = new StringBuilder("TicketId : Message\n");
@@ -38,9 +38,9 @@ public class TicketLogService {
 						.append(" :").append(ticketLogStatistics.getMessage()).append("\n");
 			}
 
-			String filename = "ticketlog.log";
+			
 
-			filewriter = new FileWriter(filename);
+			
 			filewriter.write(filecontent.toString());
 			filewriter.flush();
 
@@ -56,10 +56,7 @@ public class TicketLogService {
 		} catch (Exception e) {
 			LOG.info(e);
 			return new ResponseEntity<>("error occurred", HttpStatus.INTERNAL_SERVER_ERROR);
-		} finally {
-			if (filewriter != null)
-				filewriter.close();
-		}
+		} 
 	}
 
 }

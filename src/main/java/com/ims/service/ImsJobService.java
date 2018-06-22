@@ -57,35 +57,38 @@ public class ImsJobService {
 		if(!CollectionUtils.isEmpty(ticketSystems)){
 			JobDescriptor descriptor = new JobDescriptor();
 			for(TicketSystem system:ticketSystems){
-				if("Y".equalsIgnoreCase(system.getEnableFlag())){
-					List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
-					TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
-					triggerDescriptor.setCron(system.getAutomationCronValue());
-					triggerDescriptor.setGroup(system.getCustomer());
-					triggerDescriptor.setName(system.getSystemName());
-					
-					triggerDescriptors.add(triggerDescriptor);
-					descriptor.setTriggerDescriptors(triggerDescriptors);
-					descriptor.setGroup(system.getCustomer());
-					descriptor.setName(system.getSystemName());
-					JobDetail jobDetail = descriptor.buildJobDetail();
-					Set<Trigger> triggersForJob = descriptor.buildTriggers();
-					log.info("About to save job with key - { }", jobDetail.getKey());
-					try {
-						scheduler.scheduleJob(jobDetail, triggersForJob, false);
-						log.info("Job with key - { } saved sucessfully", jobDetail.getKey());
-					} catch (SchedulerException e) {
-						log.info("S Exception "+e);
-						log.error("Couldn't save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
-						throw new IllegalArgumentException(e.getLocalizedMessage());
-					}
-				}
+				startScheduler(descriptor, system);
 			}
-			
-			
 			return descriptor;
 		}
 		return null;
+	}
+
+
+	private void startScheduler(JobDescriptor descriptor, TicketSystem system) {
+		if("Y".equalsIgnoreCase(system.getEnableFlag())){
+			List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
+			TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
+			triggerDescriptor.setCron(system.getAutomationCronValue());
+			triggerDescriptor.setGroup(system.getCustomer());
+			triggerDescriptor.setName(system.getSystemName());
+			
+			triggerDescriptors.add(triggerDescriptor);
+			descriptor.setTriggerDescriptors(triggerDescriptors);
+			descriptor.setGroup(system.getCustomer());
+			descriptor.setName(system.getSystemName());
+			JobDetail jobDetail = descriptor.buildJobDetail();
+			Set<Trigger> triggersForJob = descriptor.buildTriggers();
+			log.info("About to save job with key - { }", jobDetail.getKey());
+			try {
+				scheduler.scheduleJob(jobDetail, triggersForJob, false);
+				log.info("Job with key - { } saved sucessfully", jobDetail.getKey());
+			} catch (SchedulerException e) {
+				log.info("S Exception "+e);
+				log.error("Couldn't save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
+				throw new IllegalArgumentException(e.getLocalizedMessage());
+			}
+		}
 	}
 	
 	
@@ -123,7 +126,7 @@ public class ImsJobService {
 		return Optional.empty();
 	}
 	
-	public void updateJob(String group, String name, JobDescriptor descriptor) {
+	public void updateJob(String group, String name) {
 		try {
 			JobDetail oldJobDetail = scheduler.getJobDetail(jobKey(name, group));
 			if(Objects.nonNull(oldJobDetail)) {

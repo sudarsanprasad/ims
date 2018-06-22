@@ -54,7 +54,6 @@ public class ElasticSearchService {
 	    HttpEntity<String> entity = new HttpEntity<>(requestObject.toString(), headers);
 	    String result = restTemplate.postForObject( url, entity, String.class );
 		
-		List<IncidentDto> incidents;
 		JSONObject resultObject;
 	    Set<String> affServices = new HashSet<>();
 	    double maxScore;
@@ -78,24 +77,7 @@ public class ElasticSearchService {
 	    			affServices.add(source.getString(ASC));
 	    			LOG.info("AFF Service == "+source.getString(ASC));
 	    		}
-	    		int numberOfIncidents;
-	    		
-	    		for(String service:affServices){
-	    			incidents = new ArrayList<>();
-	    			numberOfIncidents = 0;
-	    			AffectedServiceDto affectedServiceDto = new AffectedServiceDto();
-	    			LOG.info("AFF SERV === "+service);
-	    			for(int i=0; i < hits.length(); i++){
-		    			JSONObject hit = (JSONObject)hits.getJSONObject(i); 
-		    			int score = hit.getInt("_score");
-		    			JSONObject source = (JSONObject) hit.get("_source");
-		    			numberOfIncidents = getIncidents(incidents, maxScore, service, score, source);
-		    		}
-	    			affectedServiceDto.setIncidents(incidents);
-	    			affectedServiceDto.setNum_incidents(numberOfIncidents);
-	    			list.add(affectedServiceDto);
-	    		}
-	    		
+	    		getAffectedServiceDtos(affServices, maxScore, list, hits);
 	    	}
 	    	
 	    	topicDto.setTopic(29);
@@ -107,7 +89,28 @@ public class ElasticSearchService {
 	    }
 		return responseDto;
 	}
-	private int getIncidents(List<IncidentDto> incidents, double maxScore, String service, int score, JSONObject source) {
+
+	private void getAffectedServiceDtos(Set<String> affServices, double maxScore, List<AffectedServiceDto> list, JSONArray hits) {
+		List<IncidentDto> incidents;
+		int numberOfIncidents;
+		for(String service:affServices){
+			incidents = new ArrayList<>();
+			numberOfIncidents = 0;
+			AffectedServiceDto affectedServiceDto = new AffectedServiceDto();
+			LOG.info("AFF SERV === "+service);
+			for(int i=0; i < hits.length(); i++){
+				JSONObject hit = (JSONObject)hits.getJSONObject(i); 
+				int score = hit.getInt("_score");
+				JSONObject source = (JSONObject) hit.get("_source");
+				numberOfIncidents = getIncidents(incidents, maxScore, service, score, source);
+			}
+			affectedServiceDto.setIncidents(incidents);
+			affectedServiceDto.setNum_incidents(numberOfIncidents);
+			list.add(affectedServiceDto);
+		}
+	}
+	
+	int getIncidents(List<IncidentDto> incidents, double maxScore, String service, int score, JSONObject source) {
 		int numberOfIncidents=0;
 		if(service.equals(source.get(ASC))){
 			LOG.info("Solution == "+source.get(SOLUTION));

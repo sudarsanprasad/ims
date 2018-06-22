@@ -30,8 +30,8 @@ public class ImsJobController {
 	}
 
 	@PutMapping(path = "/groups/{group}/jobs/{name}")
-	public ResponseEntity<Void> updateJob(@PathVariable String group, @PathVariable String name, @RequestBody JobDescriptor descriptor) {
-		imsJobService.updateJob(group, name, descriptor);
+	public ResponseEntity<Void> updateJob(@PathVariable String group, @PathVariable String name) {
+		imsJobService.updateJob(group, name);
 		return ResponseEntity.noContent().build();
 	}
 
