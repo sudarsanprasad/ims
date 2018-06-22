@@ -227,7 +227,7 @@ public class FTPService {
 		
 	}
 	
-	private TicketStatistics getTicketStatistics(String fileName, String systemName, String customer) {
+	public TicketStatistics getTicketStatistics(String fileName, String systemName, String customer) {
 		TicketStatistics ticketStatistics = new TicketStatistics();
 		ticketStatistics.setSystemName(systemName);
 		ticketStatistics.setCustomer(customer);
