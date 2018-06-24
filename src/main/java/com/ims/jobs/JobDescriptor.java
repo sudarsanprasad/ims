@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Data
+@SuppressWarnings("all")
 public class JobDescriptor {
 	@NotBlank
 	private String name;

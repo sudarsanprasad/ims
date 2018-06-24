@@ -30,7 +30,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketSystem;
-import com.ims.jobs.JobDescriptor;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
 
@@ -57,20 +56,6 @@ public class ImsJobServiceTest {
 	@Test
 	public void createJobsEmtyList() {
 		isNull(imsJobService.createJobs(new ArrayList<TicketSystem>()));
-	}
-	
-	@Test
-	public void createJob() {
-		JobDescriptor descriptor=new JobDescriptor().setName("Deloite");
-		notNull(imsJobService.createJob("Deloite", descriptor));
-	}
-	
-	@SuppressWarnings("unchecked")
-	@Test(expected=IllegalArgumentException.class)
-	public void createJobException() throws SchedulerException {
-		JobDescriptor descriptor=new JobDescriptor().setName("Deloite");
-		doThrow(new SchedulerException()).when(scheduler).scheduleJob(anyObject(),anySet(),anyBoolean());
-		imsJobService.createJob("Deloite", descriptor);
 	}
 	
 	@Test

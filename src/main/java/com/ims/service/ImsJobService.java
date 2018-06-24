@@ -29,9 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import com.ims.constant.JobType;
 import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketSystem;
-import com.ims.jobs.ForecastJobDescriptor;
 import com.ims.jobs.JobDescriptor;
-import com.ims.jobs.KrJobDescriptor;
 import com.ims.jobs.TriggerDescriptor;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
@@ -89,23 +87,6 @@ public class ImsJobService {
 				throw new IllegalArgumentException(e.getLocalizedMessage());
 			}
 		}
-	}
-	
-	
-	public JobDescriptor createJob(String group, JobDescriptor descriptor) {
-		descriptor.setGroup(group);
-		JobDetail jobDetail = descriptor.buildJobDetail();
-		Set<Trigger> triggersForJob = descriptor.buildTriggers();
-		log.info("About to save job with key - { }", jobDetail.getKey());
-		try {
-			scheduler.scheduleJob(jobDetail, triggersForJob, false);
-			log.info("Job with key - {} saved sucesfully", jobDetail.getKey());
-		} catch (SchedulerException e) {
-			log.info("Exception details"+e);
-			log.error("Couldnot save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
-			throw new IllegalArgumentException(e.getLocalizedMessage());
-		}
-		return descriptor;
 	}
 	
 	@Transactional(readOnly = true)
@@ -210,9 +191,9 @@ public class ImsJobService {
 		return state;
 	}
 	
-	public ForecastJobDescriptor createForecastJob() {
+	public JobDescriptor createForecastJob() {
 		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("forecast.cronvalue");
-		ForecastJobDescriptor descriptor = new ForecastJobDescriptor();
+		JobDescriptor forecastDescriptor = new JobDescriptor();
 		List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
 		TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
 		triggerDescriptor.setCron(configuration.getValue());
@@ -220,11 +201,11 @@ public class ImsJobService {
 		triggerDescriptor.setName(JobType.FORECAST.getDescription());
 		
 		triggerDescriptors.add(triggerDescriptor);
-		descriptor.setTriggerDescriptors(triggerDescriptors);
-		descriptor.setGroup(JobType.FORECAST.getDescription());
-		descriptor.setName(JobType.FORECAST.getDescription());
-		JobDetail jobDetail = descriptor.buildJobDetail();
-		Set<Trigger> triggersForJob = descriptor.buildTriggers();
+		forecastDescriptor.setTriggerDescriptors(triggerDescriptors);
+		forecastDescriptor.setGroup(JobType.FORECAST.getDescription());
+		forecastDescriptor.setName(JobType.FORECAST.getDescription());
+		JobDetail jobDetail = forecastDescriptor.buildJobDetail();
+		Set<Trigger> triggersForJob = forecastDescriptor.buildTriggers();
 		log.info("Forecast About to save job with key - {}", jobDetail.getKey());
 		try {
 			scheduler.scheduleJob(jobDetail, triggersForJob, false);
@@ -233,12 +214,12 @@ public class ImsJobService {
 			log.info("Exception "+e);
 			throw new IllegalArgumentException(e.getLocalizedMessage());
 		}
-		return descriptor;
+		return forecastDescriptor;
 	}
 	
-	public KrJobDescriptor createKrJob() {
+	public JobDescriptor createKrJob() {
 		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("forecast.cronvalue");
-		KrJobDescriptor descriptor = new KrJobDescriptor();
+		JobDescriptor krDescriptor = new JobDescriptor();
 		List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
 		TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
 		triggerDescriptor.setCron(configuration.getValue());
@@ -246,11 +227,11 @@ public class ImsJobService {
 		triggerDescriptor.setName(JobType.KR.getDescription());
 		
 		triggerDescriptors.add(triggerDescriptor);
-		descriptor.setTriggerDescriptors(triggerDescriptors);
-		descriptor.setGroup(JobType.KR.getDescription());
-		descriptor.setName(JobType.KR.getDescription());
-		JobDetail jobDetail = descriptor.buildJobDetail();
-		Set<Trigger> triggersForJob = descriptor.buildTriggers();
+		krDescriptor.setTriggerDescriptors(triggerDescriptors);
+		krDescriptor.setGroup(JobType.KR.getDescription());
+		krDescriptor.setName(JobType.KR.getDescription());
+		JobDetail jobDetail = krDescriptor.buildJobDetail();
+		Set<Trigger> triggersForJob = krDescriptor.buildTriggers();
 		log.info("KR About to save job with key - {}", jobDetail.getKey());
 		try {
 			scheduler.scheduleJob(jobDetail, triggersForJob, false);
@@ -260,7 +241,7 @@ public class ImsJobService {
 			log.error("Could not save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
 			throw new IllegalArgumentException(e.getLocalizedMessage());
 		}
-		return descriptor;
+		return krDescriptor;
 	}
 	
 }

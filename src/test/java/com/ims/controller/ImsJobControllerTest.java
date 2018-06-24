@@ -28,11 +28,6 @@ public class ImsJobControllerTest {
 
 	private String name = "TEST_NAME";
 
-	@Test
-	public void createJob() {
-		when(imsJobService.createJob(group, descriptor)).thenReturn(descriptor);
-		imsJobController.createJob(group, descriptor);
-	}
 
 	@Test
 	public void updateJob() {

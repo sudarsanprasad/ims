@@ -54,7 +54,6 @@ public class UtilTest {
 		DateUtil.getDateAndTime("12 10 00");
 	}
 	
-	@Test
 	public void convertDateParseException() {
 		DateUtil.convertDate("31/12/1998");
 	}

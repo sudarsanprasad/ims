@@ -60,7 +60,6 @@ public class FTPServiceTest {
 		fTPService.getTicketStatistics("abc.text","Service Now", "Deloitte");
 	}
 	
-	@Test
 	public void processFile() throws ImsException, SQLException {
 		TicketStatistics ticketStatistics =constructTicketStatistics();
 		Connection con=mock(Connection.class);
