@@ -1,6 +1,5 @@
 package com.ims.service;
 
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -57,10 +56,9 @@ public class FTPServiceTest {
 		fTPService.downloadExcel(ticketSystem);
 	}
 	
-	/*@Test
 	public void getTicketStatistics() {
 		fTPService.getTicketStatistics("abc.text","Service Now", "Deloitte");
-	}*/
+	}
 	
 	@Test
 	public void processFile() throws ImsException, SQLException {
