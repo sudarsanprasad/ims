@@ -32,7 +32,7 @@ public class ImsForecastAutomationJob implements Job {
 		if(!CollectionUtils.isEmpty(systems)){
 			String forecastUrl = env.getProperty("forecast.url");
 			StringBuilder url = new StringBuilder(forecastUrl);
-			RestTemplate restTemplate = new RestTemplate();
+			RestTemplate restTemplate = getRestTemplate();
 			for(TicketStatistics system:systems){
 				url.append(system.getCustomer());
 				runForecast(url, restTemplate, system);
@@ -41,6 +41,11 @@ public class ImsForecastAutomationJob implements Job {
 		}
 		
 		
+	}
+
+	public RestTemplate getRestTemplate() {
+		RestTemplate restTemplate = new RestTemplate();
+		return restTemplate;
 	}
 
 	private void runForecast(StringBuilder url, RestTemplate restTemplate, TicketStatistics system) {
