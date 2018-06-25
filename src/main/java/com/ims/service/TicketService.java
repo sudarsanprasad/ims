@@ -148,35 +148,35 @@ public class TicketService {
 	}
 	
 	public TicketStatistics getTicketStatistics(String fileName, String systemName, String customer) {
-		TicketStatistics ticketStatistics = new TicketStatistics();
-		ticketStatistics.setSystemName(systemName);
-		ticketStatistics.setCustomer(customer);
-		ticketStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
-		ticketStatistics.setAutomationStartDate(new Date());
-		ticketStatistics.setFileName(fileName);
-		ticketStatistics.setSource("API");
-		ticketStatistics.setComments("Scheduler started Successfully");
+		TicketStatistics ticketApiStatistics = new TicketStatistics();
+		ticketApiStatistics.setSystemName(systemName);
+		ticketApiStatistics.setCustomer(customer);
+		ticketApiStatistics.setAutomationStatus(StatusType.INPROGRESS.getDescription());
+		ticketApiStatistics.setAutomationStartDate(new Date());
+		ticketApiStatistics.setFileName(fileName);
+		ticketApiStatistics.setSource("API");
+		ticketApiStatistics.setComments("Scheduler started Successfully");
 		List<TicketStatistics>  list = ticketStatisticsRepository.findAllByOrderByJobIdDesc();
 		if(!CollectionUtils.isEmpty(list)){
-			ticketStatistics.setVersionNumber(list.size()+1);
+			ticketApiStatistics.setVersionNumber(list.size()+1);
 		}else{
-			ticketStatistics.setVersionNumber(1);
+			ticketApiStatistics.setVersionNumber(1);
 		}
 		
-		return ticketStatistics;
+		return ticketApiStatistics;
 	}
 	
-	void buildQuery(String systemName, String customer, TicketStatistics ticketStatistics, StringBuilder query, TicketMetadata data) {
-		if("jobid".equalsIgnoreCase(data.getBusinessColumn())){
-			query.append("\"").append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
-		}else if("version".equalsIgnoreCase(data.getBusinessColumn())){
-			query.append("\"").append(String.valueOf(ticketStatistics.getVersionNumber())).append("\"").append(",");
-		}else if("customername".equalsIgnoreCase(data.getBusinessColumn())){
+	void buildQuery(String systemName, String customer, TicketStatistics ticketApiStatistics, StringBuilder query, TicketMetadata apiData) {
+		if("jobid".equalsIgnoreCase(apiData.getBusinessColumn())){
+			query.append("\"").append(String.valueOf(ticketApiStatistics.getJobId())).append("\"").append(",");
+		}else if("version".equalsIgnoreCase(apiData.getBusinessColumn())){
+			query.append("\"").append(String.valueOf(ticketApiStatistics.getVersionNumber())).append("\"").append(",");
+		}else if("customername".equalsIgnoreCase(apiData.getBusinessColumn())){
 			query.append("\"").append(customer).append("\"").append(",");
-		}else if("systemname".equalsIgnoreCase(data.getBusinessColumn())){
+		}else if("systemname".equalsIgnoreCase(apiData.getBusinessColumn())){
 			query.append("\"").append(systemName).append("\"");
 		}else{
-			query.append(data.getBusinessColumn()).append(",");
+			query.append(apiData.getBusinessColumn()).append(",");
 		}
 	}
 	
