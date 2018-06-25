@@ -102,10 +102,11 @@ public class ExcelToCsvUtil {
 				LOG.info("Error === >> " + e);
 			}
 		}
-		try {
+		try(FileWriter fw = new FileWriter(file)){
 			LOG.info("Saving csv file ==== >>" + file);
-			FileWriter fw = new FileWriter(file);
-			writeFile(text, fw);
+			Writer writer = new BufferedWriter(fw);
+			writer.write(text);
+			writer.close();
 			fw.close();
 		} catch (IOException e) {
 			LOG.info("Error == >> " + e);
@@ -113,11 +114,6 @@ public class ExcelToCsvUtil {
 
 	}
 
-	private void writeFile(String text, FileWriter fw) throws IOException {
-		Writer writer = new BufferedWriter(fw);
-		writer.write(text);
-		writer.close();
-	}
 
 	/**
 	 * @param args

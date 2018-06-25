@@ -36,5 +36,10 @@ public class DateUtil {
 		}
         return resultDate;
 	}
-
+	
+	public static String convertDateToAPIString(Date date){
+        DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");  
+        return dateFormat.format(date);  
+	}
+	
 }

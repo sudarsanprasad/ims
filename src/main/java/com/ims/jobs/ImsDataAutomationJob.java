@@ -42,21 +42,18 @@ public class ImsDataAutomationJob implements Job {
 		String system = context.getTrigger().getKey().getName();
 		TicketSystem ticketSystem = ticketSystemRepository.findBySystemNameAndCustomer(system, customer);
 		
-		boolean isFailed = false;
 		try {
 			if("API".equalsIgnoreCase(ticketSystem.getType())){
-				ticketService.updateTicketData(getRecords(ticketSystem), ticketSystem);
+				ticketService.updateDataToHDFS(getRecords(ticketSystem), ticketSystem);
 			}else{
 				ftpService.downloadExcel(ticketSystem);
 			}
+			imsJobService.triggerForecastModelScheduler(customer);
 		} catch (ImsException e) {
 			log.error("Exception == "+e);
-			isFailed =true;
 		}
 		log.info("Job completed");
-		if(!isFailed){
-			imsJobService.triggerForecastModelScheduler(customer);
-		}
+		
 	}
 	
 	private String getRecords(TicketSystem ticketSystem) {

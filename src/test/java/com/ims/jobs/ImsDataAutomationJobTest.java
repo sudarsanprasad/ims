@@ -56,7 +56,7 @@ public class ImsDataAutomationJobTest {
 		when(context.getTrigger()).thenReturn(trigger);
 		when(trigger.getKey()).thenReturn(triggerKey);
 		//when(triggerKey.getGroup()).thenReturn("Deloite");
-		doNothing().when(ticketService).updateTicketData(anyString(), anyObject());
+		doNothing().when(ticketService).updateDataToHDFS(anyString(), anyObject());
 		when(ticketSystemRepository.findBySystemNameAndCustomer("Deloite","DEFAULT")).thenReturn(ticketSystem);
 		when(ftpService.downloadExcel(ticketSystem)).thenReturn(true);
 		imsDataAutomationJob.execute(context);
@@ -74,7 +74,7 @@ public class ImsDataAutomationJobTest {
 		when(context.getTrigger()).thenReturn(trigger);
 		when(trigger.getKey()).thenReturn(triggerKey);
 		//when(triggerKey.getGroup()).thenReturn("Deloite");
-		doNothing().when(ticketService).updateTicketData(anyString(), anyObject());
+		doNothing().when(ticketService).updateDataToHDFS(anyString(), anyObject());
 		when(ticketSystemRepository.findBySystemNameAndCustomer("Deloite","DEFAULT")).thenReturn(ticketSystem);
 		when(ftpService.downloadExcel(null)).thenThrow(ImsException.class);
 		imsDataAutomationJob.execute(context);
