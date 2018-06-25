@@ -56,10 +56,12 @@ public class FTPServiceTest {
 		fTPService.downloadExcel(ticketSystem);
 	}
 	
+	@Test
 	public void getTicketStatistics() {
 		fTPService.getTicketStatistics("abc.text","Service Now", "Deloitte");
 	}
 	
+	@Test
 	public void processFile() throws ImsException, SQLException {
 		TicketStatistics ticketStatistics =constructTicketStatistics();
 		Connection con=mock(Connection.class);
@@ -68,6 +70,8 @@ public class FTPServiceTest {
 		doReturn(stmt).when(con).createStatement();
 		doReturn(ticketStatistics).when(fTPService).getTicketStatistics(anyString(),anyString(),anyString());
 		when(ticketStatisticsRepository.save(ticketStatistics)).thenReturn(ticketStatistics);
+		when(ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
+		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
 		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
 		fTPService.processFile("", "ServiceNow", "Deloite",new File("abc"), "C;/", "XLS", "test");
 	}

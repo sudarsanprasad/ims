@@ -1,6 +1,7 @@
 package com.ims.util;
 
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +12,8 @@ import java.util.List;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -19,7 +22,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.util.Assert;
 
+import com.ims.entity.FieldConfiguration;
 import com.ims.entity.TicketMetadata;
+import com.ims.entity.TicketSystem;
 import com.ims.repository.TicketMetadataRepository;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -30,6 +35,9 @@ public class UtilTest {
 	
 	@InjectMocks
 	QueryBuilder queryBuilder;
+	
+	@InjectMocks
+	JsonToCsvUtil jsonToCsvUtil;
 	
 	
 	@Test
@@ -130,6 +138,39 @@ public class UtilTest {
 		FileNameUtil.getSystemName("deloite_servicenow.text");
 	}
 	
+	@Test
+	public  void getFileName() {
+		TicketSystem ticketSystem = constructTicketSystem();
+		FileNameUtil.getFileName("/api/", ticketSystem);
+	}
+
+	@Test
+	public void  getPpmFileName() {
+		TicketSystem ticketSystem = constructTicketSystem();
+		FileNameUtil.getPpmFileName("/api/", ticketSystem);
+	}
+	
+	@Test
+	public void prepareCsv() {
+		JSONObject jsonObjMock=mock(JSONObject.class);
+		JSONArray records=mock(JSONArray.class);
+		JSONObject record=mock(JSONObject.class);
+		FieldConfiguration fieldConfiguration=new FieldConfiguration();
+		fieldConfiguration.setId(10l);
+		fieldConfiguration.setCustomer("Delloite");
+		fieldConfiguration.setSystemName("ServiceNow");
+		fieldConfiguration.setProperty("test property");
+		List<FieldConfiguration> fieldConfigurationList=new ArrayList<>();
+		fieldConfigurationList.add(fieldConfiguration);
+		when(jsonObjMock.getJSONArray("result")).thenReturn(records);
+		when(records.length()).thenReturn(1).thenReturn(0);
+		when(records.getJSONObject(0)).thenReturn(record);
+		when(record.get(anyString())).thenReturn("abc");
+		jsonToCsvUtil.prepareCsv(jsonObjMock, fieldConfigurationList, "test", "abc");
+		
+	}
+
+	
 	private List<TicketMetadata> constructTicketMetaDataList() {
 		List<TicketMetadata> ticketMetadataList = new ArrayList<TicketMetadata>();
 		TicketMetadata ticketMetadata = new TicketMetadata();
@@ -137,6 +178,15 @@ public class UtilTest {
 		ticketMetadata.setSystemName("Service Now");
 		ticketMetadataList.add(ticketMetadata);
 		return ticketMetadataList;
+	}
+	
+		
+	private TicketSystem constructTicketSystem() {
+		TicketSystem ticketSystem = new TicketSystem();
+		ticketSystem.setId(10L);
+		ticketSystem.setCustomer("Deloite");
+		ticketSystem.setSystemName("ServiceNow");
+		return ticketSystem;
 	}
 
 
