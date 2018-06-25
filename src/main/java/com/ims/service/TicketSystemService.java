@@ -58,4 +58,8 @@ public class TicketSystemService {
 	public List<FieldMask> getFieldMask() {
 		return fieldMaskRepository.findByMaskEnabled("X");
 	}
+	
+	public List<String> getCustomers() {
+		return ticketSystemRepository.findDistinctCustomers();
+	}
 }

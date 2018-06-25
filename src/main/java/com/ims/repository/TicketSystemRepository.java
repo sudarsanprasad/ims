@@ -18,4 +18,7 @@ public interface TicketSystemRepository extends JpaRepository<TicketSystem, Long
 	@Modifying(clearAutomatically = true)
 	@Query("update TicketSystem ts set ts.firstTimeFlag ='N'  where ts.customer = :customer")
 	void updateFirstTimeFlagAsN(@Param("customer") String customer);
+	
+	@Query("SELECT DISTINCT ts.customer FROM TicketSystem ts")
+	List<String> findDistinctCustomers();
 }

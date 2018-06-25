@@ -57,4 +57,9 @@ public class TicketSystemController {
 	public List<FieldMask> getFieldMask() {
 		return ticketSystemService.getFieldMask();
 	}
+	
+	@GetMapping("/getCustomers")
+	public List<String> getCustomers() {
+		return ticketSystemService.getCustomers();
+	}
 }
