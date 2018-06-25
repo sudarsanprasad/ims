@@ -194,8 +194,7 @@ public class FTPService {
 			}
 	}
 
-	private StringBuilder createTempTableQuery(String systemName,
-			List<TicketMetadata> systemFields) {
+	private StringBuilder createTempTableQuery(String systemName, List<TicketMetadata> systemFields) {
 		StringBuilder tempTableBuilder = new StringBuilder("CREATE EXTERNAL TABLE IF NOT EXISTS temp_ims_").append(systemName).append("(");
 		for(TicketMetadata field:systemFields){
 			tempTableBuilder.append(field.getBusinessColumn()).append(" string, ");
