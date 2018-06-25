@@ -64,7 +64,7 @@ public class TicketService {
 	
 	public void updateDataToHDFS(String result, TicketSystem system) {
 		List<FieldConfiguration> fields = fieldConfigurationRepository.findPropertyBySystemNameOrderById(system.getSystemName());
-		String location = (String)env.getProperty("api.file.location");
+		String location = env.getProperty("api.file.location");
 		LOG.info("API  File Configured Location === >>"+location);
 		JSONObject jsonObj = new JSONObject(result);
 		JSONArray records = jsonObj.getJSONArray("result");
@@ -74,7 +74,8 @@ public class TicketService {
 			JSONObject record = records.getJSONObject(i);
 			if("Service Now".equalsIgnoreCase(system.getSystemName())){
 				String comments = getUrl(restTemplate, (String) record.get((String)env.getProperty("ticketid").trim()));
-				String maskedData = DataMaskUtil.maskData(comments);
+				String replaceString=comments.replace("System Administrator  Additional comments  n"," ");
+				String maskedData = DataMaskUtil.maskData(replaceString);
 				record.put("comments", DataMaskUtil.replaceSpecialChars(maskedData));
 			}
 		}
