@@ -35,6 +35,8 @@ public class TicketSystemService {
 		List<TicketSystem> ticketSystems =  ticketSystemRepository.findByCustomer(ticketSystem.getCustomer());
 		if(CollectionUtils.isEmpty(ticketSystems)){
 			ticketSystem.setFirstTimeFlag("Y");
+		}else{
+			ticketSystem.setFirstTimeFlag("N");
 		}
 		ticketSystem.setAutomationCronValue("0 0/2 * * * ?");
 		return ticketSystemRepository.save(ticketSystem);

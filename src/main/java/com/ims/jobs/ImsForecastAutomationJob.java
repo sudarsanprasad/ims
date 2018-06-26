@@ -28,14 +28,14 @@ public class ImsForecastAutomationJob implements Job {
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		List<String> customers = ticketStatisticsRepository.findDistinctForecastCustomers();
-		List<TicketStatistics> systems = ticketStatisticsRepository.findAllByCustomerIn(customers);
-		if(!CollectionUtils.isEmpty(systems)){
+		List<TicketStatistics> statistics = ticketStatisticsRepository.findAllByCustomerIn(customers);
+		if(!CollectionUtils.isEmpty(statistics)){
 			String forecastUrl = env.getProperty("forecast.url");
 			StringBuilder url = new StringBuilder(forecastUrl);
 			RestTemplate restTemplate = new RestTemplate();
-			for(TicketStatistics system:systems){
-				url.append(system.getCustomer());
-				runForecast(url, restTemplate, system);
+			for(TicketStatistics stats:statistics){
+				url.append(stats.getCustomer());
+				runForecast(url, restTemplate, stats);
 				
 			}
 		}
@@ -43,22 +43,26 @@ public class ImsForecastAutomationJob implements Job {
 		
 	}
 
-	private void runForecast(StringBuilder url, RestTemplate restTemplate, TicketStatistics system) {
+	private void runForecast(StringBuilder url, RestTemplate restTemplate, TicketStatistics statistics) {
 		try{
-			system.setForecastStatus(StatusType.INPROGRESS.getDescription());
-			ticketStatisticsRepository.save(system);
-			String result = restTemplate.getForObject(url.toString(), String.class);
-			if("Success".equalsIgnoreCase(result)){
-				system.setForecastStatus(StatusType.COMPLETED.getDescription());
-				ticketStatisticsRepository.save(system);
-			}else{
-				system.setForecastStatus(StatusType.INPROGRESS.getDescription());
-				ticketStatisticsRepository.save(system);
+			if(StatusType.COMPLETED.getDescription().equalsIgnoreCase(statistics.getAutomationStatus())){
+				statistics.setForecastStatus(StatusType.INPROGRESS.getDescription());
+				ticketStatisticsRepository.save(statistics);
+				String result = restTemplate.getForObject(url.toString(), String.class);
+				LOG.info("Forecast model build status ==>> "+result);
+				if("Success".equalsIgnoreCase(result)){
+					statistics.setForecastStatus(StatusType.COMPLETED.getDescription());
+					ticketStatisticsRepository.save(statistics);
+				}else{
+					statistics.setForecastStatus(StatusType.FAILED.getDescription());
+					ticketStatisticsRepository.save(statistics);
+				}
 			}
+			
 		}catch(Exception ex){
 			LOG.info("Exception ===>> "+ex);
-			system.setForecastStatus(StatusType.FAILED.getDescription());
-			ticketStatisticsRepository.save(system);
+			statistics.setForecastStatus(StatusType.FAILED.getDescription());
+			ticketStatisticsRepository.save(statistics);
 		}
 	}
 }

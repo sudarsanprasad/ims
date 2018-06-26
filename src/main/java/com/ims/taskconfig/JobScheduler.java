@@ -50,7 +50,7 @@ public class JobScheduler {
 		imsJobService.createJobs(ticketSystems);
 	}
 	
-	//@Scheduled(cron = "0 0/10 * * * ?")
+	@Scheduled(cron = "0 0/5 * * * ?")
 	public void runForecastScheduler() throws ImsException {
 		imsJobService.createForecastJob();
 	}

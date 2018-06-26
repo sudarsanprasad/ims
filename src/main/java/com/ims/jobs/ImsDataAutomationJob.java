@@ -43,15 +43,21 @@ public class ImsDataAutomationJob implements Job {
 		TicketSystem ticketSystem = ticketSystemRepository.findBySystemNameAndCustomer(system, customer);
 		
 		try {
-			if("API".equalsIgnoreCase(ticketSystem.getType())){
-				ticketService.updateDataToHDFS(getRecords(ticketSystem), ticketSystem);
-			}else{
-				ftpService.downloadExcel(ticketSystem);
+			if("Y".equalsIgnoreCase(ticketSystem.getEnableFlag())){
+				if("API".equalsIgnoreCase(ticketSystem.getType())){
+					ticketService.updateDataToHDFS(getRecords(ticketSystem), ticketSystem);
+				}else{
+					ftpService.downloadExcel(ticketSystem);
+				}
+				if("Y".equalsIgnoreCase(ticketSystem.getFirstTimeFlag())){
+					imsJobService.triggerForecastModelScheduler(customer);
+				}
 			}
-			imsJobService.triggerForecastModelScheduler(customer);
 		} catch (ImsException e) {
 			log.error("Exception == "+e);
 		}
+		ticketSystem.setFirstTimeFlag("N");
+		ticketSystemRepository.save(ticketSystem);
 		log.info("Job completed");
 		
 	}

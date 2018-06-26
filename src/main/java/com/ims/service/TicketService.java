@@ -88,19 +88,18 @@ public class TicketService {
 			}
 			recordsCount++;
 		}
-		String systemName = system.getSystemName().replaceAll(" ", "");
+		String systemName = system.getSystemName().replaceAll(" ", "").toLowerCase();
 		TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics("NA", systemName, system.getCustomer()));
 		LOG.info("Records Count ==>> "+recordsCount);
 		JsonToCsvUtil jsonToCsvUtil = new JsonToCsvUtil();
 		String fileName = FileNameUtil.getFileName(location, system);
 		jsonToCsvUtil.prepareCsv(jsonObj, fields, fileName, FileNameUtil.getPpmFileName(ppmLocation, system));
+		List<TicketMetadata> systemFields = ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(system.getSystemName(), "Y");
+		StringBuilder tableBuilder = createTempTableQuery(systemName, systemFields);
 		StringBuilder queryBuilder = new StringBuilder("load data local inpath \"");
 		queryBuilder.append(FileNameUtil.getFileName(location, system)).append("\" into table temp_ims_").append(systemName);
 		LOG.info("Query Builder === >>"+queryBuilder.toString());
-		List<TicketMetadata> systemFields = ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(systemName, "Y");
 		try(Connection con = getConnection();Statement stmt = con.createStatement()) {
-			
-			StringBuilder tableBuilder = createTempTableQuery(systemName, systemFields);
 			LOG.info("Teamp Table Query  ==>> "+tableBuilder);
 			stmt.execute(tableBuilder.toString());
 			stmt.execute("truncate table temp_ims_"+systemName);
@@ -117,7 +116,17 @@ public class TicketService {
 			}
 			StringBuilder finalQuery = prepareQuery.getFromValue(query, "temp_ims_"+systemName);
 			LOG.info(finalQuery.toString());
+			stmt.execute(finalQuery.toString());
 			deleteFile(fileName);
+			ticketStatistics.setRecordsInserted(Long.valueOf(recordsCount));
+			ticketStatistics.setRecordsFailed(0l);
+			ticketStatistics.setAutomationEndDate(new Date());
+			ticketStatistics.setComments("Data Inserted successfully");
+			ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
+			ticketStatistics.setForecastStatus(StatusType.OPEN.getDescription());
+			ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
+			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
+			ticketStatisticsRepository.save(ticketStatistics);
 		} catch (SQLException e) {
 			LOG.info(e);
 		}

@@ -186,10 +186,11 @@ public class FTPService {
 				ticketStatistics.setRecordsInserted(Long.valueOf(0));
 				ticketStatistics.setRecordsFailed(0l);
 				ticketStatistics.setAutomationEndDate(new Date());
-				ticketStatistics.setComments("Data Inserted successfully");
+				ticketStatistics.setComments("Failed to insert the data");
 				ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
 				ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
 				ticketStatisticsRepository.save(ticketStatistics);
+				LOG.error(ex);
 				throw new ImsException("Exception occured while processing excel data", ex);
 			}
 	}

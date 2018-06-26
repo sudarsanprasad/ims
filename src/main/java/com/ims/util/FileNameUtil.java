@@ -25,7 +25,7 @@ public class FileNameUtil {
 
 	public static String getPpmFileName(String ppmLocation, TicketSystem system) {
 		StringBuilder fileName = new StringBuilder(ppmLocation);
-		fileName.append("_").append(system.getCustomer().trim()).append("_").append("PPM").append("_").append(DateUtil.convertDateToAPIString(new Date())).append(".csv");
+		fileName.append(system.getCustomer()).append("_").append(system.getSystemName()).append("_").append("PPM").append("_").append(DateUtil.convertDateToAPIString(new Date())).append(".csv");
 		return fileName.toString();
 	}
 }
