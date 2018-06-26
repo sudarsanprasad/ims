@@ -29,7 +29,9 @@ import org.springframework.web.client.RestTemplate;
 import com.ims.constant.JobType;
 import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketSystem;
+import com.ims.jobs.ForecastJobDescriptor;
 import com.ims.jobs.JobDescriptor;
+import com.ims.jobs.KrJobDescriptor;
 import com.ims.jobs.TriggerDescriptor;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
@@ -191,9 +193,9 @@ public class ImsJobService {
 		return state;
 	}
 	
-	public JobDescriptor createForecastJob() {
+	public ForecastJobDescriptor createForecastJob() {
 		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("forecast.cronvalue");
-		JobDescriptor forecastDescriptor = new JobDescriptor();
+		ForecastJobDescriptor forecastDescriptor = new ForecastJobDescriptor();
 		List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
 		TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
 		triggerDescriptor.setCron(configuration.getValue());
@@ -217,9 +219,9 @@ public class ImsJobService {
 		return forecastDescriptor;
 	}
 	
-	public JobDescriptor createKrJob() {
+	public KrJobDescriptor createKrJob() {
 		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("forecast.cronvalue");
-		JobDescriptor krDescriptor = new JobDescriptor();
+		KrJobDescriptor krDescriptor = new KrJobDescriptor();
 		List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
 		TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
 		triggerDescriptor.setCron(configuration.getValue());

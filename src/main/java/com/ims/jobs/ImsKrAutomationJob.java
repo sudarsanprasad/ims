@@ -48,15 +48,24 @@ public class ImsKrAutomationJob implements Job {
 		List<TicketStatistics> list = ticketStatisticsRepository.findAllByAutomationStatusAndKnowledgeBaseStatusOrderByJobIdDesc(StatusType.COMPLETED.getDescription(), StatusType.OPEN.getDescription());
 		if(CollectionUtils.isEmpty(list)){
 			for(TicketStatistics record : list){
-				log.info("Calling KR API for file "+record.getFileName());
-				String url = env.getProperty("kr.url");
-				RestTemplate restTemplate = new RestTemplate();
-				restTemplate.getForObject(url, String.class);
+				if(StatusType.COMPLETED.getDescription().equalsIgnoreCase(record.getAutomationStatus()) && StatusType.OPEN.getDescription().equalsIgnoreCase(record.getKnowledgeBaseStatus())){
+					log.info("Calling KR API for file "+record.getFileName());
+					record.setKnowledgeBaseStatus(StatusType.INPROGRESS.getDescription());
+					ticketStatisticsRepository.save(record);
+					String url = env.getProperty("kr.url");
+					RestTemplate restTemplate = new RestTemplate();
+					String result = restTemplate.getForObject(url, String.class);
+					if("Success".equalsIgnoreCase(result)){
+						record.setKnowledgeBaseStatus(StatusType.COMPLETED.getDescription());
+						ticketStatisticsRepository.save(record);
+						ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("kr.build.status");
+						imsConfiguration.setValue("COMPLETED");
+						imsConfigurationRepository.save(imsConfiguration);
+					}
+				}
 			}
 		}
-		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("forecast.model.status");
-		imsConfiguration.setValue("COMPLETED");
-		imsConfigurationRepository.save(imsConfiguration);
+		
 	}
 	
 }

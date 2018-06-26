@@ -1,7 +1,5 @@
 package com.ims.taskconfig;
 
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -11,13 +9,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import com.ims.entity.TicketSystem;
 import com.ims.exception.ImsException;
+import com.ims.jobs.ForecastJobDescriptor;
 import com.ims.jobs.JobDescriptor;
+import com.ims.jobs.KrJobDescriptor;
 import com.ims.repository.TicketSystemRepository;
 import com.ims.service.ImsJobService;
 
@@ -45,13 +44,13 @@ public class JobSchedulerTest {
 	@Test
 	public void runForecastScheduler() throws ImsException {
 		ReflectionTestUtils.setField(jobScheduler, "imsJobService", imsJobService);
-		when(imsJobService.createForecastJob()).thenReturn(new JobDescriptor());
+		when(imsJobService.createForecastJob()).thenReturn(new ForecastJobDescriptor());
 		jobScheduler.runForecastScheduler();
 	}
 
 	@Test
 	public void runKRScheduler() throws ImsException {
-		when(imsJobService.createKrJob()).thenReturn(new JobDescriptor());
+		when(imsJobService.createKrJob()).thenReturn(new KrJobDescriptor());
 		ReflectionTestUtils.setField(jobScheduler, "imsJobService", imsJobService);
 		jobScheduler.runKRScheduler();
 	}

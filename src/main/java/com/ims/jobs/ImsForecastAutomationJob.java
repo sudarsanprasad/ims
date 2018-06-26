@@ -12,7 +12,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
 import com.ims.constant.StatusType;
+import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketStatistics;
+import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketStatisticsRepository;
 
 public class ImsForecastAutomationJob implements Job {
@@ -24,6 +26,9 @@ public class ImsForecastAutomationJob implements Job {
 	
 	@Autowired
 	TicketStatisticsRepository ticketStatisticsRepository;
+	
+	@Autowired
+	ImsConfigurationRepository imsConfigurationRepository;
 	
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -45,7 +50,7 @@ public class ImsForecastAutomationJob implements Job {
 
 	private void runForecast(StringBuilder url, RestTemplate restTemplate, TicketStatistics statistics) {
 		try{
-			if(StatusType.COMPLETED.getDescription().equalsIgnoreCase(statistics.getAutomationStatus())){
+			if(StatusType.COMPLETED.getDescription().equalsIgnoreCase(statistics.getAutomationStatus()) && StatusType.OPEN.getDescription().equalsIgnoreCase(statistics.getForecastStatus())){
 				statistics.setForecastStatus(StatusType.INPROGRESS.getDescription());
 				ticketStatisticsRepository.save(statistics);
 				String result = restTemplate.getForObject(url.toString(), String.class);
@@ -53,6 +58,9 @@ public class ImsForecastAutomationJob implements Job {
 				if("Success".equalsIgnoreCase(result)){
 					statistics.setForecastStatus(StatusType.COMPLETED.getDescription());
 					ticketStatisticsRepository.save(statistics);
+					ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("kr.build.status");
+					imsConfiguration.setValue("COMPLETED");
+					imsConfigurationRepository.save(imsConfiguration);
 				}else{
 					statistics.setForecastStatus(StatusType.FAILED.getDescription());
 					ticketStatisticsRepository.save(statistics);

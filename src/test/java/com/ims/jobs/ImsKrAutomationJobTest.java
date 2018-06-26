@@ -67,7 +67,6 @@ public class ImsKrAutomationJobTest {
 	@Test
 	public void executeEmptyList() throws JobExecutionException {
 		JobExecutionContext context = Mockito.mock(JobExecutionContext.class);
-		TicketStatistics ticketStatistics = constructTicketStatistics();
 		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
 		//ticketStatisticsList.add(ticketStatistics);
 		doReturn(ticketStatisticsList).when(ticketStatisticsRepository)
