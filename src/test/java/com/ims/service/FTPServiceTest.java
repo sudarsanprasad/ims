@@ -39,43 +39,66 @@ public class FTPServiceTest {
 
 	@Mock
 	TicketStatisticsRepository ticketStatisticsRepository;
-	
+
 	@Mock
 	TicketSystemRepository ticketSystemRepository;
-	
-	
+
 	@InjectMocks
 	@Spy
 	FTPService fTPService;
-	
+
 	@Test
 	public void downloadExcel() throws ImsException {
 		TicketSystem ticketSystem = new TicketSystem();
 		ticketSystem.setCustomer("Deloitte");
-		when(ticketSystemRepository.findByCustomerAndEnableFlagAndType("Deloitte", "Y", "FTP")).thenReturn(getTicketSystemList());
+		when(ticketSystemRepository.findByCustomerAndEnableFlagAndType("Deloitte", "Y", "FTP"))
+				.thenReturn(getTicketSystemList());
 		fTPService.downloadExcel(ticketSystem);
 	}
-	
+
 	@Test
 	public void getTicketStatistics() {
-		fTPService.getTicketStatistics("abc.text","Service Now", "Deloitte");
+		fTPService.getTicketStatistics("abc.text", "Service Now", "Deloitte");
 	}
-	
+
 	@Test
 	public void processFile() throws ImsException, SQLException {
-		TicketStatistics ticketStatistics =constructTicketStatistics();
-		Connection con=mock(Connection.class);
-		Statement stmt=mock(Statement.class);
+		TicketStatistics ticketStatistics = constructTicketStatistics();
+		Connection con = mock(Connection.class);
+		Statement stmt = mock(Statement.class);
 		doReturn(con).when(fTPService).getConnection();
 		doReturn(stmt).when(con).createStatement();
-		doReturn(ticketStatistics).when(fTPService).getTicketStatistics(anyString(),anyString(),anyString());
+		doReturn(ticketStatistics).when(fTPService).getTicketStatistics(anyString(), anyString(), anyString());
 		when(ticketStatisticsRepository.save(ticketStatistics)).thenReturn(ticketStatistics);
-		when(ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
-		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
-		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
-		fTPService.processFile("", "ServiceNow", "Deloite",new File("abc"), "C;/", "XLS", "test");
+		when(ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(anyString(), anyString()))
+				.thenReturn(constructTicketMetaDataList());
+		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(), anyString()))
+				.thenReturn(constructTicketMetaDataList());
+		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(), anyString()))
+				.thenReturn(constructTicketMetaDataList());
+		fTPService.processFile("", "ServiceNow", "Deloite", new File("abc"), "C;/", "XLS", "test");
 	}
+
+	@Test(expected=ImsException.class)
+	public void processFileException() throws ImsException, SQLException {
+
+		TicketStatistics ticketStatistics = constructTicketStatistics();
+		Connection con = mock(Connection.class);
+		Statement stmt = mock(Statement.class);
+		doReturn(con).when(fTPService).getConnection();
+		doReturn(null).when(con).createStatement();
+		doReturn(ticketStatistics).when(fTPService).getTicketStatistics(anyString(), anyString(), anyString());
+		when(ticketStatisticsRepository.save(ticketStatistics)).thenReturn(ticketStatistics);
+		when(ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(anyString(), anyString()))
+				.thenReturn(constructTicketMetaDataList());
+		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(), anyString()))
+				.thenReturn(constructTicketMetaDataList());
+		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(), anyString()))
+				.thenReturn(constructTicketMetaDataList());
+		fTPService.processFile("", "ServiceNow", "Deloite", new File("abc"), "C;/", "XLS", "test");
 	
+	}
+
 	private TicketSystem constructTicketSystem() {
 		TicketSystem ticketSystem = new TicketSystem();
 		ticketSystem.setId(10L);
@@ -92,7 +115,7 @@ public class FTPServiceTest {
 		ticketSystemList.add(constructTicketSystem());
 		return ticketSystemList;
 	}
-	
+
 	private TicketStatistics constructTicketStatistics() {
 		TicketStatistics ticketStatistics = new TicketStatistics();
 		ticketStatistics.setCustomer("Deloitte");
@@ -100,7 +123,7 @@ public class FTPServiceTest {
 		ticketStatistics.setFileName("test.txt");
 		return ticketStatistics;
 	}
-	
+
 	private List<TicketMetadata> constructTicketMetaDataList() {
 		List<TicketMetadata> ticketMetadataList = new ArrayList<TicketMetadata>();
 		TicketMetadata ticketMetadata = new TicketMetadata();
