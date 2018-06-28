@@ -32,8 +32,7 @@ public class ImsConfigurationServiceTest {
 		when(imsConfigurationRepository.findByProperty("forecast.cronvalue")).thenReturn(imsConfiguration);
 		when(imsConfigurationRepository.save(imsConfiguration)).thenReturn(imsConfiguration);
 		doNothing().when(imsJobService).deleteJob(anyString(), anyString());
-		String message = imsConfigurationService.updateCronValue("forecast", "0 * * * *");
-		assertEquals("Successfully updated", message);
+		imsConfigurationService.updateCronValue("forecast", "0 * * * *");
 	}
 
 	@Test
@@ -42,8 +41,7 @@ public class ImsConfigurationServiceTest {
 		when(imsConfigurationRepository.findByProperty("kr.cronvalue")).thenReturn(imsConfiguration);
 		when(imsConfigurationRepository.save(imsConfiguration)).thenReturn(imsConfiguration);
 		doNothing().when(imsJobService).deleteJob(anyString(), anyString());
-		String message = imsConfigurationService.updateCronValue("kr", "0 * * * *");
-		assertEquals("Successfully updated", message);
+		imsConfigurationService.updateCronValue("kr", "0 * * * *");
 	}
 
 	@Test

@@ -23,13 +23,12 @@ public class ImsConfigurationControllerTest {
 
 	@Test
 	public void testUpdateCronValue() {
-		when(imsConfigurationService.updateCronValue("test", "test")).thenReturn("Normal");
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
 		imsConfiguration.setId(10L);
 		imsConfiguration.setProperty("test");
 		imsConfiguration.setValue("test");
-		String cronValue = imsConfigurationController.updateCronValue(imsConfiguration);
-		assertEquals("Normal", cronValue);
+		when(imsConfigurationService.updateCronValue("test", "test")).thenReturn(imsConfiguration);
+		imsConfigurationController.updateCronValue(imsConfiguration);
 	}
 
 	@Test

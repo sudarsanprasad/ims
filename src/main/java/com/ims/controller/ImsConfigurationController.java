@@ -45,7 +45,7 @@ public class ImsConfigurationController {
 		return imsConfigurationService.updateKrStatus(status);
 	}
 	
-	@GetMapping(value="/getAll")
+	@GetMapping(value="/getAllCron")
 	public List<ImsConfiguration> findAll(){
 		return imsConfigurationService.findAll();
 	}
