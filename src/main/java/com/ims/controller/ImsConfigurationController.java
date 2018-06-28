@@ -16,37 +16,38 @@ import com.ims.service.ImsConfigurationService;
 @RestController
 @RequestMapping("/configuration")
 public class ImsConfigurationController {
-	
+
 	@Autowired
 	ImsConfigurationService imsConfigurationService;
-	
+
 	@PostMapping(value = "/updateCron")
 	public ImsConfiguration updateCronValue(@RequestBody ImsConfiguration imsConfiguration) {
-		return imsConfigurationService.updateCronValue(imsConfiguration.getProperty(), imsConfiguration.getValue());
+		return imsConfigurationService.updateCronValue(imsConfiguration.getProperty(), imsConfiguration.getValue(),
+				imsConfiguration.getFrequencyType(), imsConfiguration.getFrequencyValue());
 	}
-	
+
 	@GetMapping(value = "/getForecastStatus")
 	public String getForecastModelStatus() {
 		return imsConfigurationService.getForecastModelStatus();
 	}
-	
+
 	@GetMapping(value = "/getKrStatus")
 	public String getKrStatus() {
 		return imsConfigurationService.getKrStatus();
 	}
-	
+
 	@GetMapping(value = "/updateForecastStatus/{status}")
 	public String updateForecastStatus(@PathVariable String status) {
 		return imsConfigurationService.updateForecastStatus(status);
 	}
-	
+
 	@GetMapping(value = "/updateKrStatus/{status}")
 	public String updateKrStatus(@PathVariable String status) {
 		return imsConfigurationService.updateKrStatus(status);
 	}
-	
-	@GetMapping(value="/getAllCron")
-	public List<ImsConfiguration> findAll(){
+
+	@GetMapping(value = "/getAllCron")
+	public List<ImsConfiguration> findAll() {
 		return imsConfigurationService.findAll();
 	}
 }

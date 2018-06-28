@@ -23,16 +23,20 @@ public class ImsConfigurationService {
 	@Autowired
 	ImsJobService imsJobService;
 
-	public ImsConfiguration updateCronValue(String type, String cronValue) {
+	public ImsConfiguration updateCronValue(String type, String cronValue, String frequencyType, String frequencyValue) {
 		ImsConfiguration imsConfiguration = null;
 		if (JobType.FORECAST.getDescription().equalsIgnoreCase(type)) {
 			imsConfiguration = imsConfigurationRepository.findByProperty("forecast.cronvalue");
 			imsConfiguration.setValue(cronValue);
+			imsConfiguration.setFrequencyType(frequencyType);
+			imsConfiguration.setFrequencyValue(frequencyValue);
 			imsConfigurationRepository.save(imsConfiguration);
 			imsJobService.deleteJob(JobType.FORECAST.getDescription(), JobType.FORECAST.getDescription());
 		} else if (JobType.KR.getDescription().equalsIgnoreCase(type)) {
 			imsConfiguration = imsConfigurationRepository.findByProperty("kr.cronvalue");
 			imsConfiguration.setValue(cronValue);
+			imsConfiguration.setFrequencyType(frequencyType);
+			imsConfiguration.setFrequencyValue(frequencyValue);
 			imsConfigurationRepository.save(imsConfiguration);
 			imsJobService.deleteJob(JobType.KR.getDescription(), JobType.KR.getDescription());
 		}

@@ -27,7 +27,7 @@ public class ImsConfigurationControllerTest {
 		imsConfiguration.setId(10L);
 		imsConfiguration.setProperty("test");
 		imsConfiguration.setValue("test");
-		when(imsConfigurationService.updateCronValue("test", "test")).thenReturn(imsConfiguration);
+		when(imsConfigurationService.updateCronValue("test", "test","type","value")).thenReturn(imsConfiguration);
 		imsConfigurationController.updateCronValue(imsConfiguration);
 	}
 
