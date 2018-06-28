@@ -12,9 +12,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.web.client.RestTemplate;
 
 import com.ims.constant.StatusType;
-import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketStatistics;
-import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketStatisticsRepository;
 
 public class ImsForecastAutomationJob implements Job {
@@ -27,9 +25,6 @@ public class ImsForecastAutomationJob implements Job {
 	@Autowired
 	TicketStatisticsRepository ticketStatisticsRepository;
 	
-	@Autowired
-	ImsConfigurationRepository imsConfigurationRepository;
-	
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		List<String> customers = ticketStatisticsRepository.findDistinctForecastCustomers();
@@ -37,9 +32,11 @@ public class ImsForecastAutomationJob implements Job {
 		if(!CollectionUtils.isEmpty(statistics)){
 			String forecastUrl = env.getProperty("forecast.url");
 			StringBuilder url = new StringBuilder(forecastUrl);
+			LOG.info("Forecast URL ==>> "+url);
 			RestTemplate restTemplate = new RestTemplate();
 			for(TicketStatistics stats:statistics){
 				url.append(stats.getCustomer());
+				LOG.info("Forecast URL ==>> "+url.toString());
 				runForecast(url, restTemplate, stats);
 				
 			}
@@ -54,13 +51,10 @@ public class ImsForecastAutomationJob implements Job {
 				statistics.setForecastStatus(StatusType.INPROGRESS.getDescription());
 				ticketStatisticsRepository.save(statistics);
 				String result = restTemplate.getForObject(url.toString(), String.class);
-				LOG.info("Forecast model build status ==>> "+result);
+				LOG.info("Forecast status ==>> "+result);
 				if("Success".equalsIgnoreCase(result)){
 					statistics.setForecastStatus(StatusType.COMPLETED.getDescription());
 					ticketStatisticsRepository.save(statistics);
-					ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("kr.build.status");
-					imsConfiguration.setValue("COMPLETED");
-					imsConfigurationRepository.save(imsConfiguration);
 				}else{
 					statistics.setForecastStatus(StatusType.FAILED.getDescription());
 					ticketStatisticsRepository.save(statistics);

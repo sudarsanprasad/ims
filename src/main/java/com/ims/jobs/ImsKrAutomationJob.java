@@ -4,6 +4,7 @@ import java.util.List;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.log4j.Logger;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -23,6 +24,8 @@ import com.ims.service.TicketService;
 
 @Slf4j
 public class ImsKrAutomationJob implements Job {
+	
+	private static final Logger LOG = Logger.getLogger(ImsKrAutomationJob.class);
 	
 	@Autowired
 	private Environment env;
@@ -53,8 +56,10 @@ public class ImsKrAutomationJob implements Job {
 					record.setKnowledgeBaseStatus(StatusType.INPROGRESS.getDescription());
 					ticketStatisticsRepository.save(record);
 					String url = env.getProperty("kr.url");
+					LOG.info("KR URL ==>> "+url);
 					RestTemplate restTemplate = new RestTemplate();
 					String result = restTemplate.getForObject(url, String.class);
+					LOG.info("Result from KR ==>> "+result);
 					if("Success".equalsIgnoreCase(result)){
 						record.setKnowledgeBaseStatus(StatusType.COMPLETED.getDescription());
 						ticketStatisticsRepository.save(record);

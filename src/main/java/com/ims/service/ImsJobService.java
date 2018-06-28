@@ -11,6 +11,7 @@ import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.apache.log4j.Logger;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -41,6 +42,9 @@ import com.ims.repository.TicketSystemRepository;
 @Transactional
 @RequiredArgsConstructor
 public class ImsJobService {
+	
+	private static final Logger LOG = Logger.getLogger(ImsJobService.class);
+	
 	private final Scheduler scheduler;
 	
 	@Autowired
@@ -168,9 +172,11 @@ public class ImsJobService {
 		imsConfiguration.setValue("INPROGRESS");
 		imsConfigurationRepository.save(imsConfiguration);
 		String location = env.getProperty("forecast.model.url");
-		StringBuilder url = new StringBuilder(location).append(customerName); 
+		StringBuilder url = new StringBuilder(location).append(customerName);
+		LOG.info("Forecast model URL ==>> "+url.toString());
 		RestTemplate restTemplate = new RestTemplate();
 		String result = restTemplate.getForObject(url.toString(), String.class);
+		LOG.info("fore cast model building status ===>> "+result);
 		if("Success".equalsIgnoreCase(result)){
 			ticketSystemRepository.updateFirstTimeFlagAsN(customerName);
 			imsConfiguration.setValue("COMPLETED");
