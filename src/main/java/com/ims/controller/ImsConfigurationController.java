@@ -1,5 +1,7 @@
 package com.ims.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,7 +21,7 @@ public class ImsConfigurationController {
 	ImsConfigurationService imsConfigurationService;
 	
 	@PostMapping(value = "/updateCron")
-	public String updateCronValue(@RequestBody ImsConfiguration imsConfiguration) {
+	public ImsConfiguration updateCronValue(@RequestBody ImsConfiguration imsConfiguration) {
 		return imsConfigurationService.updateCronValue(imsConfiguration.getProperty(), imsConfiguration.getValue());
 	}
 	
@@ -41,5 +43,10 @@ public class ImsConfigurationController {
 	@GetMapping(value = "/updateKrStatus/{status}")
 	public String updateKrStatus(@PathVariable String status) {
 		return imsConfigurationService.updateKrStatus(status);
+	}
+	
+	@GetMapping(value="/getAll")
+	public List<ImsConfiguration> findAll(){
+		return imsConfigurationService.findAll();
 	}
 }

@@ -20,5 +20,9 @@ public class ImsConfiguration {
 	private String property;
 	
 	private String value;
+	
+	private String frequencyType;
+	
+	private String frequencyValue;
 
 }
