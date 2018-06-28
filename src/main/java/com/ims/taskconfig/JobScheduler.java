@@ -55,7 +55,7 @@ public class JobScheduler {
 		imsJobService.createForecastJob();
 	}
 	
-	@Scheduled(cron = "0 0/15 * * * ?")
+	@Scheduled(cron = "0 0/5 * * * ?")
 	public void runKRScheduler() throws ImsException {
 		imsJobService.createKrJob();
 	}

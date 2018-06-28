@@ -25,7 +25,7 @@ import com.ims.service.TicketService;
 @Slf4j
 public class ImsKrAutomationJob implements Job {
 	
-	private static final Logger LOG = Logger.getLogger(ImsKrAutomationJob.class);
+	private static final Logger LOG = Logger.getRootLogger();
 	
 	@Autowired
 	private Environment env;
@@ -49,10 +49,10 @@ public class ImsKrAutomationJob implements Job {
 	public void execute(JobExecutionContext context) throws JobExecutionException {
 		log.info("Job triggered to run KR");
 		List<TicketStatistics> list = ticketStatisticsRepository.findAllByAutomationStatusAndKnowledgeBaseStatusOrderByJobIdDesc(StatusType.COMPLETED.getDescription(), StatusType.OPEN.getDescription());
-		if(CollectionUtils.isEmpty(list)){
+		if(!CollectionUtils.isEmpty(list)){
 			for(TicketStatistics record : list){
 				if(StatusType.COMPLETED.getDescription().equalsIgnoreCase(record.getAutomationStatus()) && StatusType.OPEN.getDescription().equalsIgnoreCase(record.getKnowledgeBaseStatus())){
-					log.info("Calling KR API for file "+record.getFileName());
+					LOG.info("Calling KR API for file "+record.getFileName());
 					record.setKnowledgeBaseStatus(StatusType.INPROGRESS.getDescription());
 					ticketStatisticsRepository.save(record);
 					String url = env.getProperty("kr.url");

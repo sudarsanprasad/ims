@@ -1,5 +1,7 @@
 package com.ims.jobs;
 
+import java.util.logging.Logger;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.quartz.Job;
@@ -20,6 +22,8 @@ import com.ims.service.TicketService;
 @Slf4j
 public class ImsDataAutomationJob implements Job {
 	
+	private static final Logger LOG = Logger.getAnonymousLogger();
+	
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
 	
@@ -37,7 +41,7 @@ public class ImsDataAutomationJob implements Job {
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
-		log.info("Job triggered to get data");
+		LOG.info("Job triggered to get data");
 		String customer = context.getTrigger().getKey().getGroup();
 		String system = context.getTrigger().getKey().getName();
 		TicketSystem ticketSystem = ticketSystemRepository.findBySystemNameAndCustomer(system, customer);
@@ -58,7 +62,7 @@ public class ImsDataAutomationJob implements Job {
 		}
 		ticketSystem.setFirstTimeFlag("N");
 		ticketSystemRepository.save(ticketSystem);
-		log.info("Job completed");
+		LOG.info("Job completed");
 		
 	}
 	

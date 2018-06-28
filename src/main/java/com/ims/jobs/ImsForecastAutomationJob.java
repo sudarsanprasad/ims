@@ -17,7 +17,7 @@ import com.ims.repository.TicketStatisticsRepository;
 
 public class ImsForecastAutomationJob implements Job {
 	
-	private static final Logger LOG = Logger.getLogger(ImsForecastAutomationJob.class);
+	private static final Logger LOG = Logger.getRootLogger();
 	
 	@Autowired
 	private Environment env;
@@ -31,12 +31,13 @@ public class ImsForecastAutomationJob implements Job {
 		List<TicketStatistics> statistics = ticketStatisticsRepository.findAllByCustomerIn(customers);
 		if(!CollectionUtils.isEmpty(statistics)){
 			String forecastUrl = env.getProperty("forecast.url");
-			StringBuilder url = new StringBuilder(forecastUrl);
-			LOG.info("Forecast URL ==>> "+url);
+			
+			
 			RestTemplate restTemplate = new RestTemplate();
 			for(TicketStatistics stats:statistics){
+				StringBuilder url = new StringBuilder(forecastUrl);
+				LOG.info("Forecast URL ==>> "+url);
 				url.append(stats.getCustomer());
-				LOG.info("Forecast URL ==>> "+url.toString());
 				runForecast(url, restTemplate, stats);
 				
 			}
@@ -48,8 +49,10 @@ public class ImsForecastAutomationJob implements Job {
 	private void runForecast(StringBuilder url, RestTemplate restTemplate, TicketStatistics statistics) {
 		try{
 			if(StatusType.COMPLETED.getDescription().equalsIgnoreCase(statistics.getAutomationStatus()) && StatusType.OPEN.getDescription().equalsIgnoreCase(statistics.getForecastStatus())){
+				LOG.info("In Run Forecast method");
 				statistics.setForecastStatus(StatusType.INPROGRESS.getDescription());
 				ticketStatisticsRepository.save(statistics);
+				LOG.info("Triggered URL ===>> "+url.toString());
 				String result = restTemplate.getForObject(url.toString(), String.class);
 				LOG.info("Forecast status ==>> "+result);
 				if("Success".equalsIgnoreCase(result)){
