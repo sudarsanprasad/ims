@@ -75,11 +75,7 @@ public class ExcelToCsvUtil {
 	private String getValue(Row row, int j) {
 		String cellValue;
 		if (HSSFDateUtil.isCellDateFormatted(row.getCell(j))) {
-			LOG.info("Date Before Conversion ==>> "
-					+ row.getCell(j).getDateCellValue());
-			cellValue = DateUtil.convertDateToString(row.getCell(j)
-					.getDateCellValue());
-			LOG.info("Date After Conversion ==>> " + cellValue);
+			cellValue = DateUtil.convertDateToString(row.getCell(j).getDateCellValue());
 		} else {
 			cellValue = String.valueOf(row.getCell(j).getNumericCellValue());
 		}

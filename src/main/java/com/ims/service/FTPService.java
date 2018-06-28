@@ -38,7 +38,7 @@ import com.ims.util.QueryBuilder;
 @Service
 public class FTPService {
 
-	private static final Logger LOG = Logger.getLogger(FTPService.class);
+	private static final Logger LOG = Logger.getRootLogger();
 
 	
 
@@ -179,19 +179,21 @@ public class FTPService {
 				ticketStatistics.setAutomationStatus(StatusType.COMPLETED.getDescription());
 				ticketStatistics.setForecastStatus(StatusType.OPEN.getDescription());
 				ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
-				ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
+				ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted().longValue()+ticketStatistics.getRecordsFailed().longValue());
 				ticketStatisticsRepository.save(ticketStatistics);
 				closeConnection(con, stmt);
 			} catch (Exception ex) {
-				ticketStatistics.setRecordsInserted(Long.valueOf(0));
-				ticketStatistics.setRecordsFailed(0l);
-				ticketStatistics.setAutomationEndDate(new Date());
-				ticketStatistics.setComments("Failed to insert the data");
-				ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
-				ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
-				ticketStatisticsRepository.save(ticketStatistics);
-				LOG.error(ex);
-				throw new ImsException("Exception occured while processing excel data", ex);
+				if(!ex.getMessage().contains("SASL authentication")){
+					ticketStatistics.setRecordsInserted(Long.valueOf(0));
+					ticketStatistics.setRecordsFailed(0l);
+					ticketStatistics.setAutomationEndDate(new Date());
+					ticketStatistics.setComments("Failed to insert the data");
+					ticketStatistics.setAutomationStatus(StatusType.FAILED.getDescription());
+					ticketStatistics.setTotalRecords(0l);
+					ticketStatisticsRepository.save(ticketStatistics);
+					LOG.error(ex);
+					throw new ImsException("Exception occured while processing excel data", ex);
+				}
 			}
 	}
 
