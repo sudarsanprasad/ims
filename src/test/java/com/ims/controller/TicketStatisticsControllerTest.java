@@ -1,5 +1,6 @@
 package com.ims.controller;
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.util.Assert.notEmpty;
 import static org.springframework.util.Assert.notNull;
@@ -94,6 +95,26 @@ public class TicketStatisticsControllerTest {
 		TicketStatistics ticketStatisticsResp = ticketStatisticsController.getCurrentRecordStatus(10L);
 		notNull(ticketStatisticsResp);
 
+	}
+
+	@Test
+	public void getStatisticsByCustomer() {
+		TicketStatistics ticketStatistics = new TicketStatistics();
+		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
+		ticketStatisticsList.add(ticketStatistics);
+		when(ticketStatisticsService.getStatistics(anyString())).thenReturn(ticketStatisticsList);
+		List<TicketStatistics> ticketStatisticsListResp = ticketStatisticsController.getStatistics("customer");
+		notEmpty(ticketStatisticsListResp);
+	}
+
+	@Test
+	public void getSystemNames() {
+		List<String> listOfSystemNames = new ArrayList<>();
+		listOfSystemNames.add("ServiceNow");
+		listOfSystemNames.add("AMPM");
+		when(ticketStatisticsService.getSystemNames()).thenReturn(listOfSystemNames);
+		List<String> listOfSystemNamesResp = ticketStatisticsController.getSystemNames();
+		notEmpty(listOfSystemNamesResp);
 	}
 
 	private TicketStatistics constructTicketStatostics() {

@@ -2,6 +2,7 @@ package com.ims.service;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -74,6 +75,26 @@ public class FTPServiceTest {
 		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
 		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
 		fTPService.processFile("", "ServiceNow", "Deloite",new File("abc"), "C;/", "XLS", "test");
+	}
+	
+	@Test(expected=ImsException.class)
+	public void processFileException() throws ImsException, SQLException {
+
+		TicketStatistics ticketStatistics = constructTicketStatistics();
+		Connection con = mock(Connection.class);
+		Statement stmt = mock(Statement.class);
+		doReturn(con).when(fTPService).getConnection();
+		doThrow(new SQLException("test")).when(con).createStatement();
+		doReturn(ticketStatistics).when(fTPService).getTicketStatistics(anyString(), anyString(), anyString());
+		when(ticketStatisticsRepository.save(ticketStatistics)).thenReturn(ticketStatistics);
+		when(ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(anyString(), anyString()))
+				.thenReturn(constructTicketMetaDataList());
+		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(), anyString()))
+				.thenReturn(constructTicketMetaDataList());
+		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(), anyString()))
+				.thenReturn(constructTicketMetaDataList());
+		fTPService.processFile("", "ServiceNow", "Deloite", new File("abc"), "C;/", "XLS", "test");
+ 	
 	}
 	
 	private TicketSystem constructTicketSystem() {

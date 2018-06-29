@@ -56,6 +56,7 @@ public class ImsForecastAutomationJobTest {
 		ticketStatistics.setCustomer("Deloitte");
 		ticketStatistics.setJobId(10L);
 		ticketStatistics.setFileName("test.txt");
+		ticketStatistics.setAutomationStatus("COMPLETED");
 		return ticketStatistics;
 	}
 }

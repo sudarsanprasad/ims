@@ -1,5 +1,6 @@
 package com.ims.service;
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.util.Assert.notEmpty;
@@ -109,6 +110,34 @@ public class TicketStatisticsServiceTest {
 		when(ticketStatisticsRepository.findByJobId(10L)).thenReturn(ticketStatistics);
 		TicketStatistics ticketStatisticsResp = ticketStatisticsService.getCurrentRecordStatus(10L);
 		notNull(ticketStatisticsResp);
+	}
+
+	@Test
+	public void getStatisticsByCustomer() {
+		TicketStatistics ticketStatistics = constructTicketStatostics();
+		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
+		ticketStatisticsList.add(ticketStatistics);
+		when(ticketStatisticsRepository.findDistinctByCustomer(anyString())).thenReturn(ticketStatisticsList);
+		List<TicketStatistics> ticketStatisticsListResp = ticketStatisticsService.getStatistics("Delloite");
+		notEmpty(ticketStatisticsListResp);
+	}
+
+	@Test
+	public void getSystemNames() {
+		List<String> listOfSystemNames = new ArrayList<String>();
+		listOfSystemNames.add("Service Now");
+		when(ticketStatisticsRepository.findDistinctSystems()).thenReturn(listOfSystemNames);
+		List<String> ticketStatisticsListResp = ticketStatisticsService.getSystemNames();
+		notEmpty(ticketStatisticsListResp);
+
+	}
+
+	@Test
+	public void getStatistics() {
+		TicketStatistics ticketStatistics = constructTicketStatostics();
+		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
+		ticketStatisticsList.add(ticketStatistics);
+		ticketStatisticsService.getStatistics(ticketStatistics);
 	}
 
 	private TicketStatistics constructTicketStatostics() {
