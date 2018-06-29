@@ -50,7 +50,7 @@ public class ImsKrAutomationJobTest {
 	@InjectMocks
 	ImsKrAutomationJob imsKrAutomationJob;
 
-	@Test
+	@Test(expected=Exception.class)
 	public void execute() throws JobExecutionException {
 		JobExecutionContext context = Mockito.mock(JobExecutionContext.class);
 		TicketStatistics ticketStatistics = constructTicketStatistics();
@@ -59,16 +59,17 @@ public class ImsKrAutomationJobTest {
 		doReturn(ticketStatisticsList).when(ticketStatisticsRepository)
 				.findAllByAutomationStatusAndKnowledgeBaseStatusOrderByJobIdDesc(Mockito.anyString(),
 						Mockito.anyString());
+		doReturn("http://localhost:3001/kr/build_kr").when(env).getProperty("kr.url");
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
 		when(imsConfigurationRepository.findByProperty("forecast.model.status")).thenReturn(imsConfiguration);
 		imsKrAutomationJob.execute(context);
 	}
-	
+
 	@Test
 	public void executeEmptyList() throws JobExecutionException {
 		JobExecutionContext context = Mockito.mock(JobExecutionContext.class);
 		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
-		//ticketStatisticsList.add(ticketStatistics);
+		// ticketStatisticsList.add(ticketStatistics);
 		doReturn(ticketStatisticsList).when(ticketStatisticsRepository)
 				.findAllByAutomationStatusAndKnowledgeBaseStatusOrderByJobIdDesc(Mockito.anyString(),
 						Mockito.anyString());
@@ -82,6 +83,8 @@ public class ImsKrAutomationJobTest {
 		ticketStatistics.setCustomer("Deloitte");
 		ticketStatistics.setJobId(10L);
 		ticketStatistics.setFileName("test.txt");
+		ticketStatistics.setAutomationStatus("COMPLETED");
+		ticketStatistics.setKnowledgeBaseStatus("OPEN");
 		return ticketStatistics;
 	}
 
