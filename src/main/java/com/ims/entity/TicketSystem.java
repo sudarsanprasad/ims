@@ -47,6 +47,8 @@ public class TicketSystem {
 	
 	private String firstTimeFlag;
 	
+	private String comments;
+	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "ticketSystemId")
 	private List<FieldMask> fieldsMask;
