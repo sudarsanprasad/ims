@@ -18,6 +18,7 @@ import org.quartz.TriggerKey;
 import org.quartz.impl.JobDetailImpl;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("static-access")
 public class JobDescriptorTest {
 	
 	@InjectMocks
@@ -43,6 +44,7 @@ public class JobDescriptorTest {
 		when(jobDetail.getKey()).thenReturn(new JobKey("test"));
 		jobDescriptor.buildDescriptor(jobDetail, triggersOfJob);
 	}
+	
 	
 	@Test
 	public void buildDescriptorKR() {
