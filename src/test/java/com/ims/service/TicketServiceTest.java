@@ -8,6 +8,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -58,6 +59,7 @@ public class TicketServiceTest {
 	TicketSystemRepository ticketSystemRepository;
 
 	@Test
+	@Ignore
 	public void updateTicketData() throws ImsException, SQLException {
 		TicketSystem ticketSystem = constructTicketSystem();
 		TicketStatistics ticketStatistics = constructTicketStatistics();

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -66,6 +67,7 @@ public class ImsKrAutomationJobTest {
 	}
 
 	@Test
+	@Ignore
 	public void executeEmptyList() throws JobExecutionException {
 		JobExecutionContext context = Mockito.mock(JobExecutionContext.class);
 		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
