@@ -51,6 +51,11 @@ public class TicketSystem {
 	
 	private String comments;
 	
+	private String frequencyType;
+	
+	private String frequencyValue;
+	
+	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "ticketSystemId")
 	private List<FieldMask> fieldsMask;
