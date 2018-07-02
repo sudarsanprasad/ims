@@ -47,12 +47,6 @@ public class UtilTest {
 	}
 	
 	@Test
-	public void maskData2() {
-		String maskeddata=DataMaskUtil2.maskData("Hi John, My phone number is 95825258  and mail id abc@gmail.com");
-		Assert.notNull(maskeddata);
-	}
-	
-	@Test
 	public void convertDateToString() {
 		DateUtil.convertDateToString(new Date());
 	}
@@ -83,13 +77,13 @@ public class UtilTest {
 		when(row.getLastCellNum()).thenReturn((short) 1).thenReturn((short) 0);
 		when(row.getCell(0)).thenReturn(cell);
 		when(cell.toString()).thenReturn("Hi John How are you" );
-		excelToCsvUtil.echoAsCSV(sheet,"abc.text","");
+		excelToCsvUtil.echoAsCSV(sheet,"abc.text","", null, null);
 	}
 	
 	@Test
 	public void readExcelFileException() {
 		ExcelToCsvUtil excelToCsvUtil=new ExcelToCsvUtil();
-		excelToCsvUtil.readExcelFile("abc", "text", "ppm");
+		excelToCsvUtil.readExcelFile("abc", "text", "ppm", null, null);
 	}
 	
 	@Test

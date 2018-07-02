@@ -124,6 +124,7 @@ public class FTPService {
 	void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
 		TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName(), systemName, customer));
 		List<TicketMetadata> systemFields = ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(systemName, "Y");
+		List<String> krFields = ticketMetadataRepository.findMappingColumnByIsKnowledgement(systemName);
 		StringBuilder tableBuilder = createTempTableQuery(systemName, systemFields);
 		
 		LOG.info("Teamp Table Query  ==>> "+tableBuilder);
@@ -146,7 +147,7 @@ public class FTPService {
 				}
 				
 				ExcelToCsvUtil excelToCsvUtil = new ExcelToCsvUtil();
-				excelToCsvUtil.readExcelFile(pathName, csvFileName, ppmFileName);
+				excelToCsvUtil.readExcelFile(pathName, csvFileName, ppmFileName, krFields, systemName);
 				LOG.info("csvFileName ==>> "+csvFileName);
 				int recordsCount = excelToCsvUtil.getRecordsCount(pathName);
 				LOG.info("Count ==>> "+recordsCount);
@@ -184,7 +185,7 @@ public class FTPService {
 				closeConnection(con, stmt);
 			} catch (Exception ex) {
 				if(!ex.getMessage().contains("SASL authentication")){
-					ticketStatistics.setRecordsInserted(Long.valueOf(0));
+					ticketStatistics.setRecordsInserted(0l);
 					ticketStatistics.setRecordsFailed(0l);
 					ticketStatistics.setAutomationEndDate(new Date());
 					ticketStatistics.setComments("Failed to insert the data");

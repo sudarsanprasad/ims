@@ -64,6 +64,7 @@ public class ImsDataAutomationJob implements Job {
 				}
 				
 				if("Y".equalsIgnoreCase(ticketSystem.getKkrFirstTimeFlag())){
+					LOG.info("Trigger KR");
 					krService.triggerKr();
 				}
 			}
@@ -95,6 +96,7 @@ public class ImsDataAutomationJob implements Job {
 		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("servicenow.lastrundate");
 		String[] dateAndTime = DateUtil.getDateAndTime(configuration.getValue());
 		filterBuilder.append("('").append(dateAndTime[0]).append("','").append(dateAndTime[1]).append("')");
+		LOG.info("Service now URL  ==>> "+filterBuilder.toString());
 		return filterBuilder.toString();
 	}
 	

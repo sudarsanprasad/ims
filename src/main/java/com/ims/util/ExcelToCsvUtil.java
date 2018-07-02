@@ -3,9 +3,12 @@ package com.ims.util;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.CellType;
@@ -20,11 +23,12 @@ public class ExcelToCsvUtil {
 
 	private static final Logger LOG = Logger.getAnonymousLogger();
 
-	public void echoAsCSV(Sheet sheet, String file, String ppmFile) {
+	public void echoAsCSV(Sheet sheet, String file, String ppmFile, List<String> krFields, String systemName) {
 		Row row;
 		StringBuilder fileContent = new StringBuilder("");
 		StringBuilder fileContentStatusNew = new StringBuilder("");
-		int statusColumnIndex = getColumnIndex(sheet);
+		getPpmHeader(krFields, fileContent);
+		int statusColumnIndex = getColumnIndex(sheet, systemName);
 		for (int i = 1; i <= sheet.getLastRowNum(); i++) {
 			row = sheet.getRow(i);
 			StringBuilder line = new StringBuilder("");
@@ -34,8 +38,7 @@ public class ExcelToCsvUtil {
 				if (row.getCell(j).getCellTypeEnum() == CellType.NUMERIC) {
 					cellValue = getValue(row, j);
 				} else if (row.getCell(j).getCellTypeEnum() == CellType.STRING) {
-					cellValue = row.getCell(j).getStringCellValue()
-							.replaceAll("[\r\n]+", " ").replaceAll(",", " ");
+					cellValue = row.getCell(j).getStringCellValue().replaceAll("[\r\n]+", " ").replaceAll(",", " ");
 				} else if (row.getCell(j).getCellTypeEnum() == CellType.BOOLEAN) {
 					cellValue = Boolean.toString(row.getCell(j).getBooleanCellValue());
 				} else if (row.getCell(j).getCellTypeEnum() == CellType.FORMULA) {
@@ -47,8 +50,7 @@ public class ExcelToCsvUtil {
 				lineStatusNew.append(cellValue).append(",");
 			}
 			fileContent.append(line.toString()).append("\n");
-			if ("NEW".equalsIgnoreCase(row.getCell(statusColumnIndex)
-					.toString())) {
+			if ("NEW".equalsIgnoreCase(row.getCell(statusColumnIndex).toString()) || StringUtils.isEmpty(row.getCell(statusColumnIndex).toString()) || "OPEN".equalsIgnoreCase(row.getCell(statusColumnIndex).toString())) {
 				fileContentStatusNew.append(line.toString()).append("\n");
 			}
 		}
@@ -56,15 +58,22 @@ public class ExcelToCsvUtil {
 		write2File(fileContentStatusNew.toString(), ppmFile);
 	}
 
-	private int getColumnIndex(Sheet sheet) {
+	private void getPpmHeader(List<String> krFields, StringBuilder fileContent) {
+		if(!CollectionUtils.isEmpty(krFields)){
+			fileContent.append(krFields);
+		}
+	}
+
+	private int getColumnIndex(Sheet sheet, String systemName) {
 		int statusColumnIndex = 0;
 		Row row;
 		for (int i = 0; i <= 1; i++) {
 			row = sheet.getRow(i);
 			for (int j = 0; j < row.getLastCellNum(); j++) {
-				if ("Status".equalsIgnoreCase(row.getCell(j).toString())
-						|| "State".equalsIgnoreCase(row.getCell(j).toString())) {
+				if ("Status".equalsIgnoreCase(row.getCell(j).toString()) || "State".equalsIgnoreCase(row.getCell(j).toString())) {
 					statusColumnIndex = row.getCell(j).getColumnIndex();
+				}else if("AMPM".equals(systemName)){
+					statusColumnIndex = row.getCell(9).getColumnIndex();
 				}
 			}
 			LOG.info("" + row.getCell(statusColumnIndex));
@@ -92,11 +101,11 @@ public class ExcelToCsvUtil {
 	 * @param args
 	 *            the command line arguments
 	 */
-	public void readExcelFile(String fileName, String file, String ppmFile) {
+	public void readExcelFile(String fileName, String file, String ppmFile, List<String> krFields, String systemName) {
 		try (InputStream inp = new FileInputStream(fileName)) {
 			try (Workbook wb = WorkbookFactory.create(inp)) {
 				for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-					echoAsCSV(wb.getSheetAt(i), file, ppmFile);
+					echoAsCSV(wb.getSheetAt(i), file, ppmFile, krFields, systemName);
 				}
 			}
 		} catch (InvalidFormatException | IOException ex) {
