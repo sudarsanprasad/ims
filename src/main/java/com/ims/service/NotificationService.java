@@ -18,7 +18,7 @@ public class NotificationService {
 	
 	private static final Logger LOG = Logger.getLogger(NotificationService.class);
 
-	@Value("${ppm.file.location}")
+	@Value("${ppm.file.location.out}")
 	private String folderPath;
 
 	public List<JSONObject> readJSON() {

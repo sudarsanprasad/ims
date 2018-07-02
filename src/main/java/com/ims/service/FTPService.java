@@ -54,7 +54,7 @@ public class FTPService {
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
 	
-	@Value("${ppm.file.location}")
+	@Value("${ppm.file.location.in}")
 	String ppmLocation;
 
 	public boolean downloadExcel(TicketSystem system) throws ImsException {
