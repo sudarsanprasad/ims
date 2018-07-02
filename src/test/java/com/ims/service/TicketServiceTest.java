@@ -1,11 +1,13 @@
 package com.ims.service;
 
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Ignore;
@@ -19,6 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.env.Environment;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketMetadata;
 import com.ims.entity.TicketStatistics;
 import com.ims.entity.TicketSystem;
@@ -59,7 +62,6 @@ public class TicketServiceTest {
 	TicketSystemRepository ticketSystemRepository;
 
 	@Test
-	@Ignore
 	public void updateTicketData() throws ImsException, SQLException {
 		TicketSystem ticketSystem = constructTicketSystem();
 		TicketStatistics ticketStatistics = constructTicketStatistics();
@@ -76,6 +78,8 @@ public class TicketServiceTest {
 		Mockito.doReturn(stmt).when(con).createStatement();
 		Mockito.doReturn(constructTicketMetaDataList()).when(ticketMetadataRepository).findBySystemNameAndIsProactiveOrderById(anyString(),anyString());
 		Mockito.doReturn(constructTicketMetaDataList()).when(ticketMetadataRepository).findBySystemNameAndCustomerOrderById(anyString(),anyString());
+		ImsConfiguration imsConfiguration = new ImsConfiguration();
+		when(imsConfigurationRepository.findByProperty("servicenow.lastrundate")).thenReturn(imsConfiguration);
 		ticketService.updateDataToHDFS(getResult(), ticketSystem);
 	}
 
@@ -94,6 +98,7 @@ public class TicketServiceTest {
 		ticketStatistics.setCustomer("Deloitte");
 		ticketStatistics.setJobId(10L);
 		ticketStatistics.setFileName("test.txt");
+		ticketStatistics.setAutomationStartDate(new Date());
 		return ticketStatistics;
 	}
 	
