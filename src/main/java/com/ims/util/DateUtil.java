@@ -1,5 +1,6 @@
 package com.ims.util;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,6 +41,11 @@ public class DateUtil {
 	public static String convertDateToAPIString(Date date){
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");  
         return dateFormat.format(date);  
+	}
+	
+	public static Timestamp getTimeStamp() {
+		Date date = new Date();
+		return new Timestamp(date.getTime());
 	}
 	
 }
