@@ -17,6 +17,7 @@ import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
 import com.ims.service.FTPService;
 import com.ims.service.ImsJobService;
+import com.ims.service.KrService;
 import com.ims.service.TicketService;
 
 @Slf4j
@@ -38,6 +39,9 @@ public class ImsDataAutomationJob implements Job {
 	
 	@Autowired
 	ImsJobService imsJobService;
+	
+	@Autowired
+	private KrService krService;
 
 	@Override
 	public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -56,11 +60,16 @@ public class ImsDataAutomationJob implements Job {
 				if("Y".equalsIgnoreCase(ticketSystem.getFirstTimeFlag())){
 					imsJobService.triggerForecastModelScheduler(customer);
 				}
+				
+				if("Y".equalsIgnoreCase(ticketSystem.getKkrFirstTimeFlag())){
+					krService.triggerKr();
+				}
 			}
 		} catch (ImsException e) {
 			log.error("Exception == "+e);
 		}
 		ticketSystem.setFirstTimeFlag("N");
+		ticketSystem.setKkrFirstTimeFlag("N");
 		ticketSystemRepository.save(ticketSystem);
 		LOG.info("Job completed");
 		

@@ -38,7 +38,7 @@ public class TicketSystemService {
 		}else{
 			ticketSystem.setFirstTimeFlag("N");
 		}
-		ticketSystem.setAutomationCronValue("0 0/2 * * * ?");
+		ticketSystem.setKkrFirstTimeFlag("Y");
 		return ticketSystemRepository.save(ticketSystem);
 	}
 

@@ -47,6 +47,8 @@ public class TicketSystem {
 	
 	private String firstTimeFlag;
 	
+	private String kkrFirstTimeFlag;
+	
 	private String comments;
 	
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
