@@ -21,6 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.ims.constant.StatusType;
 import com.ims.entity.FieldConfiguration;
+import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketMetadata;
 import com.ims.entity.TicketStatistics;
 import com.ims.entity.TicketSystem;
@@ -31,6 +32,7 @@ import com.ims.repository.TicketRepository;
 import com.ims.repository.TicketStatisticsRepository;
 import com.ims.repository.TicketSystemRepository;
 import com.ims.util.DataMaskUtil;
+import com.ims.util.DateUtil;
 import com.ims.util.FileNameUtil;
 import com.ims.util.JsonToCsvUtil;
 import com.ims.util.QueryBuilder;
@@ -66,7 +68,7 @@ public class TicketService {
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
 	
-	@Value("${ppm.file.location}")
+	@Value("${ppm.file.location.in}")
 	String ppmLocation;
 	
 	public void updateDataToHDFS(String result, TicketSystem system) {
@@ -127,6 +129,7 @@ public class TicketService {
 			ticketStatistics.setKnowledgeBaseStatus(StatusType.OPEN.getDescription());
 			ticketStatistics.setTotalRecords(ticketStatistics.getRecordsInserted()+ticketStatistics.getRecordsFailed());
 			ticketStatisticsRepository.save(ticketStatistics);
+			updateLastRunDate(ticketStatistics);
 		} catch (SQLException e) {
 			LOG.info(e);
 		}
@@ -198,6 +201,12 @@ public class TicketService {
 		StringBuilder tableBuilder = new StringBuilder(builder).append(") COMMENT 'port_data ' ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\,' STORED AS TEXTFILE LOCATION '/apps/hive/warehouse/ims.db/temp_ims_");
 		tableBuilder.append(systemName).append("'");
 		return tableBuilder;
+	}
+	
+	public void updateLastRunDate(TicketStatistics ticketStatistics) {
+		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("servicenow.lastrundate");
+		configuration.setValue(DateUtil.convertDateToString(ticketStatistics.getAutomationStartDate()));
+		imsConfigurationRepository.save(configuration);
 	}
 	
 }

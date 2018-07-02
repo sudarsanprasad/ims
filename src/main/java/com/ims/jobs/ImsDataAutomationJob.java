@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.web.client.RestTemplate;
 
+import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketSystem;
 import com.ims.exception.ImsException;
 import com.ims.repository.ImsConfigurationRepository;
@@ -19,6 +20,7 @@ import com.ims.service.FTPService;
 import com.ims.service.ImsJobService;
 import com.ims.service.KrService;
 import com.ims.service.TicketService;
+import com.ims.util.DateUtil;
 
 @Slf4j
 public class ImsDataAutomationJob implements Job {
@@ -82,7 +84,18 @@ public class ImsDataAutomationJob implements Job {
 	}
 	
 	private String getUrl(TicketSystem ticketSystem){
-		 return ticketSystem.getUrl();
+		StringBuilder builder = new StringBuilder();
+		String systemName = ticketSystem.getSystemName().trim().toLowerCase();
+		builder.append(systemName).append("filter");
+		LOG.info("FilterName ==>> "+builder.toString());
+		ImsConfiguration systemFilter = imsConfigurationRepository.findByProperty(builder.toString());
+		LOG.info("Filter Value from DB ==>> "+systemFilter.getValue());
+		StringBuilder filterBuilder = new StringBuilder();
+		filterBuilder.append(ticketSystem.getUrl()).append(systemFilter.getValue());
+		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("servicenow.lastrundate");
+		String[] dateAndTime = DateUtil.getDateAndTime(configuration.getValue());
+		filterBuilder.append("('").append(dateAndTime[0]).append("','").append(dateAndTime[1]).append("')");
+		return filterBuilder.toString();
 	}
 	
 }

@@ -44,17 +44,21 @@ public class KrService {
 					RestTemplate restTemplate = new RestTemplate();
 					String result = restTemplate.getForObject(url, String.class);
 					LOG.info("Result from KR ==>> "+result);
-					if("Success".equalsIgnoreCase(result)){
-						record.setKnowledgeBaseStatus(StatusType.COMPLETED.getDescription());
-						ticketStatisticsRepository.save(record);
-						ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("kr.build.status");
-						imsConfiguration.setValue("COMPLETED");
-						imsConfigurationRepository.save(imsConfiguration);
-					}
+					updateConfiguration(record, result);
 				}
 			}
 		}
 		
+	}
+
+	private void updateConfiguration(TicketStatistics record, String result) {
+		if("Success".equalsIgnoreCase(result)){
+			record.setKnowledgeBaseStatus(StatusType.COMPLETED.getDescription());
+			ticketStatisticsRepository.save(record);
+			ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("kr.build.status");
+			imsConfiguration.setValue("COMPLETED");
+			imsConfigurationRepository.save(imsConfiguration);
+		}
 	}
 
 }
