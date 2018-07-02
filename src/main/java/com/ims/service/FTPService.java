@@ -31,7 +31,6 @@ import com.ims.exception.ImsException;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketStatisticsRepository;
 import com.ims.repository.TicketSystemRepository;
-import com.ims.util.ExcelToCsvUtil;
 import com.ims.util.FileNameUtil;
 import com.ims.util.QueryBuilder;
 
@@ -136,19 +135,15 @@ public class FTPService {
 				LOG.info("fileName == >> "+fileName);
 				
 				String csvFileName;
-				String ppmFileName = null;
 				if(FileType.CSV.getDescription().equals(fileType)){
 					csvFileName = file.getName();
 				}else{
 					String[] fileVar = fileName.split("\\.");
 					csvFileName = location+fileVar[0]+".csv";
-					ppmFileName = ppmLocation+fileVar[0]+"_PPM"+".csv";
 				}
 				
-				ExcelToCsvUtil excelToCsvUtil = new ExcelToCsvUtil();
-				excelToCsvUtil.readExcelFile(pathName, csvFileName, ppmFileName);
 				LOG.info("csvFileName ==>> "+csvFileName);
-				int recordsCount = excelToCsvUtil.getRecordsCount(pathName);
+				int recordsCount = 0;
 				LOG.info("Count ==>> "+recordsCount);
 				
 				StringBuilder queryBuilder = new StringBuilder("load data local inpath \"");

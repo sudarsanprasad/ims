@@ -82,7 +82,6 @@ public class FTPServiceTest {
 
 		TicketStatistics ticketStatistics = constructTicketStatistics();
 		Connection con = mock(Connection.class);
-		Statement stmt = mock(Statement.class);
 		doReturn(con).when(fTPService).getConnection();
 		doThrow(new SQLException("test")).when(con).createStatement();
 		doReturn(ticketStatistics).when(fTPService).getTicketStatistics(anyString(), anyString(), anyString());
