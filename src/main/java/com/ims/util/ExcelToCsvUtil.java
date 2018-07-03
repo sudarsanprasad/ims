@@ -30,8 +30,7 @@ public class ExcelToCsvUtil {
 		Row row;
 		int closeDateIndex = 9;
 		StringBuilder fileContent = new StringBuilder("");
-		StringBuilder fileContentStatusNew = new StringBuilder("");
-		addPpmHeader(fileContentStatusNew, krFields);
+		StringBuilder fileContentStatusNew = new StringBuilder(addPpmHeader(krFields)).append("\n");
 		int statusColumnIndex = getColumnIndex(sheet);
 		LOG.info("Status Index ==>> "+statusColumnIndex);
 		Map<String, Integer> headerIndexMap = getColumnIndexMap(sheet, krFields);
@@ -55,7 +54,7 @@ public class ExcelToCsvUtil {
 				line.append(cellValue).append(",");
 			}
 			
-			createPpmContent(krFields, systemName, customer, row, headerIndexMap, lineStatusNew);
+			lineStatusNew.append(createPpmContent(krFields, systemName, customer, row, headerIndexMap));
 			
 			fileContent.append(line.toString()).append("\n");
 			LOG.info("Value ==>> "+row.getCell(closeDateIndex).toString());
@@ -68,8 +67,8 @@ public class ExcelToCsvUtil {
 	}
 
 
-	private void createPpmContent(List<TicketMetadata> krFields,String systemName, String customer, Row row,
-			Map<String, Integer> headerIndexMap, StringBuilder lineStatusNew) {
+	private String createPpmContent(List<TicketMetadata> krFields,String systemName, String customer, Row row, Map<String, Integer> headerIndexMap) {
+		StringBuilder lineStatusNew = new StringBuilder();
 		String ppmCellValue = null;
 		boolean flag = false;
 		for(TicketMetadata data:krFields){
@@ -96,14 +95,17 @@ public class ExcelToCsvUtil {
 			lineStatusNew.append(ppmCellValue).append(",");
 			LOG.info("Line ==>> "+lineStatusNew.toString());
 		}
+		
+		return lineStatusNew.toString().substring(0, lineStatusNew.lastIndexOf(","));
 	}
 
 	
-	private void addPpmHeader(StringBuilder fileContentStatusNew, List<TicketMetadata> krFields){
+	private String addPpmHeader(List<TicketMetadata> krFields){
+		StringBuilder fileContentStatusNew = new StringBuilder();
 		for(TicketMetadata data:krFields){
 			fileContentStatusNew.append(data.getMappingColumn()).append(",");
 		}
-		fileContentStatusNew.append("\n");
+		return fileContentStatusNew.toString().substring(0, fileContentStatusNew.lastIndexOf(","));
 	}
 	
 
@@ -125,8 +127,7 @@ public class ExcelToCsvUtil {
 	}
 
 
-	private int createMap(
-			Map<String, Integer> headerIndexMap, Row row, String businessColumn) {
+	private int createMap(Map<String, Integer> headerIndexMap, Row row, String businessColumn) {
 		int statusColumnIndex=0;
 		for (int j = 0; j < row.getLastCellNum(); j++) {
 			if (businessColumn.equalsIgnoreCase(row.getCell(j).toString())) {
