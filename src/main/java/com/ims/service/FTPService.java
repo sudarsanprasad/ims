@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +71,7 @@ public class FTPService {
 		try{
 		for(TicketSystem ticketSystem:list){
 			DefaultFtpSessionFactory factory = new DefaultFtpSessionFactory();
+			factory.setClientMode(FTPClient.PASSIVE_LOCAL_DATA_CONNECTION_MODE); 
 			LOG.info("URL === >>"+ticketSystem.getUrl());
 			LOG.info("User Name === >>"+ticketSystem.getUserName());
 			LOG.info("Password === >>"+ticketSystem.getPassword());
@@ -124,7 +126,7 @@ public class FTPService {
 	void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
 		TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName(), systemName, customer));
 		List<TicketMetadata> systemFields = ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(systemName, "Y");
-		List<String> krFields = ticketMetadataRepository.findMappingColumnByIsKnowledgement(systemName);
+		List<TicketMetadata> krFields = ticketMetadataRepository.findBySystemNameAndIsKnowledgementOrderById(systemName, "Y");
 		StringBuilder tableBuilder = createTempTableQuery(systemName, systemFields);
 		
 		LOG.info("Teamp Table Query  ==>> "+tableBuilder);
@@ -147,7 +149,7 @@ public class FTPService {
 				}
 				
 				ExcelToCsvUtil excelToCsvUtil = new ExcelToCsvUtil();
-				excelToCsvUtil.readExcelFile(pathName, csvFileName, ppmFileName, krFields, systemName);
+				excelToCsvUtil.readExcelFile(pathName, csvFileName, ppmFileName, krFields, systemName, customer);
 				LOG.info("csvFileName ==>> "+csvFileName);
 				int recordsCount = excelToCsvUtil.getRecordsCount(pathName);
 				LOG.info("Count ==>> "+recordsCount);

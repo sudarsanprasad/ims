@@ -23,7 +23,7 @@ public interface TicketMetadataRepository extends JpaRepository<TicketMetadata, 
 	@Query("SELECT m.mappingColumn  FROM TicketMetadata m where isForecast = 'Y' AND systemName = :systemName")
 	List<String> findMappingColumnByIsForecast(@Param("systemName") String systemName);
 	
-	@Query("SELECT m.mappingColumn FROM TicketMetadata m where isKnowledgement = 'Y' AND systemName = :systemName")
+	@Query("SELECT m.mappingColumn FROM TicketMetadata m where isKnowledgement = 'Y' AND systemName = :systemName order by id")
 	List<String> findMappingColumnByIsKnowledgement(@Param("systemName") String systemName);
 	
 	TicketMetadata findByMappingColumnAndSystemName(String mappingColumn, String systemName);
