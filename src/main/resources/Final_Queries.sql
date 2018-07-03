@@ -80,7 +80,7 @@ INSERT INTO public.ticket_configuration(id, property, value) VALUES (3,'apisched
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (4,'ftpschedulertime','*/240 * * * * *');
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (2,'ftpschedulerflag','N');
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (5,'apilastrundate','2018-06-20 16:30:00');
-INSERT INTO public.ticket_configuration(id, property, value) VALUES (8,'forecast.model.status','FAILED');
+INSERT INTO public.ticket_configuration(id, property, value) VALUES (8,'forecast.model.status','OPEN');
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (1,'apischedulerflag','N');
 INSERT INTO public.ticket_configuration(id, property, value, frequency_type, frequency_value) VALUES (7,'kr.cronvalue','0 0 12 ? * WED *','Weekly','WED');
 INSERT INTO public.ticket_configuration(id, property, value, frequency_type, frequency_value) VALUES (6,'forecast.cronvalue','0 0 0/18 1/1 * ? *','Hourly','18');
