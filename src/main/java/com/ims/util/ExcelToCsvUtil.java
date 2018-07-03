@@ -28,16 +28,17 @@ public class ExcelToCsvUtil {
 
 	public void echoAsCSV(Sheet sheet, String file, String ppmFile, List<TicketMetadata> krFields, String systemName, String customer) {
 		Row row;
+		int closeDateIndex = 9;
 		StringBuilder fileContent = new StringBuilder("");
 		StringBuilder fileContentStatusNew = new StringBuilder("");
 		addPpmHeader(fileContentStatusNew, krFields);
-		int statusColumnIndex = getColumnIndex(sheet, systemName);
+		int statusColumnIndex = getColumnIndex(sheet);
+		LOG.info("Status Index ==>> "+statusColumnIndex);
 		Map<String, Integer> headerIndexMap = getColumnIndexMap(sheet, krFields);
 		for (int i = 1; i <= sheet.getLastRowNum(); i++) {
 			row = sheet.getRow(i);
 			StringBuilder line = new StringBuilder("");
 			StringBuilder lineStatusNew = new StringBuilder("");
-			String ppmCellValue = null;
 			for (int j = 0; j < row.getLastCellNum(); j++) {
 				String cellValue;
 				if (row.getCell(j).getCellTypeEnum() == CellType.NUMERIC) {
@@ -54,34 +55,11 @@ public class ExcelToCsvUtil {
 				line.append(cellValue).append(",");
 			}
 			
-			boolean flag = false;
-			for(TicketMetadata data:krFields){
-				String businnesColumn = null;
-				if(!StringUtils.isEmpty(data.getBusinessColumn())){
-					businnesColumn = data.getBusinessColumn().replaceAll("_", " ");
-				}
-				LOG.info("businnesColumn ==>> "+businnesColumn);
-				int index = headerIndexMap.get(businnesColumn);
-				LOG.info("index === "+index);
-				LOG.info("Cell ===>> "+row.getCell(index));
-				
-				if(index == 26){
-					flag = true;
-					ppmCellValue = customer;
-				}
-				if(index == 27){
-					flag = true;
-					ppmCellValue = systemName;
-				}
-				if(!flag){
-					ppmCellValue = row.getCell(index).toString();
-				}
-				lineStatusNew.append(ppmCellValue).append(",");
-				LOG.info("Line ==>> "+lineStatusNew.toString());
-			}
+			createPpmContent(krFields, systemName, customer, row, headerIndexMap, lineStatusNew);
 			
 			fileContent.append(line.toString()).append("\n");
-			if ("NEW".equalsIgnoreCase(row.getCell(statusColumnIndex).toString()) || StringUtils.isEmpty(row.getCell(statusColumnIndex).toString()) || "OPEN".equalsIgnoreCase(row.getCell(statusColumnIndex).toString())) {
+			LOG.info("Value ==>> "+row.getCell(closeDateIndex).toString());
+			if (StringUtils.isEmpty(row.getCell(closeDateIndex).toString())) {
 				fileContentStatusNew.append(lineStatusNew.toString()).append("\n");
 			}
 		}
@@ -89,10 +67,41 @@ public class ExcelToCsvUtil {
 		write2File(fileContentStatusNew.toString(), ppmFile);
 	}
 
+
+	private void createPpmContent(List<TicketMetadata> krFields,String systemName, String customer, Row row,
+			Map<String, Integer> headerIndexMap, StringBuilder lineStatusNew) {
+		String ppmCellValue = null;
+		boolean flag = false;
+		for(TicketMetadata data:krFields){
+			String businnesColumn = null;
+			if(!StringUtils.isEmpty(data.getBusinessColumn())){
+				businnesColumn = data.getBusinessColumn().replaceAll("_", " ");
+			}
+			LOG.info("businnesColumn ==>> "+businnesColumn);
+			int index = headerIndexMap.get(businnesColumn);
+			LOG.info("index === "+index);
+			LOG.info("Cell ===>> "+row.getCell(index));
+			
+			if(index == 26){
+				flag = true;
+				ppmCellValue = customer;
+			}
+			if(index == 27){
+				flag = true;
+				ppmCellValue = systemName;
+			}
+			if(!flag){
+				ppmCellValue = row.getCell(index).toString();
+			}
+			lineStatusNew.append(ppmCellValue).append(",");
+			LOG.info("Line ==>> "+lineStatusNew.toString());
+		}
+	}
+
 	
 	private void addPpmHeader(StringBuilder fileContentStatusNew, List<TicketMetadata> krFields){
 		for(TicketMetadata data:krFields){
-			fileContentStatusNew.append(data.getBusinessColumn()).append(",");
+			fileContentStatusNew.append(data.getMappingColumn()).append(",");
 		}
 		fileContentStatusNew.append("\n");
 	}
@@ -106,12 +115,7 @@ public class ExcelToCsvUtil {
 			row = sheet.getRow(i);
 			for(TicketMetadata data:krFields){
 				String businessColumn = data.getBusinessColumn().replaceAll("_", " ");
-				for (int j = 0; j < row.getLastCellNum(); j++) {
-					if (businessColumn.equalsIgnoreCase(row.getCell(j).toString())) {
-						statusColumnIndex = row.getCell(j).getColumnIndex();
-						headerIndexMap.put(businessColumn, statusColumnIndex);
-					}
-				}
+				statusColumnIndex = createMap(headerIndexMap, row, businessColumn);
 			}
 			LOG.info("" + row.getCell(statusColumnIndex));
 		}
@@ -119,9 +123,22 @@ public class ExcelToCsvUtil {
 		headerIndexMap.put("systemname", 27);
 		return headerIndexMap;
 	}
+
+
+	private int createMap(
+			Map<String, Integer> headerIndexMap, Row row, String businessColumn) {
+		int statusColumnIndex=0;
+		for (int j = 0; j < row.getLastCellNum(); j++) {
+			if (businessColumn.equalsIgnoreCase(row.getCell(j).toString())) {
+				statusColumnIndex = row.getCell(j).getColumnIndex();
+				headerIndexMap.put(businessColumn, statusColumnIndex);
+			}
+		}
+		return statusColumnIndex;
+	}
 	
 
-	private int getColumnIndex(Sheet sheet, String systemName) {
+	private int getColumnIndex(Sheet sheet) {
 		int statusColumnIndex = 0;
 		Row row;
 		for (int i = 0; i <= 1; i++) {
