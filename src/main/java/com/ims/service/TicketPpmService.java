@@ -1,5 +1,7 @@
 package com.ims.service;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +16,15 @@ public class TicketPpmService {
 
 	@Autowired
 	private TicketPpmRepository ticketPpmRepository;
-	
-	public List<TicketPpm> findByPpmFlag(){
-		return ticketPpmRepository.findByPpmFlag("Y");
+
+	public List<TicketPpm> findByPpmFlag() {
+		LocalDate date = LocalDate.now().minusDays(7);
+		Timestamp timestamp = Timestamp.valueOf(date.atStartOfDay());
+		return ticketPpmRepository.findByPpmFlagAndCreateDateIsAfter("Y", timestamp);
 	}
-	
-	public void updateNotifications(){
+
+	public void updateNotifications() {
 		ticketPpmRepository.updatePpmFlagAsN(DateUtil.getTimeStamp());
 	}
-	
+
 }

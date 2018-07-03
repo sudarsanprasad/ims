@@ -14,6 +14,8 @@ public interface TicketPpmRepository extends JpaRepository<TicketPpm, String> {
 	
 	List<TicketPpm> findByPpmFlag(String ppmFlag);
 	
+	List<TicketPpm> findByPpmFlagAndCreateDateIsAfter(String ppmFlag,Timestamp createDate);
+	
 	@Modifying(clearAutomatically = true)
 	@Query("update TicketPpm tp set tp.lastSeenDate =:lastSeenDate, tp.ppmFlag ='Y'")
 	void updatePpmFlagAsN(@Param("lastSeenDate") Timestamp lastSeenDate);
