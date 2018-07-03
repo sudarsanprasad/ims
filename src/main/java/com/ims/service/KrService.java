@@ -51,7 +51,7 @@ public class KrService {
 		
 	}
 
-	private void updateConfiguration(TicketStatistics record, String result) {
+	public void updateConfiguration(TicketStatistics record, String result) {
 		if("Success".equalsIgnoreCase(result)){
 			record.setKnowledgeBaseStatus(StatusType.COMPLETED.getDescription());
 			ticketStatisticsRepository.save(record);

@@ -66,6 +66,16 @@ public class UtilTest {
 	}
 	
 	@Test
+	public void convertDateInvalidDate() {
+		DateUtil.convertDate("124hg");
+	}
+	
+	@Test
+	public void getTimeStamp() {
+		DateUtil.getTimeStamp();
+	}
+	
+	@Test
 	public void echoAsCSV() {
 		Sheet sheet=mock(Sheet.class);
 		Row row=mock(Row.class);

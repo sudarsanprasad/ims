@@ -1,4 +1,4 @@
-package com.ims.jobs;
+package com.ims.service;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
@@ -6,58 +6,38 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.core.env.Environment;
+import org.springframework.web.client.ResourceAccessException;
 
 import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketStatistics;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketStatisticsRepository;
-import com.ims.repository.TicketSystemRepository;
-import com.ims.service.FTPService;
-import com.ims.service.KrService;
-import com.ims.service.TicketService;
 
 @RunWith(MockitoJUnitRunner.class)
-public class ImsKrAutomationJobTest {
+public class KrServiceTest {
 
 	@Mock
 	private Environment env;
 
 	@Mock
-	TicketSystemRepository ticketSystemRepository;
-
-	@Mock
 	ImsConfigurationRepository imsConfigurationRepository;
-
-	@Mock
-	private TicketService ticketService;
-
-	@Mock
-	private FTPService ftpService;
-	
-	@Mock
-	private KrService krService;
 
 	@Mock
 	private TicketStatisticsRepository ticketStatisticsRepository;
 
-	@Spy
 	@InjectMocks
-	ImsKrAutomationJob imsKrAutomationJob;
+	private KrService krService;
 
-	@Test
-	public void execute() throws JobExecutionException {
-		JobExecutionContext context = Mockito.mock(JobExecutionContext.class);
+	@Test(expected = ResourceAccessException.class)
+	public void triggerKr() {
+
 		TicketStatistics ticketStatistics = constructTicketStatistics();
 		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
 		ticketStatisticsList.add(ticketStatistics);
@@ -65,23 +45,23 @@ public class ImsKrAutomationJobTest {
 				.findAllByAutomationStatusAndKnowledgeBaseStatusOrderByJobIdDesc(Mockito.anyString(),
 						Mockito.anyString());
 		doReturn("http://localhost:3001/kr/build_kr").when(env).getProperty("kr.url");
-		ImsConfiguration imsConfiguration = new ImsConfiguration();
-		when(imsConfigurationRepository.findByProperty("forecast.model.status")).thenReturn(imsConfiguration);
-		imsKrAutomationJob.execute(context);
+		krService.triggerKr();
 	}
 
 	@Test
-	@Ignore
-	public void executeEmptyList() throws JobExecutionException {
-		JobExecutionContext context = Mockito.mock(JobExecutionContext.class);
-		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
-		// ticketStatisticsList.add(ticketStatistics);
-		doReturn(ticketStatisticsList).when(ticketStatisticsRepository)
-				.findAllByAutomationStatusAndKnowledgeBaseStatusOrderByJobIdDesc(Mockito.anyString(),
-						Mockito.anyString());
+	public void updateConfiguration() {
+		TicketStatistics record = constructTicketStatistics();
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
-		when(imsConfigurationRepository.findByProperty("forecast.model.status")).thenReturn(imsConfiguration);
-		imsKrAutomationJob.execute(context);
+		when(imsConfigurationRepository.findByProperty("kr.build.status")).thenReturn(imsConfiguration);
+		krService.updateConfiguration(record, "Success");
+	}
+	
+	@Test
+	public void updateConfigurationFAILED() {
+		TicketStatistics record = constructTicketStatistics();
+		ImsConfiguration imsConfiguration = new ImsConfiguration();
+		when(imsConfigurationRepository.findByProperty("kr.build.status")).thenReturn(imsConfiguration);
+		krService.updateConfiguration(record, "FAILED");
 	}
 
 	private TicketStatistics constructTicketStatistics() {
