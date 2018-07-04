@@ -2,6 +2,7 @@ package com.ims.entity;
 
 import java.sql.Timestamp;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -19,6 +20,7 @@ public class TicketPpm {
 	@Id
 	private String id;
 	
+	@Column(length=10485760)
 	private String data;
 	
 	private String ppmFlag;

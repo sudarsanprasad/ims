@@ -33,7 +33,8 @@ public class TicketPpmService {
 			for(TicketPpm ppm:list){
 				JSONParser parser = new JSONParser();
 				try {
-					JSONObject json = (JSONObject) parser.parse(ppm.getData());
+					String data = ppm.getData().replaceAll("^\"|\"$", "");
+					JSONObject json = (JSONObject) parser.parse(data);
 					ppm.setPpmData(json);
 				} catch (ParseException e) {
 					LOG.info(e);
