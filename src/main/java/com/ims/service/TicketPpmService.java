@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import com.ims.dto.PpmDto;
 import com.ims.entity.TicketPpm;
 import com.ims.repository.TicketPpmRepository;
-import com.ims.util.DateUtil;
 
 @Service
 public class TicketPpmService {
@@ -28,7 +27,7 @@ public class TicketPpmService {
 	public PpmDto findByPpmFlag() {
 		LocalDate date = LocalDate.now().minusDays(7);
 		Timestamp timestamp = Timestamp.valueOf(date.atStartOfDay());
-		List<TicketPpm> list = ticketPpmRepository.findByPpmFlagAndCreateDateIsAfter("Y", timestamp);
+		List<TicketPpm> list = ticketPpmRepository.findByPpmFlagAndCreateDateIsAfter("N", timestamp);
 		int size = 0;
 		if(!CollectionUtils.isEmpty(list)){
 			for(TicketPpm ppm:list){
@@ -50,7 +49,7 @@ public class TicketPpmService {
 	}
 
 	public void updateNotifications() {
-		ticketPpmRepository.updatePpmFlagAsN(DateUtil.getTimeStamp());
+		ticketPpmRepository.updatePpmFlagAsY();
 	}
 
 }
