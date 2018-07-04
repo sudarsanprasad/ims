@@ -193,7 +193,7 @@ public class TicketService {
 	}
 	
 	private StringBuilder createTempTableQuery(String systemName, List<TicketMetadata> systemFields) {
-		StringBuilder tempTableBuilder = new StringBuilder("CREATE EXTERNAL TABLE IF NOT EXISTS temp_ims_").append(systemName).append("(");
+		StringBuilder tempTableBuilder = new StringBuilder("CREATE TABLE IF NOT EXISTS temp_ims_").append(systemName).append("(");
 		for(TicketMetadata field:systemFields){
 			tempTableBuilder.append(field.getBusinessColumn()).append(" string, ");
 		}

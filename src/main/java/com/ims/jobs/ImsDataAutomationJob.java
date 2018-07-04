@@ -87,7 +87,8 @@ public class ImsDataAutomationJob implements Job {
 	private String getUrl(TicketSystem ticketSystem){
 		StringBuilder builder = new StringBuilder();
 		String systemName = ticketSystem.getSystemName().trim().toLowerCase();
-		builder.append(systemName).append("filter");
+		String system = systemName.trim();
+		builder.append(system).append(".filter");
 		LOG.info("FilterName ==>> "+builder.toString());
 		ImsConfiguration systemFilter = imsConfigurationRepository.findByProperty(builder.toString());
 		LOG.info("Filter Value from DB ==>> "+systemFilter.getValue());
