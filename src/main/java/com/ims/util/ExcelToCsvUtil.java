@@ -76,10 +76,7 @@ public class ExcelToCsvUtil {
 			if(!StringUtils.isEmpty(data.getBusinessColumn())){
 				businnesColumn = data.getBusinessColumn().replaceAll("_", " ");
 			}
-			LOG.info("businnesColumn ==>> "+businnesColumn);
 			int index = headerIndexMap.get(businnesColumn);
-			LOG.info("index === "+index);
-			LOG.info("Cell ===>> "+row.getCell(index));
 			
 			if(index == 26){
 				flag = true;
@@ -93,7 +90,6 @@ public class ExcelToCsvUtil {
 				ppmCellValue = row.getCell(index).toString();
 			}
 			lineStatusNew.append(ppmCellValue).append(",");
-			LOG.info("Line ==>> "+lineStatusNew.toString());
 		}
 		
 		return lineStatusNew.toString().substring(0, lineStatusNew.lastIndexOf(","));

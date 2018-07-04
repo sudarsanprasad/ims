@@ -88,9 +88,7 @@ public class ImsJobService {
 				scheduler.scheduleJob(jobDetail, triggersForJob, false);
 				log.info("Job with key - { } saved sucessfully", jobDetail.getKey());
 			} catch (SchedulerException e) {
-				log.info("S Exception "+e);
-				log.error("Couldn't save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
-				throw new IllegalArgumentException(e.getLocalizedMessage());
+				throw new IllegalArgumentException("Job is already running");
 			}
 		}
 	}
@@ -219,8 +217,7 @@ public class ImsJobService {
 			scheduler.scheduleJob(jobDetail, triggersForJob, false);
 			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
 		} catch (SchedulerException e) {
-			log.info("Exception "+e);
-			throw new IllegalArgumentException(e.getLocalizedMessage());
+			throw new IllegalArgumentException("Job is already running");
 		}
 		return forecastDescriptor;
 	}
@@ -245,9 +242,7 @@ public class ImsJobService {
 			scheduler.scheduleJob(jobDetail, triggersForJob, false);
 			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
 		} catch (SchedulerException e) {
-			log.info("Exception "+e);
-			log.error("Could not save job with key - {} due to error - {}", jobDetail.getKey(), e.getLocalizedMessage());
-			throw new IllegalArgumentException(e.getLocalizedMessage());
+			throw new IllegalArgumentException("Job is already running");
 		}
 		return krDescriptor;
 	}
