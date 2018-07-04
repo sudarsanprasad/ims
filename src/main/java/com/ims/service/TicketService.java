@@ -84,7 +84,7 @@ public class TicketService {
 			JSONObject record = records.getJSONObject(i);
 			if("Service Now".equalsIgnoreCase(system.getSystemName())){
 				String comments = getUrl(restTemplate, (String) record.get((String)env.getProperty("ticketid").trim()));
-				String replaceString=comments.replace("System Administrator  Additional comments  n"," ");
+				String replaceString=comments.replaceAll("System Administrator  Additional comments", "").replaceAll(" n", "");
 				String maskedData = DataMaskUtil.maskData(replaceString);
 				record.put("comments", DataMaskUtil.replaceSpecialChars(maskedData));
 			}
@@ -95,7 +95,7 @@ public class TicketService {
 		LOG.info("Records Count ==>> "+recordsCount);
 		JsonToCsvUtil jsonToCsvUtil = new JsonToCsvUtil();
 		String fileName = FileNameUtil.getFileName(location, system);
-		jsonToCsvUtil.prepareCsv(jsonObj, fields, fileName, FileNameUtil.getPpmFileName(ppmLocation, system));
+		jsonToCsvUtil.prepareCsv(jsonObj, fields, fileName, FileNameUtil.getPpmFileName(ppmLocation, system), ticketStatistics);
 		List<TicketMetadata> systemFields = ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(system.getSystemName(), "Y");
 		StringBuilder tableBuilder = createTempTableQuery(systemName, systemFields);
 		StringBuilder queryBuilder = new StringBuilder("load data local inpath \"");

@@ -170,7 +170,7 @@ public class UtilTest {
 		when(records.length()).thenReturn(1).thenReturn(0);
 		when(records.getJSONObject(0)).thenReturn(record);
 		when(record.get(anyString())).thenReturn("abc");
-		jsonToCsvUtil.prepareCsv(jsonObjMock, fieldConfigurationList, "test", "abc");
+		jsonToCsvUtil.prepareCsv(jsonObjMock, fieldConfigurationList, "test", "abc", null);
 		
 	}
 
