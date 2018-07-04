@@ -107,16 +107,18 @@ public class TicketService {
 			stmt.execute("truncate table temp_ims_"+systemName);
 			stmt.execute(queryBuilder.toString());
 			QueryBuilder prepareQuery = new QueryBuilder();
-			StringBuilder qBuilder = prepareQuery.buildHiveQuery(ticketMetadataRepository, systemName, system.getCustomer(),"API");
+			StringBuilder qBuilder = prepareQuery.buildHiveQuery(ticketMetadataRepository, system.getSystemName(), system.getCustomer(),"API");
 			StringBuilder query = prepareQuery.getSelectValue(qBuilder);
 			
-			List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomerOrderById(systemName, system.getCustomer());
+			List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomerOrderById(system.getSystemName(), system.getCustomer());
 			if(!CollectionUtils.isEmpty(metadata)){
 				for(TicketMetadata data : metadata){
-					buildQuery(systemName, system.getCustomer(), ticketStatistics,query, data);
+					buildQuery(system.getSystemName(), system.getCustomer(), ticketStatistics,query, data);
 				}
 			}
-			StringBuilder finalQuery = prepareQuery.getFromValue(query, "temp_ims_"+systemName);
+			String tempQueryBuilder = query.toString().substring(0, query.lastIndexOf(","));
+			StringBuilder insertQuery = new StringBuilder(tempQueryBuilder);
+			StringBuilder finalQuery = prepareQuery.getFromValue(insertQuery, "temp_ims_"+systemName);
 			LOG.info(finalQuery.toString());
 			stmt.execute(finalQuery.toString());
 			deleteFile(fileName);
@@ -186,7 +188,7 @@ public class TicketService {
 		}else if("customername".equalsIgnoreCase(apiData.getBusinessColumn())){
 			query.append("\"").append(customer).append("\"").append(",");
 		}else if("systemname".equalsIgnoreCase(apiData.getBusinessColumn())){
-			query.append("\"").append(systemName).append("\"");
+			query.append("\"").append(systemName).append("\"").append(",");
 		}else{
 			query.append(apiData.getBusinessColumn()).append(",");
 		}

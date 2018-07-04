@@ -18,12 +18,7 @@ public class QueryBuilder {
 	
 	public StringBuilder buildHiveQuery(TicketMetadataRepository ticketMetadataRepository, String systemName, String customer, String source){
 		StringBuilder queryBuilder;
-		if("FTP".equalsIgnoreCase(source)){
-			queryBuilder = new StringBuilder("insert into TICKET_DATA (");
-		}else{
-			queryBuilder = new StringBuilder("insert into ticket_api_temp_data (");
-		}
-		
+		queryBuilder = new StringBuilder("insert into TICKET_DATA (");
 		buildInsertQueryWithMetadata(queryBuilder, ticketMetadataRepository, systemName, customer);
 		return queryBuilder;
 	}
