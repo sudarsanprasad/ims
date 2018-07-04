@@ -84,7 +84,7 @@ public class TicketService {
 			JSONObject record = records.getJSONObject(i);
 			if("Service Now".equalsIgnoreCase(system.getSystemName())){
 				String comments = getUrl(restTemplate, (String) record.get((String)env.getProperty("ticketid").trim()));
-				String replaceString=comments.replaceAll("System Administrator  Additional comments", "").replaceAll(" n", "");
+				String replaceString=comments.replaceAll("System Administrator", "").replaceAll("Additional comments", "").replaceAll(" n", "");
 				String maskedData = DataMaskUtil.maskData(replaceString);
 				record.put("comments", DataMaskUtil.replaceSpecialChars(maskedData));
 			}
