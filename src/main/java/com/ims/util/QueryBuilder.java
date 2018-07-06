@@ -16,7 +16,7 @@ public class QueryBuilder {
 	@Autowired
 	private Environment env;
 	
-	public StringBuilder buildHiveQuery(TicketMetadataRepository ticketMetadataRepository, String systemName, String customer, String source){
+	public StringBuilder buildHiveQuery(TicketMetadataRepository ticketMetadataRepository, String systemName, String customer){
 		StringBuilder queryBuilder;
 		queryBuilder = new StringBuilder("insert into TICKET_DATA (");
 		buildInsertQueryWithMetadata(queryBuilder, ticketMetadataRepository, systemName, customer);

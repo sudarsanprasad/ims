@@ -102,7 +102,7 @@ public class UtilTest {
 		TicketMetadataRepository ticketMetadataRepository=mock(TicketMetadataRepository.class);
 		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById("ServiceNow", "Deloitte"))
 		.thenReturn(ticketMetadataList);
-		queryBuilder.buildHiveQuery(ticketMetadataRepository, "ServiceNow", "Deloitte", "API");
+		queryBuilder.buildHiveQuery(ticketMetadataRepository, "ServiceNow", "Deloitte");
 	}
 	
 	@Test
@@ -111,7 +111,7 @@ public class UtilTest {
 		TicketMetadataRepository ticketMetadataRepository=mock(TicketMetadataRepository.class);
 		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById("ServiceNow", "Deloitte"))
 		.thenReturn(ticketMetadataList);
-		queryBuilder.buildHiveQuery(ticketMetadataRepository, "ServiceNow", "Deloitte", "FTP");
+		queryBuilder.buildHiveQuery(ticketMetadataRepository, "ServiceNow", "Deloitte");
 	}
 	
 	@Test

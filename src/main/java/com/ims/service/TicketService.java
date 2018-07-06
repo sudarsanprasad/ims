@@ -107,7 +107,7 @@ public class TicketService {
 			stmt.execute("truncate table temp_ims_"+systemName);
 			stmt.execute(queryBuilder.toString());
 			QueryBuilder prepareQuery = new QueryBuilder();
-			StringBuilder qBuilder = prepareQuery.buildHiveQuery(ticketMetadataRepository, system.getSystemName(), system.getCustomer(),"API");
+			StringBuilder qBuilder = prepareQuery.buildHiveQuery(ticketMetadataRepository, system.getSystemName(), system.getCustomer());
 			StringBuilder query = prepareQuery.getSelectValue(qBuilder);
 			
 			List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomerOrderById(system.getSystemName(), system.getCustomer());

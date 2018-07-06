@@ -162,7 +162,7 @@ public class FTPService {
 				stmt.execute(queryBuilder.toString());
 				
 				QueryBuilder prepareQuery = new QueryBuilder();
-				StringBuilder qBuilder = prepareQuery.buildHiveQuery(ticketMetadataRepository, systemName, customer,"FTP");
+				StringBuilder qBuilder = prepareQuery.buildHiveQuery(ticketMetadataRepository, systemName, customer);
 				StringBuilder query = prepareQuery.getSelectValue(qBuilder);
 				
 				List<TicketMetadata> metadata =  ticketMetadataRepository.findBySystemNameAndCustomerOrderById(systemName, customer);
