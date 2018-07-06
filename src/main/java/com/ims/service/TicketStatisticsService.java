@@ -22,6 +22,11 @@ public class TicketStatisticsService {
 	
 	private static final Logger LOG = Logger.getRootLogger();
 	
+	private static String startDate = "automation_start_date >=";
+	private static String endDate = "AND automation_end_date <=";
+	private static String and = "AND";
+	private static String where = "where";
+	
 	@Autowired
     private EntityManager entityManager;
 
@@ -88,7 +93,7 @@ public class TicketStatisticsService {
 			queryBuilder.append("source = '");
 			queryBuilder.append(ticketStatistics.getSource()).append("'");
 			if(ticketStatistics.getSystemNames() != null){
-				queryBuilder.append(" AND ");
+				queryBuilder.append(" ").append(and).append(" ");
 				queryBuilder.append("system_name in (");
 				for(String name:ticketStatistics.getSystemNames()){
 					systemBuiler.append("'").append(name).append("'").append(",");
@@ -99,9 +104,9 @@ public class TicketStatisticsService {
 			}
 			if(ticketStatistics.getAutomationStartDate() != null){
 				queryBuilder.append(" AND ");
-				queryBuilder.append(" automation_start_date >= '");
+				queryBuilder.append(" ").append(startDate).append(" '");
 				queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationStartDate()));
-				queryBuilder.append("' AND automation_end_date <= '");
+				queryBuilder.append("' AND ").append(endDate).append(" '");
 				queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationEndDate())).append("'");
 			}
 		}else if(!CollectionUtils.isEmpty(ticketStatistics.getSystemNames())){
@@ -115,16 +120,16 @@ public class TicketStatisticsService {
 			queryBuilder.append(")");
 			if(ticketStatistics.getAutomationStartDate() != null){
 				queryBuilder.append(" AND ");
-				queryBuilder.append(" automation_start_date >= '");
+				queryBuilder.append(" ").append(startDate).append(" '");
 				queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationStartDate()));
-				queryBuilder.append("' AND automation_end_date <= '");
+				queryBuilder.append("' AND ").append(startDate).append(" '");
 				queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationEndDate())).append("'");
 			}
 		}else if(ticketStatistics.getAutomationStartDate() != null){
-			queryBuilder.append("where ");
-			queryBuilder.append(" automation_start_date >= '");
+			queryBuilder.append(where).append(" ");
+			queryBuilder.append(" ").append(endDate).append(" '");
 			queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationStartDate()));
-			queryBuilder.append("' AND automation_end_date <= '");
+			queryBuilder.append("' ").append(and).append(" ").append(endDate).append(" '");
 			queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationEndDate())).append("'");
 		}
 		LOG.info("Query ===>>> "+queryBuilder.toString());
