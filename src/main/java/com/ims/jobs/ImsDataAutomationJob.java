@@ -71,6 +71,7 @@ public class ImsDataAutomationJob implements Job {
 		} catch (ImsException e) {
 			log.error("Exception == "+e);
 		}
+		ticketSystem = ticketSystemRepository.findBySystemNameAndCustomer(system, customer);
 		ticketSystem.setFirstTimeFlag("N");
 		ticketSystem.setKkrFirstTimeFlag("N");
 		ticketSystemRepository.save(ticketSystem);

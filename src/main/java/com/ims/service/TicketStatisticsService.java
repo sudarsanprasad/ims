@@ -104,7 +104,7 @@ public class TicketStatisticsService {
 				queryBuilder.append("' AND automation_end_date <= '");
 				queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationEndDate())).append("'");
 			}
-		}else if(ticketStatistics.getSystemNames() != null){
+		}else if(!CollectionUtils.isEmpty(ticketStatistics.getSystemNames())){
 			queryBuilder.append("where ");
 			queryBuilder.append("system_name in (");
 			for(String name:ticketStatistics.getSystemNames()){
