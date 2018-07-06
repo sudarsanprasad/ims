@@ -39,6 +39,7 @@ public class UtilTest {
 	@InjectMocks
 	JsonToCsvUtil jsonToCsvUtil;
 	
+	
 	@Test
 	public void maskData() {
 		String maskeddata=DataMaskUtil.maskData("Hi John, My phone number is 95825258  and mail id abc@gmail.com");
