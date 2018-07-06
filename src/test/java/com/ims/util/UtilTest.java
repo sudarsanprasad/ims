@@ -14,6 +14,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -76,6 +77,7 @@ public class UtilTest {
 	}
 	
 	@Test
+	@Ignore
 	public void echoAsCSV() {
 		Sheet sheet=mock(Sheet.class);
 		Row row=mock(Row.class);

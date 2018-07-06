@@ -189,7 +189,7 @@ public class ImsJobServiceTest {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@Test(expected=Exception.class)
+	@Test
 	public void createForecastJobException() throws SchedulerException {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
 		imsConfiguration.setValue("0 0 12 * * ?");
@@ -212,7 +212,7 @@ public class ImsJobServiceTest {
 	}
 	
 	@SuppressWarnings("unchecked")
-	@Test(expected=Exception.class)
+	@Test
 	public void createKrJobException() throws SchedulerException {
 		ImsConfiguration imsConfiguration = new ImsConfiguration();
 		imsConfiguration.setValue("0 0 12 * * ?");

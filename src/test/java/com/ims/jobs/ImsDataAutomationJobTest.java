@@ -16,12 +16,14 @@ import org.quartz.JobExecutionException;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
 
+import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketSystem;
 import com.ims.exception.ImsException;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
 import com.ims.service.FTPService;
 import com.ims.service.ImsJobService;
+import com.ims.service.KrService;
 import com.ims.service.TicketService;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -41,6 +43,9 @@ public class ImsDataAutomationJobTest {
 	
 	@Mock
 	ImsJobService imsJobService;
+	
+	@Mock
+	private KrService krService;
 	
 	@InjectMocks
 	ImsDataAutomationJob imsDataAutomationJob;
@@ -76,8 +81,17 @@ public class ImsDataAutomationJobTest {
 		//when(triggerKey.getGroup()).thenReturn("Deloite");
 		doNothing().when(ticketService).updateDataToHDFS(anyString(), anyObject());
 		when(ticketSystemRepository.findBySystemNameAndCustomer("Deloite","DEFAULT")).thenReturn(ticketSystem);
-		when(ftpService.downloadExcel(null)).thenThrow(ImsException.class);
+		when(ftpService.downloadExcel(ticketSystem)).thenThrow(ImsException.class);
 		imsDataAutomationJob.execute(context);
+	}
+	
+	@Test
+	public void getUrl(){
+		TicketSystem ticketSystem = constructTicketSystem();
+		ImsConfiguration imsConfiguration = new ImsConfiguration();
+		imsConfiguration.setValue("06 43 19 77");
+		when(imsConfigurationRepository.findByProperty(anyString())).thenReturn(imsConfiguration);
+		imsDataAutomationJob.getUrl(ticketSystem);
 	}
 	
 	private TicketSystem constructTicketSystem() {
@@ -85,6 +99,9 @@ public class ImsDataAutomationJobTest {
 		ticketSystem.setId(10L);
 		ticketSystem.setCustomer("Deloite");
 		ticketSystem.setSystemName("ServiceNow");
+		ticketSystem.setEnableFlag("Y");
+		ticketSystem.setFirstTimeFlag("Y");
+		ticketSystem.setKkrFirstTimeFlag("Y");
 		return ticketSystem;
 	}
 

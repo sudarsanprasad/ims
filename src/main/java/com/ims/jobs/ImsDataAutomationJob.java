@@ -79,13 +79,13 @@ public class ImsDataAutomationJob implements Job {
 		
 	}
 	
-	private String getRecords(TicketSystem ticketSystem) {
+	public String getRecords(TicketSystem ticketSystem) {
 		 RestTemplate restTemplate = new RestTemplate();
 		 restTemplate.getInterceptors().add(new BasicAuthorizationInterceptor(ticketSystem.getUserName(), ticketSystem.getPassword()));
 		 return restTemplate.getForObject(getUrl(ticketSystem), String.class);
 	}
 	
-	private String getUrl(TicketSystem ticketSystem){
+	public String getUrl(TicketSystem ticketSystem){
 		StringBuilder builder = new StringBuilder();
 		String systemName = ticketSystem.getSystemName().trim().toLowerCase();
 		String system = systemName.trim();

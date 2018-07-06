@@ -2,12 +2,17 @@ package com.ims.service;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.util.Assert.notEmpty;
 import static org.springframework.util.Assert.notNull;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 
+import com.ims.constant.SourceType;
 import com.ims.constant.StatusType;
 import com.ims.entity.TicketStatistics;
 import com.ims.repository.TicketStatisticsRepository;
@@ -29,6 +35,9 @@ public class TicketStatisticsServiceTest {
 
 	@Mock
 	private TicketStatisticsRepository ticketStatisticsRepository;
+	
+	@Mock
+	private EntityManager entityManager;
 
 	@Test
 	public void create() {
@@ -133,10 +142,44 @@ public class TicketStatisticsServiceTest {
 	}
 
 	@Test
-	public void getStatistics() {
+	public void getStatisticsWithSourceNotNull() {
 		TicketStatistics ticketStatistics = constructTicketStatostics();
 		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
 		ticketStatisticsList.add(ticketStatistics);
+		Query query=mock(Query.class);
+		when(entityManager.createQuery(anyString())).thenReturn(query);
+		@SuppressWarnings("unchecked")
+		List<TicketStatistics> list=mock(List.class);
+		when(query.getResultList()).thenReturn(list);
+		ticketStatisticsService.getStatistics(ticketStatistics);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void getStatisticsWithSourceAsNull() {
+		TicketStatistics ticketStatistics = constructTicketStatostics();
+		ticketStatistics.setSource(null);
+		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
+		ticketStatisticsList.add(ticketStatistics);
+		Query query=mock(Query.class);
+		when(entityManager.createQuery(anyString())).thenReturn(query);
+		List<TicketStatistics> list=mock(List.class);
+		when(query.getResultList()).thenReturn(list);
+		ticketStatisticsService.getStatistics(ticketStatistics);
+	}
+	
+	@Test
+	public void getStatisticsWithSourceAndSystemNamesAsNull() {
+		TicketStatistics ticketStatistics = constructTicketStatostics();
+		ticketStatistics.setSource(null);
+		ticketStatistics.setSystemNames(null);
+		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
+		ticketStatisticsList.add(ticketStatistics);
+		Query query=mock(Query.class);
+		when(entityManager.createQuery(anyString())).thenReturn(query);
+		@SuppressWarnings("unchecked")
+		List<TicketStatistics> list=mock(List.class);
+		when(query.getResultList()).thenReturn(list);
 		ticketStatisticsService.getStatistics(ticketStatistics);
 	}
 
@@ -145,6 +188,14 @@ public class TicketStatisticsServiceTest {
 		ticketStatistics.setCustomer("Deloitte");
 		ticketStatistics.setJobId(10L);
 		ticketStatistics.setFileName("test.txt");
+		ticketStatistics.setSource(SourceType.FTP.toString());
+		List<String> systemNames =new ArrayList<>();
+		systemNames.add("Service Now");
+		ticketStatistics.setSystemNames(systemNames);
+		Date automationStartDate=new Date();
+		ticketStatistics.setAutomationStartDate(automationStartDate);
+		Date automationEndDate=new Date();
+		ticketStatistics.setAutomationEndDate(automationEndDate);
 		return ticketStatistics;
 	}
 
