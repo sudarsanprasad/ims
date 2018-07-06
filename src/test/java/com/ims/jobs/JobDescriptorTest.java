@@ -25,10 +25,10 @@ public class JobDescriptorTest {
 	JobDescriptor jobDescriptor;
 	
 	@InjectMocks
-	KrJobDescriptor KrJobDescriptor;
+	JobDescriptor KrJobDescriptor;
 	
 	@InjectMocks
-	ForecastJobDescriptor forecastJobDescriptor;
+	JobDescriptor forecastJobDescriptor;
 	
 	@Test
 	public void buildDescriptor() {

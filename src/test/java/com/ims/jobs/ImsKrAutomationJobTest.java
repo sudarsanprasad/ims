@@ -6,7 +6,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -70,19 +69,6 @@ public class ImsKrAutomationJobTest {
 		imsKrAutomationJob.execute(context);
 	}
 
-	@Test
-	@Ignore
-	public void executeEmptyList() throws JobExecutionException {
-		JobExecutionContext context = Mockito.mock(JobExecutionContext.class);
-		List<TicketStatistics> ticketStatisticsList = new ArrayList<TicketStatistics>();
-		// ticketStatisticsList.add(ticketStatistics);
-		doReturn(ticketStatisticsList).when(ticketStatisticsRepository)
-				.findAllByAutomationStatusAndKnowledgeBaseStatusOrderByJobIdDesc(Mockito.anyString(),
-						Mockito.anyString());
-		ImsConfiguration imsConfiguration = new ImsConfiguration();
-		when(imsConfigurationRepository.findByProperty("forecast.model.status")).thenReturn(imsConfiguration);
-		imsKrAutomationJob.execute(context);
-	}
 
 	private TicketStatistics constructTicketStatistics() {
 		TicketStatistics ticketStatistics = new TicketStatistics();

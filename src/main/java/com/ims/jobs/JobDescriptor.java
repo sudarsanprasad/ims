@@ -79,6 +79,22 @@ public class JobDescriptor {
                 .usingJobData(jobDataMap)
                 .build();
 	}
+	
+	public JobDetail buildKrJobDetail() {
+		JobDataMap jobDataMap = new JobDataMap(getData());
+		return newJob(ImsKrAutomationJob.class)
+                .withIdentity(getName(), getGroup())
+                .usingJobData(jobDataMap)
+                .build();
+	}
+	
+	public JobDetail buildForecastJobDetail() {
+		JobDataMap jobDataMap = new JobDataMap(getData());
+		return newJob(ImsForecastAutomationJob.class)
+                .withIdentity(getName(), getGroup())
+                .usingJobData(jobDataMap)
+                .build();
+	}
 
 	/**
 	 * Convenience method that builds a descriptor from JobDetail and Trigger(s)

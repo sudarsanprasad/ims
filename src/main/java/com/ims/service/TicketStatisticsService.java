@@ -104,13 +104,10 @@ public class TicketStatisticsService {
 			}
 			if(ticketStatistics.getAutomationStartDate() != null){
 				queryBuilder.append(" AND ");
-				queryBuilder.append(" ").append(startDate).append(" '");
-				queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationStartDate()));
-				queryBuilder.append("' AND ").append(endDate).append(" '");
-				queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationEndDate())).append("'");
+				appendDates(ticketStatistics, queryBuilder);
 			}
 		}else if(!CollectionUtils.isEmpty(ticketStatistics.getSystemNames())){
-			queryBuilder.append("where ");
+			queryBuilder.append(where).append(" ");
 			queryBuilder.append("system_name in (");
 			for(String name:ticketStatistics.getSystemNames()){
 				systemBuiler.append("'").append(name).append("'").append(",");
@@ -120,21 +117,22 @@ public class TicketStatisticsService {
 			queryBuilder.append(")");
 			if(ticketStatistics.getAutomationStartDate() != null){
 				queryBuilder.append(" AND ");
-				queryBuilder.append(" ").append(startDate).append(" '");
-				queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationStartDate()));
-				queryBuilder.append("' AND ").append(startDate).append(" '");
-				queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationEndDate())).append("'");
+				appendDates(ticketStatistics, queryBuilder);
 			}
 		}else if(ticketStatistics.getAutomationStartDate() != null){
 			queryBuilder.append(where).append(" ");
-			queryBuilder.append(" ").append(endDate).append(" '");
-			queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationStartDate()));
-			queryBuilder.append("' ").append(and).append(" ").append(endDate).append(" '");
-			queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationEndDate())).append("'");
+			appendDates(ticketStatistics, queryBuilder);
 		}
 		LOG.info("Query ===>>> "+queryBuilder.toString());
 		Query query = entityManager.createQuery(queryBuilder.toString());
 		return (List<TicketStatistics>) query.getResultList();
+	}
+
+	private void appendDates(TicketStatistics ticketStatistics, StringBuilder queryBuilder) {
+		queryBuilder.append(" ").append(startDate).append(" '");
+		queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationStartDate()));
+		queryBuilder.append("' ").append(and).append(" ").append(endDate).append(" '");
+		queryBuilder.append(DateUtil.convertDateToString(ticketStatistics.getAutomationEndDate())).append("'");
 	}
 	
 }

@@ -14,9 +14,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.ims.entity.TicketSystem;
 import com.ims.exception.ImsException;
-import com.ims.jobs.ForecastJobDescriptor;
 import com.ims.jobs.JobDescriptor;
-import com.ims.jobs.KrJobDescriptor;
 import com.ims.repository.TicketSystemRepository;
 import com.ims.service.ImsJobService;
 
@@ -44,13 +42,13 @@ public class JobSchedulerTest {
 	@Test
 	public void runForecastScheduler() throws ImsException {
 		ReflectionTestUtils.setField(jobScheduler, "imsJobService", imsJobService);
-		when(imsJobService.createForecastJob()).thenReturn(new ForecastJobDescriptor());
+		when(imsJobService.createForecastJob()).thenReturn(new JobDescriptor());
 		jobScheduler.runForecastScheduler();
 	}
 
 	@Test
 	public void runKRScheduler() throws ImsException {
-		when(imsJobService.createKrJob()).thenReturn(new KrJobDescriptor());
+		when(imsJobService.createKrJob()).thenReturn(new JobDescriptor());
 		ReflectionTestUtils.setField(jobScheduler, "imsJobService", imsJobService);
 		jobScheduler.runKRScheduler();
 	}

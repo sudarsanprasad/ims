@@ -30,9 +30,7 @@ import org.springframework.web.client.RestTemplate;
 import com.ims.constant.JobType;
 import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketSystem;
-import com.ims.jobs.ForecastJobDescriptor;
 import com.ims.jobs.JobDescriptor;
-import com.ims.jobs.KrJobDescriptor;
 import com.ims.jobs.TriggerDescriptor;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
@@ -198,9 +196,9 @@ public class ImsJobService {
 		return state;
 	}
 	
-	public ForecastJobDescriptor createForecastJob() {
+	public JobDescriptor createForecastJob() {
 		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("forecast.cronvalue");
-		ForecastJobDescriptor forecastDescriptor = new ForecastJobDescriptor();
+		JobDescriptor forecastDescriptor = new JobDescriptor();
 		List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
 		TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
 		triggerDescriptor.setCron(configuration.getValue());
@@ -211,7 +209,7 @@ public class ImsJobService {
 		forecastDescriptor.setTriggerDescriptors(triggerDescriptors);
 		forecastDescriptor.setGroup(JobType.FORECAST.getDescription());
 		forecastDescriptor.setName(JobType.FORECAST.getDescription());
-		JobDetail jobDetail = forecastDescriptor.buildJobDetail();
+		JobDetail jobDetail = forecastDescriptor.buildForecastJobDetail();
 		Set<Trigger> triggersForJob = forecastDescriptor.buildTriggers();
 		log.info("Forecast About to save job with key - {}", jobDetail.getKey());
 		try {
@@ -224,9 +222,9 @@ public class ImsJobService {
 		return forecastDescriptor;
 	}
 	
-	public KrJobDescriptor createKrJob() {
+	public JobDescriptor createKrJob() {
 		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("forecast.cronvalue");
-		KrJobDescriptor krDescriptor = new KrJobDescriptor();
+		JobDescriptor krDescriptor = new JobDescriptor();
 		List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
 		TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
 		triggerDescriptor.setCron(configuration.getValue());
@@ -237,7 +235,7 @@ public class ImsJobService {
 		krDescriptor.setTriggerDescriptors(triggerDescriptors);
 		krDescriptor.setGroup(JobType.KR.getDescription());
 		krDescriptor.setName(JobType.KR.getDescription());
-		JobDetail jobDetail = krDescriptor.buildJobDetail();
+		JobDetail jobDetail = krDescriptor.buildKrJobDetail();
 		Set<Trigger> triggersForJob = krDescriptor.buildTriggers();
 		log.info("KR About to save job with key - {}", jobDetail.getKey());
 		try {
