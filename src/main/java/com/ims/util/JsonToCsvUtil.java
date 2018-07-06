@@ -29,7 +29,7 @@ public class JsonToCsvUtil {
 		}
 		
 		write2File(fileContent.toString(), fileName);
-		//write2File(fileContentStatusNew.toString(), ppmFileName);
+		write2File(fileContentStatusNew.toString(), ppmFileName);
 	}
 	
 	public void write2File(String text, String filePath) {

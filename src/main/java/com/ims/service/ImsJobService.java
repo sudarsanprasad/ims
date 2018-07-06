@@ -88,7 +88,8 @@ public class ImsJobService {
 				scheduler.scheduleJob(jobDetail, triggersForJob, false);
 				log.info("Job with key - { } saved sucessfully", jobDetail.getKey());
 			} catch (SchedulerException e) {
-				log.info("job is already running");
+				LOG.info(e);
+				log.info("Data job is already running");
 			}
 		}
 	}
@@ -217,7 +218,8 @@ public class ImsJobService {
 			scheduler.scheduleJob(jobDetail, triggersForJob, false);
 			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
 		} catch (SchedulerException e) {
-			log.info("job is already running");
+			LOG.info(e);
+			log.info("Forecast job is already running");
 		}
 		return forecastDescriptor;
 	}
@@ -242,7 +244,8 @@ public class ImsJobService {
 			scheduler.scheduleJob(jobDetail, triggersForJob, false);
 			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
 		} catch (SchedulerException e) {
-			log.info("job is already running");
+			LOG.info(e);
+			log.info("KR job is already running");
 		}
 		return krDescriptor;
 	}
