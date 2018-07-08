@@ -3,6 +3,9 @@ package com.ims.controller;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -27,14 +30,18 @@ public class ImsConfigurationControllerTest {
 		imsConfiguration.setId(10L);
 		imsConfiguration.setProperty("test");
 		imsConfiguration.setValue("test");
-		when(imsConfigurationService.updateCronValue("test", "test","type","value")).thenReturn(imsConfiguration);
+		when(
+				imsConfigurationService.updateCronValue("test", "test", "type",
+						"value")).thenReturn(imsConfiguration);
 		imsConfigurationController.updateCronValue(imsConfiguration);
 	}
 
 	@Test
 	public void testGetForecastModelStatus() {
-		when(imsConfigurationService.getForecastModelStatus()).thenReturn("Normal");
-		String modelStatus = imsConfigurationController.getForecastModelStatus();
+		when(imsConfigurationService.getForecastModelStatus()).thenReturn(
+				"Normal");
+		String modelStatus = imsConfigurationController
+				.getForecastModelStatus();
 		assertEquals("Normal", modelStatus);
 	}
 
@@ -47,16 +54,26 @@ public class ImsConfigurationControllerTest {
 
 	@Test
 	public void testUpdateForecastStatus() {
-		when(imsConfigurationService.updateForecastStatus("Normal")).thenReturn("Normal");
-		String foreCastStatus = imsConfigurationController.updateForecastStatus("Normal");
+		when(imsConfigurationService.updateForecastStatus("Normal"))
+				.thenReturn("Normal");
+		String foreCastStatus = imsConfigurationController
+				.updateForecastStatus("Normal");
 		assertEquals("Normal", foreCastStatus);
 	}
 
 	@Test
 	public void testUpdateKrStatus() {
-		when(imsConfigurationService.updateKrStatus("Normal")).thenReturn("Normal");
+		when(imsConfigurationService.updateKrStatus("Normal")).thenReturn(
+				"Normal");
 		String krStatus = imsConfigurationController.updateKrStatus("Normal");
 		assertEquals("Normal", krStatus);
+	}
 
+	@Test
+	public void findAll() {
+		List<ImsConfiguration> imsConfigurationList = new ArrayList<>();
+		when(imsConfigurationService.findAll())
+				.thenReturn(imsConfigurationList);
+		imsConfigurationController.findAll();
 	}
 }

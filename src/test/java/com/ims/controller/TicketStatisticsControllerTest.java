@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.ims.entity.TicketStatistics;
 import com.ims.service.TicketStatisticsService;
@@ -115,6 +116,12 @@ public class TicketStatisticsControllerTest {
 		when(ticketStatisticsService.getSystemNames()).thenReturn(listOfSystemNames);
 		List<String> listOfSystemNamesResp = ticketStatisticsController.getSystemNames();
 		notEmpty(listOfSystemNamesResp);
+	}
+	
+	@Test
+	public void getStatisticsByTicket() {
+		TicketStatistics ticketStatistics = constructTicketStatostics();
+		ticketStatisticsController.getStatistics(ticketStatistics);
 	}
 
 	private TicketStatistics constructTicketStatostics() {

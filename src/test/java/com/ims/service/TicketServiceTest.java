@@ -81,6 +81,23 @@ public class TicketServiceTest {
 		when(imsConfigurationRepository.findByProperty("servicenow.lastrundate")).thenReturn(imsConfiguration);
 		ticketService.updateDataToHDFS(getResult(), ticketSystem);
 	}
+	
+	@Test
+	public void buildQuery(){
+		StringBuilder query=new StringBuilder("test");
+		TicketStatistics ticketStatistics = constructTicketStatistics();
+		TicketMetadata ticketMetadata=new TicketMetadata();
+		List<String> listOfStrings=new ArrayList<>();
+		listOfStrings.add("jobid");
+		listOfStrings.add("version");
+		listOfStrings.add("customername");
+		listOfStrings.add("systemname");
+		listOfStrings.add("test");
+		for(String apiData:listOfStrings){
+			ticketMetadata.setBusinessColumn(apiData);
+		ticketService.buildQuery("Service Now", "Delloite", ticketStatistics, query, ticketMetadata);
+		}
+	}
 
 	private TicketSystem constructTicketSystem() {
 		TicketSystem ticketSystem = new TicketSystem();

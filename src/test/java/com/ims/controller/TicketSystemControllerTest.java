@@ -79,6 +79,11 @@ public class TicketSystemControllerTest {
 		List<FieldMask> fieldMaskListResp =ticketSystemController.getFieldMask();
 		notEmpty(fieldMaskListResp);
 	}
+	
+	@Test
+	public void getCustomers() {
+		ticketSystemController.getCustomers();
+	}
 
 	private List<FieldMask> loadFieldMaskList() {
 		FieldMask fieldMask = new FieldMask();
