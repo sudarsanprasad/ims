@@ -16,7 +16,7 @@ public class ExcelToCsvUtilTest {
 	@InjectMocks
 	ExcelToCsvUtil excelToCsvUtil;
 
-	@Test(expected=Exception.class)
+	@Test
 	public void readExcelFile() {
 		List<TicketMetadata> ticketMetaDataList=constructTicketMetaDataList();
 		excelToCsvUtil.readExcelFile("src/test/resources/Deloitte_AMPM_P10_20180522121000.xls", "src/test/resources/",
@@ -33,8 +33,8 @@ public class ExcelToCsvUtilTest {
 		TicketMetadata ticketMetadata = new TicketMetadata();
 		ticketMetadata.setId(10L);
 		ticketMetadata.setSystemName("Service Now");
-		ticketMetadata.setMappingColumn("Col1");
-		ticketMetadata.setBusinessColumn("Col2");
+		ticketMetadata.setMappingColumn("customername");
+		ticketMetadata.setBusinessColumn("systemname");
 		ticketMetadataList.add(ticketMetadata);
 		return ticketMetadataList;
 	}
