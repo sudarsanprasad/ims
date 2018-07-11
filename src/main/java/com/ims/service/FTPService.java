@@ -126,9 +126,9 @@ public class FTPService {
 	void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
 		TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName(), systemName, customer));
 		List<TicketMetadata> systemFields = ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(systemName, "Y");
+		String ticketSystem = systemName.replaceAll(" ", "_");
+		StringBuilder tableBuilder = createTempTableQuery(ticketSystem, systemFields);
 		List<TicketMetadata> krFields = ticketMetadataRepository.findBySystemNameAndIsKnowledgementOrderById(systemName, "Y");
-		StringBuilder tableBuilder = createTempTableQuery(systemName, systemFields);
-		
 		LOG.info("Teamp Table Query  ==>> "+tableBuilder);
 		try(Connection con = getConnection();Statement stmt = con.createStatement()) {
 				stmt.execute(tableBuilder.toString());
@@ -144,8 +144,9 @@ public class FTPService {
 					csvFileName = file.getName();
 				}else{
 					String[] fileVar = fileName.split("\\.");
-					csvFileName = location+fileVar[0]+".csv";
-					ppmFileName = ppmLocation+fileVar[0]+"_PPM"+".csv";
+					String filePart = fileVar[0].replaceAll(" ", "_");
+					csvFileName = location+filePart+".csv";
+					ppmFileName = ppmLocation+filePart+"_PPM"+".csv";
 				}
 				
 				ExcelToCsvUtil excelToCsvUtil = new ExcelToCsvUtil();
@@ -155,10 +156,11 @@ public class FTPService {
 				LOG.info("Count ==>> "+recordsCount);
 				
 				StringBuilder queryBuilder = new StringBuilder("load data local inpath \"");
-				queryBuilder.append(csvFileName).append("\" into table temp_ims_").append(systemName);
+				
+				queryBuilder.append(csvFileName).append("\" into table temp_ims_").append(ticketSystem);
 				LOG.info("Query Builder === >>"+queryBuilder.toString());
 				
-				stmt.execute("truncate table temp_ims_"+systemName);
+				stmt.execute("truncate table temp_ims_"+ticketSystem);
 				stmt.execute(queryBuilder.toString());
 				
 				QueryBuilder prepareQuery = new QueryBuilder();
@@ -171,7 +173,7 @@ public class FTPService {
 						buildQuery(systemName, customer, ticketStatistics,query, data);
 					}
 				}
-				StringBuilder finalQuery = prepareQuery.getFromValue(query, "temp_ims_"+systemName);
+				StringBuilder finalQuery = prepareQuery.getFromValue(query, "temp_ims_"+ticketSystem);
 				LOG.info(finalQuery.toString());
 				stmt.execute(finalQuery.toString());
 				deleteFiles(file, csvFileName);
@@ -201,19 +203,23 @@ public class FTPService {
 	}
 
 	private StringBuilder createTempTableQuery(String systemName, List<TicketMetadata> systemFields) {
-		StringBuilder tempTableBuilder = new StringBuilder("CREATE TABLE IF NOT EXISTS temp_ims_").append(systemName).append("(");
+		String ticketSystem = systemName.replaceAll(" ", "_");
+		StringBuilder tempTableBuilder = new StringBuilder("CREATE TABLE IF NOT EXISTS temp_ims_").append(ticketSystem).append("(");
+		String columnName;
 		for(TicketMetadata field:systemFields){
-			tempTableBuilder.append(field.getBusinessColumn()).append(" string, ");
+			columnName = field.getBusinessColumn().replaceAll(" ", "_");
+			tempTableBuilder.append(columnName).append(" string, ");
 		}
 		String builder = tempTableBuilder.toString().substring(0, tempTableBuilder.lastIndexOf(","));
 		StringBuilder tableBuilder = new StringBuilder(builder).append(") COMMENT 'port_data ' ROW FORMAT DELIMITED FIELDS TERMINATED BY '\\,' STORED AS TEXTFILE LOCATION '/apps/hive/warehouse/ims.db/temp_ims_");
-		tableBuilder.append(systemName).append("'");
+		tableBuilder.append(ticketSystem).append("'");
 		return tableBuilder;
 	}
 
 	private void buildQuery(String systemName, String customer,
 			TicketStatistics ticketStatistics, StringBuilder query,
 			TicketMetadata data) {
+		String businessColumn = data.getBusinessColumn().replaceAll(" ", "_");
 		if("jobid".equalsIgnoreCase(data.getBusinessColumn())){
 			query.append("\"").append(String.valueOf(ticketStatistics.getJobId())).append("\"").append(",");
 		}else if("version".equalsIgnoreCase(data.getBusinessColumn())){
@@ -223,7 +229,7 @@ public class FTPService {
 		}else if("systemname".equalsIgnoreCase(data.getBusinessColumn())){
 			query.append("\"").append(systemName).append("\"");
 		}else{
-			query.append(data.getBusinessColumn()).append(",");
+			query.append(businessColumn).append(",");
 		}
 	}
 

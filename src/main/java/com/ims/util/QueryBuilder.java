@@ -49,7 +49,8 @@ public class QueryBuilder {
 	}
 	
 	public StringBuilder getFromValue(StringBuilder queryBuilder, String tableName) {
-		queryBuilder.append(" from ").append(tableName);
+		String ticketSystem = tableName.replaceAll(" ", "_");
+		queryBuilder.append(" from ").append(ticketSystem);
 		return queryBuilder;
 	}
 
