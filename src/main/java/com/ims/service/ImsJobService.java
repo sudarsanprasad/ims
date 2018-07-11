@@ -33,6 +33,7 @@ import com.ims.entity.TicketSystem;
 import com.ims.jobs.ForecastJobDescriptor;
 import com.ims.jobs.JobDescriptor;
 import com.ims.jobs.KrJobDescriptor;
+import com.ims.jobs.PpmJobDescriptor;
 import com.ims.jobs.TriggerDescriptor;
 import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketSystemRepository;
@@ -242,9 +243,34 @@ public class ImsJobService {
 			scheduler.scheduleJob(jobDetail, triggersForJob, false);
 			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
 		} catch (SchedulerException e) {
-			log.info("job is already running");
+			log.info("KR job is already running");
 		}
 		return krDescriptor;
+	}
+	
+	public PpmJobDescriptor createPpmJob() {
+		ImsConfiguration configuration = imsConfigurationRepository.findByProperty("ppm.cronvalue");
+		PpmJobDescriptor ppmJobDescriptor = new PpmJobDescriptor();
+		List<TriggerDescriptor> triggerDescriptors = new ArrayList<>();
+		TriggerDescriptor triggerDescriptor = new TriggerDescriptor();
+		triggerDescriptor.setCron(configuration.getValue());
+		triggerDescriptor.setGroup(JobType.PPM.getDescription());
+		triggerDescriptor.setName(JobType.PPM.getDescription());
+		
+		triggerDescriptors.add(triggerDescriptor);
+		ppmJobDescriptor.setTriggerDescriptors(triggerDescriptors);
+		ppmJobDescriptor.setGroup(JobType.PPM.getDescription());
+		ppmJobDescriptor.setName(JobType.PPM.getDescription());
+		JobDetail jobDetail = ppmJobDescriptor.buildJobDetail();
+		Set<Trigger> triggersForJob = ppmJobDescriptor.buildTriggers();
+		log.info("PPM About to save job with key - {}", jobDetail.getKey());
+		try {
+			scheduler.scheduleJob(jobDetail, triggersForJob, false);
+			log.info("Job with key - {} saved sucessfully", jobDetail.getKey());
+		} catch (SchedulerException e) {
+			log.info("PPM job is already running");
+		}
+		return ppmJobDescriptor;
 	}
 	
 }

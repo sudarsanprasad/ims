@@ -59,5 +59,10 @@ public class JobScheduler {
 	public void runKRScheduler() throws ImsException {
 		imsJobService.createKrJob();
 	}
+	
+	@Scheduled(cron = "0 0/50 * * * ?")
+	public void runPpmScheduler() throws ImsException {
+		imsJobService.createKrJob();
+	}
 		
 }

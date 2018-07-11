@@ -39,6 +39,13 @@ public class ImsConfigurationService {
 			imsConfiguration.setFrequencyValue(frequencyValue);
 			imsConfigurationRepository.save(imsConfiguration);
 			imsJobService.deleteJob(JobType.KR.getDescription(), JobType.KR.getDescription());
+		}else if (JobType.PPM.getDescription().equalsIgnoreCase(type)) {
+			imsConfiguration = imsConfigurationRepository.findByProperty("ppm.cronvalue");
+			imsConfiguration.setValue(cronValue);
+			imsConfiguration.setFrequencyType(frequencyType);
+			imsConfiguration.setFrequencyValue(frequencyValue);
+			imsConfigurationRepository.save(imsConfiguration);
+			imsJobService.deleteJob(JobType.PPM.getDescription(), JobType.PPM.getDescription());
 		}
 		return imsConfiguration;
 	}
