@@ -59,6 +59,11 @@ public class ImsConfigurationService {
 		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("kr.build.status");
 		return imsConfiguration.getValue();
 	}
+	
+	public String getPpmStatus() {
+		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("ppm.scheduler.status");
+		return imsConfiguration.getValue();
+	}
 
 	public String updateKrStatus(String status) {
 		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty("kr.build.status");

@@ -50,4 +50,9 @@ public class ImsConfigurationController {
 	public List<ImsConfiguration> findAll() {
 		return imsConfigurationService.findAll();
 	}
+	
+	@GetMapping(value = "/getPpmStatus")
+	public String getppmStatus() {
+		return imsConfigurationService.getPpmStatus();
+	}
 }
