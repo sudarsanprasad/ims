@@ -19,7 +19,7 @@ INSERT INTO public.field_configuration(id, property, system_name) VALUES (12,'sy
 INSERT INTO public.field_configuration(id, property, system_name) VALUES (13,'incident_state','Service Now');
 INSERT INTO public.field_configuration(id, property, system_name) VALUES (14,'resolved_at','Service Now');
 INSERT INTO public.field_configuration(id, property, system_name) VALUES (15,'category ID','Service Now');
-INSERT INTO public.field_configuration(id, property, system_name) VALUES (15,'cmdb_ci ID','Service Now');
+INSERT INTO public.field_configuration(id, property, system_name) VALUES (16,'cmdb_ci ID','Service Now');
 
 INSERT INTO public.ticket_metadata(id, business_column, customer, is_forecast, is_knowledgement, is_proactive, mapping_column, system_name) VALUES (1,'jobid','Deloitte','Y','N','N','col1','AMPM');
 INSERT INTO public.ticket_metadata(id, business_column, customer, is_forecast, is_knowledgement, is_proactive, mapping_column, system_name) VALUES (2,'version','Deloitte','Y','N','N','col2','AMPM');
@@ -71,11 +71,12 @@ INSERT INTO public.ticket_configuration(id, property, value) VALUES (2,'ftpsched
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (3,'apischedulertime','*/240 * * * * *');
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (4,'ftpschedulertime','*/240 * * * * *');
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (5,'servicenow.lastrundate','2017-07-05 16:52:01');
-INSERT INTO public.ticket_configuration(id, property, value, frequency_type, frequency_value) VALUES (6,'forecast.cronvalue','0 0 0/18 1/1 * ? *','Hourly','18');
+INSERT INTO public.ticket_configuration(id, property, value, frequency_type, frequency_value) VALUES (6,'forecast.cronvalue','0 0/20 * 1/1 * ? *','Minutes','20');
 INSERT INTO public.ticket_configuration(id, property, value, frequency_type, frequency_value) VALUES (7,'kr.cronvalue','0 0/50 * 1/1 * ? *','Minutes','50');
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (8,'forecast.model.status','OPEN');
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (9,'kr.build.status','OPEN');
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (10,'service now.filter','?sysparm_query=sys_updated_on>javascript:gs.dateGenerate');
 INSERT INTO public.ticket_configuration(id, property, value) VALUES (11,'servicenow.comments.url','https://dev29786.service-now.com/api/now/v2/table/incident?sysparm_display_value=true&sysparm_fields=comments&sysparm_query=number=');
-
+INSERT INTO public.ticket_configuration(id, property, value) VALUES (12,'ppm.scheduler.status','OPEN');
+INSERT INTO public.ticket_configuration(id, property, value, frequency_type, frequency_value) VALUES (13,'ppm.cronvalue','0 0/50 * 1/1 * ? *','Minutes','50');
 
