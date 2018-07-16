@@ -19,6 +19,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Service;
 
+import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketMetadata;
 
 @Service
@@ -26,12 +27,14 @@ public class ExcelToCsvUtil {
 
 	private static final Logger LOG = Logger.getAnonymousLogger();
 
-	public void echoAsCSV(Sheet sheet, String file, String ppmFile, List<TicketMetadata> krFields, String systemName, String customer) {
+	public void echoAsCSV(Sheet sheet, String file, String ppmFile, List<TicketMetadata> krFields, String systemName, String customer, ImsConfiguration imsConfiguration) {
 		Row row;
-		int closeDateIndex = 9;
 		StringBuilder fileContent = new StringBuilder("");
 		StringBuilder fileContentStatusNew = new StringBuilder(addPpmHeader(krFields)).append("\n");
-		int statusColumnIndex = getColumnIndex(sheet);
+		int statusColumnIndex = -1;
+		if(!StringUtils.isEmpty(imsConfiguration.getValue())){
+			statusColumnIndex = Integer.parseInt(imsConfiguration.getValue());
+		}
 		LOG.info("Status Index ==>> "+statusColumnIndex);
 		Map<String, Integer> headerIndexMap = getColumnIndexMap(sheet, krFields);
 		for (int i = 1; i <= sheet.getLastRowNum(); i++) {
@@ -57,8 +60,7 @@ public class ExcelToCsvUtil {
 			lineStatusNew.append(createPpmContent(krFields, systemName, customer, row, headerIndexMap));
 			
 			fileContent.append(line.toString()).append("\n");
-			LOG.info("Value ==>> "+row.getCell(closeDateIndex).toString());
-			if (StringUtils.isEmpty(row.getCell(closeDateIndex).toString())) {
+			if ("OPEN".equalsIgnoreCase(row.getCell(statusColumnIndex).toString())) {
 				fileContentStatusNew.append(lineStatusNew.toString()).append("\n");
 			}
 		}
@@ -134,22 +136,6 @@ public class ExcelToCsvUtil {
 		return statusColumnIndex;
 	}
 	
-
-	private int getColumnIndex(Sheet sheet) {
-		int statusColumnIndex = 0;
-		Row row;
-		for (int i = 0; i <= 1; i++) {
-			row = sheet.getRow(i);
-			for (int j = 0; j < row.getLastCellNum(); j++) {
-				if ("Status".equalsIgnoreCase(row.getCell(j).toString()) || "State".equalsIgnoreCase(row.getCell(j).toString())) {
-					statusColumnIndex = row.getCell(j).getColumnIndex();
-				}
-			}
-			LOG.info("" + row.getCell(statusColumnIndex));
-		}
-		return statusColumnIndex;
-	}
-
 	private String getValue(Row row, int j) {
 		String cellValue;
 		if (HSSFDateUtil.isCellDateFormatted(row.getCell(j))) {
@@ -170,11 +156,11 @@ public class ExcelToCsvUtil {
 	 * @param args
 	 *            the command line arguments
 	 */
-	public void readExcelFile(String fileName, String file, String ppmFile, List<TicketMetadata> krFields, String systemName, String customer) {
+	public void readExcelFile(String fileName, String file, String ppmFile, List<TicketMetadata> krFields, String systemName, String customer, ImsConfiguration imsConfiguration) {
 		try (InputStream inp = new FileInputStream(fileName)) {
 			try (Workbook wb = WorkbookFactory.create(inp)) {
 				for (int i = 0; i < wb.getNumberOfSheets(); i++) {
-					echoAsCSV(wb.getSheetAt(i), file, ppmFile, krFields, systemName, customer);
+					echoAsCSV(wb.getSheetAt(i), file, ppmFile, krFields, systemName, customer, imsConfiguration);
 				}
 			}
 		} catch (InvalidFormatException | IOException ex) {

@@ -74,7 +74,7 @@ public class FTPServiceTest {
 		when(ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
 		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
 		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(),anyString())).thenReturn(constructTicketMetaDataList());
-		fTPService.processFile("", "ServiceNow", "Deloite",new File("abc"), "C;/", "XLS", "test");
+		fTPService.processFile("", "ServiceNow", "Deloite",new File("abc"), "C;/", "XLS", "test", null);
 	}
 	
 	@Test(expected=ImsException.class)
@@ -92,7 +92,7 @@ public class FTPServiceTest {
 				.thenReturn(constructTicketMetaDataList());
 		when(ticketMetadataRepository.findBySystemNameAndCustomerOrderById(anyString(), anyString()))
 				.thenReturn(constructTicketMetaDataList());
-		fTPService.processFile("", "ServiceNow", "Deloite", new File("abc"), "C;/", "XLS", "test");
+		fTPService.processFile("", "ServiceNow", "Deloite", new File("abc"), "C;/", "XLS", "test", null);
  	
 	}
 	

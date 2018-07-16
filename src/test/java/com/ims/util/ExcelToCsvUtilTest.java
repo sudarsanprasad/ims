@@ -13,7 +13,7 @@ public class ExcelToCsvUtilTest {
 	
 	@Test
 	public void readExcelFile() {
-		excelToCsvUtil.readExcelFile("src/test/resources/Deloitte_AMPM_P10_20180522121000.xls", "src/test/resources/", "src/test/resources/", null, null, null);
+		excelToCsvUtil.readExcelFile("src/test/resources/Deloitte_AMPM_P10_20180522121000.xls", "src/test/resources/", "src/test/resources/", null, null, null, null);
 	}
 	
 	@Test

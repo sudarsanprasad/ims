@@ -25,16 +25,21 @@ import org.springframework.util.FileCopyUtils;
 import com.google.common.io.Files;
 import com.ims.constant.FileType;
 import com.ims.constant.StatusType;
+import com.ims.entity.ImsConfiguration;
 import com.ims.entity.TicketMetadata;
 import com.ims.entity.TicketStatistics;
 import com.ims.entity.TicketSystem;
 import com.ims.exception.ImsException;
+import com.ims.repository.ImsConfigurationRepository;
 import com.ims.repository.TicketMetadataRepository;
 import com.ims.repository.TicketStatisticsRepository;
 import com.ims.repository.TicketSystemRepository;
 import com.ims.util.ExcelToCsvUtil;
 import com.ims.util.FileNameUtil;
 import com.ims.util.QueryBuilder;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 
 @Service
 public class FTPService {
@@ -55,15 +60,18 @@ public class FTPService {
 	@Autowired
 	TicketSystemRepository ticketSystemRepository;
 	
+	@Autowired
+	ImsConfigurationRepository imsConfigurationRepository;
+	
 	@Value("${ppm.file.location.in}")
 	String ppmLocation;
 
 	public boolean downloadExcel(TicketSystem system) throws ImsException {
 		
 		List<TicketSystem> list = ticketSystemRepository.findByCustomerAndEnableFlagAndType(system.getCustomer(), "Y", "FTP");
-		
-		
-		String location = env.getProperty("file.location");
+		StringBuilder indexBuilder = new StringBuilder("status.index.").append(system.getSystemName());
+		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty(indexBuilder.toString());
+		String location = env.getProperty("ftp.file.location");
 		
 		LOG.info("Configured Location === >>"+location);
 		boolean isFileSavedToLocalFlag = false;
@@ -101,7 +109,7 @@ public class FTPService {
 		    	String pathName = location+file.getName();
 		    	LOG.info("Reading location == >> "+pathName);
 				String fileType = Files.getFileExtension(pathName);
-				readFile(location, file, pathName, fileType);
+				readFile(location, file, pathName, fileType, imsConfiguration);
 		    }
 		}
 		}catch(Exception e){
@@ -116,14 +124,14 @@ public class FTPService {
 		}
 	}
 
-	private void readFile(String location, File file, String pathName, String fileType) throws ImsException {
+	private void readFile(String location, File file, String pathName, String fileType, ImsConfiguration imsConfiguration) throws ImsException {
 		if(FileType.XLS.getDescription().equalsIgnoreCase(fileType) || FileType.XLSX.getDescription().equalsIgnoreCase(fileType)|| FileType.CSV.getDescription().equalsIgnoreCase(fileType)){
 			LOG.info("XL location ==>> "+pathName);
-			processFile(location, FileNameUtil.getSystemName(file.getName()), FileNameUtil.getCustomerName(file.getName()), file, pathName, fileType, file.getName());
+			processFile(location, FileNameUtil.getSystemName(file.getName()), FileNameUtil.getCustomerName(file.getName()), file, pathName, fileType, file.getName(), imsConfiguration);
 		}
 	}
 
-	void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName) throws ImsException {
+	void processFile(String location, String systemName, String customer, File file, String pathName, String fileType, String fileName, ImsConfiguration imsConfiguration) throws ImsException {
 		TicketStatistics ticketStatistics = ticketStatisticsRepository.save(getTicketStatistics(file.getName(), systemName, customer));
 		List<TicketMetadata> systemFields = ticketMetadataRepository.findBySystemNameAndIsProactiveOrderById(systemName, "Y");
 		String ticketSystem = systemName.replaceAll(" ", "_");
@@ -150,11 +158,11 @@ public class FTPService {
 				}
 				
 				ExcelToCsvUtil excelToCsvUtil = new ExcelToCsvUtil();
-				excelToCsvUtil.readExcelFile(pathName, csvFileName, ppmFileName, krFields, systemName, customer);
+				excelToCsvUtil.readExcelFile(pathName, csvFileName, ppmFileName, krFields, systemName, customer, imsConfiguration);
 				LOG.info("csvFileName ==>> "+csvFileName);
 				int recordsCount = excelToCsvUtil.getRecordsCount(pathName);
 				LOG.info("Count ==>> "+recordsCount);
-				
+				uploadFile(csvFileName);
 				StringBuilder queryBuilder = new StringBuilder("load data local inpath \"");
 				
 				queryBuilder.append(csvFileName).append("\" into table temp_ims_").append(ticketSystem);
@@ -285,5 +293,23 @@ public class FTPService {
 			LOG.error(e);
 			throw new ImsException("", e);
 		}
+	}
+	
+	public boolean uploadFile(String source) throws Exception{
+		
+		JSch jsch = new JSch();
+		Session session = jsch.getSession("innominds", "10.118.45.202", 22);
+		session.setPassword("Password.1");
+		session.setConfig("StrictHostKeyChecking", "no");
+		session.connect();
+
+		ChannelSftp sftpChannel = (ChannelSftp) session.openChannel("sftp");
+		sftpChannel.connect();
+		LOG.info("Source ==>> "+source);
+		LOG.info("Destination ==>> "+source);
+		sftpChannel.put(source, source);
+
+		sftpChannel.disconnect();
+        return true;
 	}
 }

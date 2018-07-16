@@ -42,7 +42,7 @@ public class UtilTest {
 	
 	@Test
 	public void maskData() {
-		String maskeddata=DataMaskUtil.maskData("Hi John, My phone number is 95825258  and mail id abc@gmail.com");
+		String maskeddata=DataMaskUtil.maskData("Hi John, My phone number is 95825258  and mail id abc@gmail.com", null);
 		Assert.notNull(maskeddata);
 	}
 	
@@ -87,13 +87,13 @@ public class UtilTest {
 		when(row.getLastCellNum()).thenReturn((short) 1).thenReturn((short) 0);
 		when(row.getCell(0)).thenReturn(cell);
 		when(cell.toString()).thenReturn("Hi John How are you" );
-		excelToCsvUtil.echoAsCSV(sheet,"abc.text","", null, null, null);
+		excelToCsvUtil.echoAsCSV(sheet,"abc.text","", null, null, null, null);
 	}
 	
 	@Test
 	public void readExcelFileException() {
 		ExcelToCsvUtil excelToCsvUtil=new ExcelToCsvUtil();
-		excelToCsvUtil.readExcelFile("abc", "text", "ppm", null, null, null);
+		excelToCsvUtil.readExcelFile("abc", "text", "ppm", null, null, null, null);
 	}
 	
 	@Test

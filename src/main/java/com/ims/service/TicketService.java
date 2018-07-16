@@ -85,7 +85,7 @@ public class TicketService {
 			if("Service Now".equalsIgnoreCase(system.getSystemName())){
 				String comments = getUrl(restTemplate, (String) record.get((String)env.getProperty("ticketid").trim()));
 				String replaceString=comments.replaceAll("System Administrator", "").replaceAll("Additional comments", "").replaceAll(" n", "");
-				String maskedData = DataMaskUtil.maskData(replaceString);
+				String maskedData = DataMaskUtil.maskData(replaceString, system.getFieldsMask());
 				record.put("comments", DataMaskUtil.replaceSpecialChars(maskedData));
 			}
 			recordsCount++;
