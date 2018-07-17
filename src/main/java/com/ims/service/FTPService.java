@@ -69,7 +69,7 @@ public class FTPService {
 	public boolean downloadExcel(TicketSystem system) throws ImsException {
 		
 		List<TicketSystem> list = ticketSystemRepository.findByCustomerAndEnableFlagAndType(system.getCustomer(), "Y", "FTP");
-		StringBuilder indexBuilder = new StringBuilder("status.index.").append(system.getSystemName());
+		StringBuilder indexBuilder = new StringBuilder("status.index.").append(system.getSystemName().toLowerCase());
 		ImsConfiguration imsConfiguration = imsConfigurationRepository.findByProperty(indexBuilder.toString());
 		String location = env.getProperty("ftp.file.location");
 		

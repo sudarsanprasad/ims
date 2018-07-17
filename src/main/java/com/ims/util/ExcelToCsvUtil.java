@@ -32,7 +32,7 @@ public class ExcelToCsvUtil {
 		StringBuilder fileContent = new StringBuilder("");
 		StringBuilder fileContentStatusNew = new StringBuilder(addPpmHeader(krFields)).append("\n");
 		int statusColumnIndex = -1;
-		if(!StringUtils.isEmpty(imsConfiguration.getValue())){
+		if(imsConfiguration != null && (!StringUtils.isEmpty(imsConfiguration.getValue()))){
 			statusColumnIndex = Integer.parseInt(imsConfiguration.getValue());
 		}
 		LOG.info("Status Index ==>> "+statusColumnIndex);
@@ -60,7 +60,7 @@ public class ExcelToCsvUtil {
 			lineStatusNew.append(createPpmContent(krFields, systemName, customer, row, headerIndexMap));
 			
 			fileContent.append(line.toString()).append("\n");
-			if ("OPEN".equalsIgnoreCase(row.getCell(statusColumnIndex).toString())) {
+			if (statusColumnIndex != -1 && "OPEN".equalsIgnoreCase(row.getCell(statusColumnIndex).toString())) {
 				fileContentStatusNew.append(lineStatusNew.toString()).append("\n");
 			}
 		}
