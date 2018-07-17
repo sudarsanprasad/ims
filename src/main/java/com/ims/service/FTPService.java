@@ -298,8 +298,8 @@ public class FTPService {
 	public boolean uploadFile(String source) throws Exception{
 		
 		JSch jsch = new JSch();
-		Session session = jsch.getSession("innominds", "10.118.45.202", 22);
-		session.setPassword("Password.1");
+		Session session = jsch.getSession(env.getProperty("ssh.username"), env.getProperty("ssh.location"), 22);
+		session.setPassword(env.getProperty("ssh.password"));
 		session.setConfig("StrictHostKeyChecking", "no");
 		session.connect();
 
