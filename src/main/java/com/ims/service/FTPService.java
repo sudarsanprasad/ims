@@ -156,13 +156,14 @@ public class FTPService {
 					csvFileName = location+filePart+".csv";
 					ppmFileName = ppmLocation+filePart+"_PPM"+".csv";
 				}
-				
+				LOG.info("PPM file name ==>>> "+ppmFileName);
 				ExcelToCsvUtil excelToCsvUtil = new ExcelToCsvUtil();
 				excelToCsvUtil.readExcelFile(pathName, csvFileName, ppmFileName, krFields, systemName, customer, imsConfiguration);
 				LOG.info("csvFileName ==>> "+csvFileName);
 				int recordsCount = excelToCsvUtil.getRecordsCount(pathName);
 				LOG.info("Count ==>> "+recordsCount);
 				uploadFile(csvFileName);
+				uploadFile(ppmFileName);
 				StringBuilder queryBuilder = new StringBuilder("load data local inpath \"");
 				
 				queryBuilder.append(csvFileName).append("\" into table temp_ims_").append(ticketSystem);

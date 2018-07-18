@@ -38,7 +38,7 @@ public class JobSchedulerTest {
 		when(imsJobService.createJobs(ticketSystems)).thenReturn(new JobDescriptor());
 		ReflectionTestUtils.setField(imsJobService, "ticketSystemRepository", ticketSystemRepository);
 		ReflectionTestUtils.setField(jobScheduler, "imsJobService", imsJobService);
-		jobScheduler.createJobs();
+		jobScheduler.dataAutomationScheduler();
 	}
 
 	@Test
